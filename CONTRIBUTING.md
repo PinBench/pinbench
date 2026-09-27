@@ -46,6 +46,9 @@ you touch the compile path.
 ## Before you push
 
 CI runs these on every pull request; running them first saves a round trip.
+`./setup_hooks.sh`, once after cloning, has git do it for you: the pre-commit
+hook formats, sorts imports and analyzes what you staged, and the pre-push hook
+runs the analysis and the tests below.
 
 ```bash
 dart analyze --fatal-infos            # must be clean, infos included — as CI runs it
