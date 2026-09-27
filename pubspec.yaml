@@ -78,10 +78,10 @@ dependencies:
     path: packages/pinbench_edition
   pinbench_edition_api:
     path: packages/pinbench_edition_api
+  pinbench_entitlements:
+    path: packages/pinbench_entitlements
   pinbench_parts:
     path: packages/pinbench_parts
-  pinbench_pro:
-    path: packages/pinbench_pro
   pinbench_sim:
     path: packages/pinbench_sim
   pinbench_terminal:
@@ -195,10 +195,12 @@ better_imports:
     - ".*windows.*"
     - ".*ephemeral.*"
 
-# Most of packages/* are submodules, each its own repository. Their pubspecs
-# depend on one another by git, as a standalone package must; these overrides
-# point every one of them back at the checked-out copy, so the app builds
-# exactly the commits it pins, and an edit to a package is picked up at once.
+# Every package in packages/, resolved to its copy here. pinbench_cdl and
+# pinbench_pdl are submodules of their own repositories, and the packages that
+# use them depend on them by git, as a standalone package must; these overrides
+# point everything back at the checked-out copy, so the app builds exactly the
+# commits it pins and an edit to a package is picked up at once. The pro
+# edition's packages rely on this too (see tools/link.sh there).
 dependency_overrides:
   pinbench_cdl:
     path: packages/pinbench_cdl
@@ -208,12 +210,12 @@ dependency_overrides:
     path: packages/pinbench_edition
   pinbench_edition_api:
     path: packages/pinbench_edition_api
+  pinbench_entitlements:
+    path: packages/pinbench_entitlements
   pinbench_parts:
     path: packages/pinbench_parts
   pinbench_pdl:
     path: packages/pinbench_pdl
-  pinbench_pro:
-    path: packages/pinbench_pro
   pinbench_sim:
     path: packages/pinbench_sim
   pinbench_terminal:

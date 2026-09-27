@@ -66,7 +66,7 @@ way.
 
 ```bash
 # Prerequisites: Flutter 3.44+
-git clone --recursive https://github.com/PinBench/pinbench.git   # packages/* are submodules
+git clone --recursive https://github.com/PinBench/pinbench.git   # the .cdl/.pdl packages are submodules
 cd pinbench
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs

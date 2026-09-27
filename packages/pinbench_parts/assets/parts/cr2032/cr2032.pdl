@@ -1,0 +1,29 @@
+# CR2032 coin cell in a holder — a battery you can put on the canvas.
+#
+# A real cell sags under load; this is an ideal source with a series
+# resistance, which is the honest cheap model: enough that shorting it does
+# not produce infinite current, not so much that it pretends to model
+# discharge.
+
+PART "Coin Cell (CR2032)"
+ID cr2032
+CATEGORY basic
+DESCRIPTION "3V lithium coin cell"
+
+SIZE 20.32mm 20.32mm
+SVG "cr2032.svg"
+
+PINS
+  plus   4px    68px  power   "+"
+  minus  116px  68px  ground  "-"
+
+PROPERTIES
+  voltage  number  3  unit:"V"  label:"Cell voltage"
+
+BEHAVIOR
+  # A dead cell should read 0 V rather than a negative one.
+  physics.voltage = max(prop.voltage, 0)
+
+PHYSICS voltageSource
+  n1 = plus
+  n2 = minus

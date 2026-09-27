@@ -80,7 +80,7 @@ to it. Anything older is summarised at the end.
 
 - The codebase is now an app plus standalone packages — `pinbench_parts`,
   `pinbench_pdl`, `pinbench_cdl`, `pinbench_sim`, `pinbench_ui`,
-  `pinbench_terminal`, `pinbench_cloud`, `pinbench_pro` and the edition seam
+  `pinbench_terminal`, `pinbench_cloud`, `pinbench_entitlements` and the edition seam
   (`pinbench_edition_api`, `pinbench_edition`) — none able to import the app.
   Each has a README.
 - Features no longer reach into each other or up into the app chrome; where they

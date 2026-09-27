@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # Most of packages/* are submodules in the published repository.
+          # pinbench_cdl and pinbench_pdl are submodules.
           submodules: recursive
 
       # No GTK/clang/ninja here on purpose: this job only analyzes and runs
@@ -103,8 +103,8 @@ jobs:
 
       # The root analysis_options excludes packages/**, and `flutter test` at
       # the root does not descend into them either — so until this step existed
-      # nothing in packages/ was ever analyzed or run on CI. pinbench_pro's tests had
-      # never executed here at all.
+      # nothing in packages/ was ever analyzed or run on CI. The entitlements
+      # package's tests had never executed here at all.
       #
       # Each package carries its own analysis_options and pubspec, so they are
       # checked on their own terms rather than the app's. Looping keeps a new
@@ -183,7 +183,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # Most of packages/* are submodules in the published repository.
+          # pinbench_cdl and pinbench_pdl are submodules.
           submodules: recursive
 
       - name: Set up Flutter
@@ -290,7 +290,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # Most of packages/* are submodules in the published repository.
+          # pinbench_cdl and pinbench_pdl are submodules.
           submodules: recursive
 
       - name: Install Linux build dependencies

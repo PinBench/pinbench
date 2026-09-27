@@ -15,13 +15,11 @@ dependencies:
   flutter_riverpod: ^3.4.2
   pinbench_cloud:
     path: ../pinbench_cloud
+  pinbench_entitlements:
+    path: ../pinbench_entitlements
   # For the part catalog a side panel may read (see hostPartsProvider).
   pinbench_parts:
-    git:
-      url: https://github.com/PinBench/parts.git
-      ref: main
-  pinbench_pro:
-    path: ../pinbench_pro
+    path: ../pinbench_parts
 
 dev_dependencies:
   # The same lint preset the app uses — see analysis_options.yaml.

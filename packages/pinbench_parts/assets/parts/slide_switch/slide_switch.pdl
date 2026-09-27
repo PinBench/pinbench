@@ -1,0 +1,36 @@
+# SPST slide switch.
+#
+# Modelled as a resistance rather than a topology change, because the solver
+# takes element values and not a rewired netlist: closed is milliohms, open is
+# a gigaohm. Both are far enough from anything else in a circuit to behave.
+
+PART "Slide Switch (SPST)"
+ID slide_switch
+CATEGORY basic
+DESCRIPTION "Single-pole slide switch"
+
+SIZE 12.7mm 6.35mm
+SVG "slide_switch.svg"
+
+PINS
+  a  4px   20px  passive "A"
+  b  68px  20px  passive "B"
+
+PROPERTIES
+  closed  boolean  false  label:"Closed"
+
+STATE
+  conducting  boolean  false
+
+BEHAVIOR
+  state.conducting   = prop.closed
+  physics.resistance = state.conducting ? 0.01 : 1000000000
+  # The knob slides, and its colour says which way. Drawn over the SVG body.
+  visual.knob        = state.conducting ? #22c55e : #3a3f44
+
+VISUALS
+  RECT 22px 12px 36px 16px filled:true id:knob radius:2
+
+PHYSICS resistor
+  n1 = a
+  n2 = b

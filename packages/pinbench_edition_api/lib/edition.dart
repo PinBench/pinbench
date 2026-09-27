@@ -1,5 +1,5 @@
 import 'package:pinbench_cloud/cloud_backend.dart';
-import 'package:pinbench_pro/pinbench_pro.dart';
+import 'package:pinbench_entitlements/pinbench_entitlements.dart';
 
 import 'side_panel.dart';
 

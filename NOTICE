@@ -7,10 +7,10 @@ PinBench contributors.
 Licensed under the Apache License, Version 2.0 (see LICENSE), with the
 following exceptions:
 
-  * packages/pinbench_pro/ — the published implementation of this package is
-    proprietary and is NOT covered by the Apache License. Only the
+  * packages/pinbench_entitlements/ — the published implementation of this
+    package is proprietary and is NOT covered by the Apache License. Only the
     open-source stub implementation is distributed under Apache-2.0.
-    See packages/pinbench_pro/README.md.
+    See packages/pinbench_entitlements/README.md.
 
   * packages/pinbench_edition/ — likewise: the edition PinBench's hosted
     builds run as is proprietary and not distributed. Only the stub in this

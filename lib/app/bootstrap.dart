@@ -13,7 +13,7 @@ import 'package:pinbench_cloud/cloud_log.dart';
 import 'package:pinbench_cloud/auth/auth_service.dart';
 import 'package:pinbench_edition/pinbench_edition.dart';
 import 'package:pinbench_edition_api/side_panel.dart';
-import 'package:pinbench_pro/pinbench_pro.dart';
+import 'package:pinbench_entitlements/pinbench_entitlements.dart';
 import 'package:pinbench_ui/ui/app_page_route.dart';
 
 import '../core/auth/auth_provider.dart';

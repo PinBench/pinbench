@@ -1,4 +1,4 @@
-import 'package:pinbench_pro/pinbench_pro.dart';
+import 'package:pinbench_entitlements/pinbench_entitlements.dart';
 import 'package:pinbench/core/entitlements/pro_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -22,7 +22,7 @@ final class _Paid implements ProGateway {
 
 /// The first paywall in the app. What matters is which side of the line each
 /// feature sits on, and that the free tier stays a real product rather than a
-/// demo — see packages/pinbench_pro/README.md.
+/// demo — see packages/pinbench_entitlements/README.md.
 void main() {
   late ProviderContainer container;
 

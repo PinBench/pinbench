@@ -1,0 +1,31 @@
+name: pinbench_ui
+description: >-
+  The app's UI kit for PinBench: the theme and its colour
+  scale, the widget wrappers every screen is built from, and the strings they
+  show. The one place allowed to name a widget library, so swapping one means
+  rewriting this package rather than every screen.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # One provider, for the user's chosen theme mode. Written by hand rather
+  # than generated, so this package needs no build_runner step of its own —
+  # see theme/theme.dart.
+  flutter_riverpod: ^3.4.2
+  # The widget library, and the icon set — which counts as one, because it is
+  # a library's worth of API surface that spreads as far as a theme lookup
+  # does. Naming either outside `theme/` and `ui/` is what
+  # `test/architecture/ui_library_boundary_test.dart` in the app forbids.
+  forui: ^0.25.0
+  lucide_icons_flutter: ^3.1.15
+
+dev_dependencies:
+  # The same lint preset the app uses — see analysis_options.yaml.
+  all_lints: ^0.1.2
+  flutter_test:
+    sdk: flutter

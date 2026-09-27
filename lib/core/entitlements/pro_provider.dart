@@ -1,4 +1,4 @@
-import 'package:pinbench_pro/pinbench_pro.dart';
+import 'package:pinbench_entitlements/pinbench_entitlements.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'pro_provider.g.dart';
@@ -8,7 +8,7 @@ part 'pro_provider.g.dart';
 /// Reads whatever `Pro.register` installed at startup. The open-source build
 /// registers nothing, so this is [FreeProGateway]; the commercial build swaps
 /// in its own implementation via `pubspec_overrides.yaml`. Feature code should
-/// never construct a gateway itself — see `packages/pinbench_pro/README.md`.
+/// never construct a gateway itself — see `packages/pinbench_entitlements/README.md`.
 @Riverpod(keepAlive: true)
 ProGateway proGateway(Ref ref) => Pro.instance;
 

@@ -25,16 +25,18 @@ Cloned without `--recursive`? `git submodule update --init` fills in `packages/`
 
 ### Changing a package
 
-Everything under `packages/pinbench_*` is a submodule — each package is its own
-repository under [PinBench](https://github.com/PinBench) (`pinbench_parts` is
-`PinBench/parts`, `pinbench_pdl` is `PinBench/pdl`, and so on), and this repo
-pins the commit of each that the app is tested with. The app resolves every one
-of them to the checked-out submodule, so an edit there takes effect in the app
-immediately.
+Most packages under `packages/` are ordinary folders in this repository: change
+them in the same pull request as the app code that needs the change.
 
-To send it: commit inside the submodule and open the pull request against that
-package's repository. If the app needs the change, a second pull request here
-moves the submodule pointer (`git add packages/pinbench_parts`).
+The two file formats are the exception. `pinbench_cdl` and `pinbench_pdl` are
+meant for other tools as well, so each is a repository of its own
+([`PinBench/cdl`](https://github.com/PinBench/cdl),
+[`PinBench/pdl`](https://github.com/PinBench/pdl)), checked out here as a
+submodule pinned to the commit the app is tested with. The app resolves both to
+the checked-out copy, so an edit there takes effect immediately. To send one:
+commit inside the submodule and open the pull request against that repository;
+if the app needs it, a second pull request here moves the submodule pointer
+(`git add packages/pinbench_pdl`).
 
 Generated `*.g.dart` files are gitignored, so `build_runner` is not optional —
 run it after every clone, pull, or branch switch.

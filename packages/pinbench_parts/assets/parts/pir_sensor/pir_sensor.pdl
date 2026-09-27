@@ -1,0 +1,37 @@
+# PIR motion sensor (HC-SR501 style).
+#
+# The reference part for `LOGIC`: everything here is still data — artwork,
+# pins, properties, state — except the one thing that cannot be a rule. A
+# retriggerable one-shot needs a clock and a memory of when the trigger
+# *stopped*, and BEHAVIOR has neither by design.
+#
+# Electrically this is a source between OUT and GND. VCC is present because
+# the real module has one and people wire it, but it is not part of the model.
+
+PART "PIR Motion Sensor"
+ID pir_sensor
+CATEGORY sensors
+DESCRIPTION "Retriggerable motion sensor — output holds high after motion stops"
+
+SIZE 20.32mm 15.24mm
+SVG "pir_sensor.svg"
+
+LOGIC one_shot
+
+PINS
+  vcc  20px  84px  power   "VCC"
+  out  52px  84px  output  "OUT"
+  gnd  84px  84px  ground  "GND"
+
+PROPERTIES
+  triggered      boolean  false  label:"Motion detected"
+  holdSeconds    number   2      unit:"s"  label:"Hold time after motion"
+  outputVoltage  number   3.3    unit:"V"  label:"Output high level"
+
+STATE
+  active       boolean  false
+  holdUntilMs  decimal  0
+
+PHYSICS voltageSource
+  n1 = out
+  n2 = gnd

@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pinbench_pro/pinbench_pro.dart';
+import 'package:pinbench_entitlements/pinbench_entitlements.dart';
 import 'package:pinbench_ui/strings.dart';
 import 'package:pinbench_ui/theme/text.dart';
 import 'package:pinbench_ui/ui/app_icon_button.dart';

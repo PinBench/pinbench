@@ -1188,6 +1188,13 @@ packages:
       relative: true
     source: path
     version: "0.1.0"
+  pinbench_entitlements:
+    dependency: "direct main"
+    description:
+      path: "packages/pinbench_entitlements"
+      relative: true
+    source: path
+    version: "0.1.0"
   pinbench_parts:
     dependency: "direct main"
     description:
@@ -1199,13 +1206,6 @@ packages:
     dependency: "direct overridden"
     description:
       path: "packages/pinbench_pdl"
-      relative: true
-    source: path
-    version: "0.1.0"
-  pinbench_pro:
-    dependency: "direct main"
-    description:
-      path: "packages/pinbench_pro"
       relative: true
     source: path
     version: "0.1.0"

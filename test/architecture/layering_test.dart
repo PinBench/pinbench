@@ -167,7 +167,7 @@ void main() {
       'pinbench_cloud',
       'pinbench_edition',
       'pinbench_edition_api',
-      'pinbench_pro',
+      'pinbench_entitlements',
     ]) {
       final files = Directory(
         'packages/$package/lib',
