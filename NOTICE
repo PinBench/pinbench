@@ -34,10 +34,6 @@ licenses, including but not limited to:
                                      separate process, not linked
   * Firebase SDKs                  — Apache-2.0 (Google LLC)
   * OpenTelemetry / dartastic      — Apache-2.0
-  * Geist (site/fonts/)            — SIL Open Font License 1.1 (The Geist
-                                     Project Authors / Vercel). Redistributed
-                                     as woff2 subsets with the marketing site;
-                                     license text in site/fonts/OFL.txt
 
 "Arduino" is a trademark of Arduino SA. This project is not affiliated
 with, endorsed by, or sponsored by Arduino SA. Run `flutter pub deps` or

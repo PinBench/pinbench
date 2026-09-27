@@ -81,7 +81,3 @@ tools/deploy.env
 # well as pubspec.yaml, so a checkout can point a package somewhere else — a
 # local clone, a fork — without touching the tracked pubspec.
 pubspec_overrides.yaml
-
-# Firebase CLI deploy cache (regenerated on every `firebase deploy`).
-.firebase/
-

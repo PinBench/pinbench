@@ -8,20 +8,16 @@ on:
     # release.yml's job.
     tags: ["v*"]
   pull_request:
-  # Manual run — the only path that publishes to the live Hosting channel.
-  # See the deploy-web job.
   workflow_dispatch:
 
-# Cancel superseded runs on the same ref to save CI minutes — except manual
-# runs, which are the ones that publish to live. Cancelling a deploy halfway
-# through is worse than paying for a duplicate run.
+# Cancel superseded runs on the same ref to save CI minutes.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
-  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+  cancel-in-progress: true
 
 # Least privilege by default. GITHUB_TOKEN is handed to every action in the
 # run, including third-party ones, so it should carry no more than reading the
-# checkout. Jobs that need more opt in for themselves (see deploy-web).
+# checkout. Jobs that need more opt in for themselves.
 permissions:
   contents: read
 
@@ -397,55 +393,3 @@ jobs:
           path: pinbench_${{ matrix.platform }}.*
           if-no-files-found: error
           retention-days: 7
-
-  # Pushes to main publish a preview channel; only a manual run
-  # (Actions -> CI -> Run workflow) publishes to live. Production releases
-  # should be a decision, not a side effect of merging.
-  deploy-web:
-    name: Deploy Web (${{ github.event_name == 'workflow_dispatch' && 'live' || 'preview' }})
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-    needs: [analyze-and-test, build-web]
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    environment: production
-    # Opts in on top of the workflow-wide read-only default: the Firebase
-    # action posts the preview URL back to the commit/PR.
-    permissions:
-      contents: read
-      pull-requests: write
-      checks: write
-    steps:
-      # Only for firebase.json / .firebaserc — the bundle itself comes from the
-      # build job, so this job needs no Flutter toolchain at all.
-      - uses: actions/checkout@v7
-
-      # Deploy exactly the artifact CI already built and tested. Rebuilding
-      # here meant ~5 extra minutes and, worse, a second binary that nothing
-      # had verified.
-      - name: Download the web build
-        uses: actions/download-artifact@v8
-        with:
-          name: pinbench-web
-
-      - name: Unpack it where firebase.json expects it
-        run: |
-          mkdir -p build/web
-          tar -xzf pinbench_web.tar.gz -C build/web
-          # Both halves, because either one missing deploys a broken site that
-          # still looks like a successful deploy: no landing page means the
-          # front door falls through to the SPA rewrite, and no app/index.html
-          # means every "Try it in your browser" link 404s.
-          test -f build/web/index.html || { echo "::error::no landing page (index.html) in the artifact"; exit 1; }
-          test -f build/web/app/index.html || { echo "::error::no Flutter app (app/index.html) in the artifact"; exit 1; }
-
-      - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a # v0.11.0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
-          # 'live' is production. Anything else is a preview channel with its
-          # own throwaway URL, which the action prints in the run summary.
-          # Pushes land on a stable 'main' preview so the URL does not change
-          # between runs.
-          channelId: ${{ github.event_name == 'workflow_dispatch' && 'live' || 'main' }}

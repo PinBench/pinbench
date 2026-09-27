@@ -238,5 +238,5 @@ echo
 echo "    Public URL : $PUBLIC_URL"
 echo "    Rollback   : ssh $SSH_USER@$SSH_HOST 'cd $REMOTE_DIR && cp server.js.bak server.js && sudo systemctl restart $SERVICE'"
 echo
-echo "    If server.js changed how the web app talks to it, redeploy the app:"
-echo "      COMPILE_API_TOKEN=… tools/deploy_web.sh"
+echo "    If server.js changed how the web app talks to it, redeploy the web app"
+echo "    from PinBench/website."

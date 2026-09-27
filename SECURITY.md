@@ -48,7 +48,7 @@ Please do not report these — they are deliberate, documented decisions:
 - **Firebase API keys in `lib/firebase_options.dart` and
   `GoogleService-Info.plist`.** Firebase client keys are public by design. They
   identify the project; they do not authorise anything. Firebase here is only
-  Analytics, Crashlytics, Performance, Remote Config and Hosting — no user data
+  Analytics, Crashlytics, Performance and Remote Config — no user data
   lives behind these keys. Project data is Appwrite's, and is controlled by the
   per-row permissions described above.
 - **The Appwrite endpoint and project id in

@@ -6,7 +6,7 @@ import 'workspace_fs_web.dart' if (dart.library.io) 'workspace_fs_io.dart';
 /// implementation on native platforms, and an in-memory store on the web, where
 /// the browser has no local filesystem. Keeping every workspace read/write
 /// behind this interface lets the workspace, template, and explorer layers
-/// compile and run for the web preview (Firebase Hosting).
+/// compile and run on the web.
 ///
 /// String path manipulation via `package:path` (`p.join`, `p.basename`,
 /// `p.dirname`) works on the web, so callers keep using those freely. Note that
