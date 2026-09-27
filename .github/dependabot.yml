@@ -3,7 +3,7 @@ version: 2
 updates:
   # Workflow actions are pinned to commit SHAs (see .github/workflows/ci.yml),
   # which is the point — a mutable tag lets whoever controls the action change
-  # what runs in a job holding FIREBASE_SERVICE_ACCOUNT. Pinning only helps if
+  # what runs in a job holding a repository secret. Pinning only helps if
   # something still moves the pins, so Dependabot does it and updates the
   # trailing `# vX.Y.Z` comment alongside the SHA.
   - package-ecosystem: github-actions

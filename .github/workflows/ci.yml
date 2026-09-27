@@ -196,10 +196,9 @@ jobs:
       - name: Test
         run: npm test
 
-  # Web is its own job, not a matrix leg, so deploy-web can depend on it
-  # alone. `needs:` cannot target one leg of a matrix, so while web shared a
-  # matrix with the desktop builds the deploy sat idle ~10 min waiting for
-  # Windows to finish a binary it does not use.
+  # Proves the web target still compiles. Only proves it: this repository does
+  # not publish the web app anywhere, so nothing here needs a deploy
+  # configuration or its secrets.
   build-web:
     name: Build Web
     needs: analyze-and-test
@@ -224,37 +223,10 @@ jobs:
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs
 
-      # Built with the service configuration baked in, so this artifact is
-      # byte-for-byte what deploy-web publishes — it downloads this rather than
-      # rebuilding. Previously the artifact was a bare build with no compile
-      # service and no App Check, i.e. not the thing that shipped.
-      #
-      # On a pull request from a fork these are empty and the bundle falls back
-      # to precompiled templates. That is fine: deploy-web only runs on main.
-      # build_site.sh, not `flutter build web`: the deployed site is the static
-      # landing page at / plus the Flutter bundle under /app/, and that
-      # assembly has to happen here because the deploy job below ships this
-      # artifact verbatim. tools/deploy_web.sh calls the same script, so a
-      # local deploy and this one cannot drift apart. --wasm,
-      # --pwa-strategy=none, --base-href and --output live inside it.
-      - name: Build the site (landing page + WASM app)
-        run: tools/build_site.sh --dart-define=FLUTTER_WEB_CANVASKIT_MAX_SURFACE_SIZE=2048 ${COMPILE_API_URL:+--dart-define=COMPILE_API_URL=$COMPILE_API_URL} ${COMPILE_API_TOKEN:+--dart-define=COMPILE_API_TOKEN=$COMPILE_API_TOKEN}
-        env:
-          COMPILE_API_URL: ${{ vars.COMPILE_API_URL }}
-          # A secret to keep it out of logs, but NOT secret once built — it
-          # ships in the JavaScript bundle. See compile_service/README.md.
-          COMPILE_API_TOKEN: ${{ secrets.COMPILE_API_TOKEN }}
-
-      - name: Package
-        run: tar -czf pinbench_web.tar.gz -C build/web .
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: pinbench-web
-          path: pinbench_web.tar.gz
-          if-no-files-found: error
-          retention-days: 7
+      # --wasm because that is the configuration that ships; a dart2js-only
+      # build would miss a WASM-specific compile failure.
+      - name: Build (WASM)
+        run: flutter build web --wasm --pwa-strategy=none
 
   # Whether this push/PR touches code only a desktop toolchain compiles.
   #
@@ -393,3 +365,29 @@ jobs:
           path: pinbench_${{ matrix.platform }}.*
           if-no-files-found: error
           retention-days: 7
+
+  # Asks PinBench/website to build and publish a preview of this commit; that
+  # repository owns the web deploy. Only on main, and only once the web build
+  # above has proven the commit compiles.
+  #
+  # WEBSITE_DISPATCH_TOKEN needs Contents: write on PinBench/website, which is
+  # what the repository_dispatch API requires. Without it the job succeeds with
+  # a notice rather than failing every run.
+  notify-website:
+    name: Request web preview
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [analyze-and-test, build-web]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Send repository_dispatch
+        env:
+          GH_TOKEN: ${{ secrets.WEBSITE_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "${GH_TOKEN}" ]; then
+            echo "::notice::WEBSITE_DISPATCH_TOKEN is not set; no preview requested."
+            exit 0
+          fi
+          gh api repos/PinBench/website/dispatches \
+            -f event_type=app-updated \
+            -f "client_payload[ref]=${GITHUB_SHA}"
