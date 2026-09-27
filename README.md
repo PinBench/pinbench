@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/PinBench/pinbench/actions/workflows/ci.yml/badge.svg)](https://github.com/PinBench/pinbench/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![Flutter](https://img.shields.io/badge/Flutter-3.44+-02569B?logo=flutter)](https://flutter.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.47+-02569B?logo=flutter)](https://flutter.dev)
 
 **Design, code, and simulate Arduino circuits — on your desktop or in the browser.**
 
@@ -65,7 +65,7 @@ way.
 ## Quick start
 
 ```bash
-# Prerequisites: Flutter 3.44+
+# Prerequisites: Flutter 3.47.5 (pinned in .fvmrc; `fvm use` picks it up)
 git clone --recursive https://github.com/PinBench/pinbench.git   # the .cdl/.pdl packages are submodules
 cd pinbench
 flutter pub get
@@ -159,7 +159,7 @@ forking is welcome and always will be, just under your own name.
 
 | Area | Technology |
 |---|---|
-| Framework | Flutter 3.44+ / Dart 3.10+ |
+| Framework | Flutter 3.47+ / Dart 3.13+ |
 | State | Riverpod 3.x with codegen |
 | Canvas | Custom `CustomPainter` |
 | Editor | `re_editor` |

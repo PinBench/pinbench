@@ -75,3 +75,7 @@ graphify-out/
 # well as pubspec.yaml, so a checkout can point a package somewhere else — a
 # local clone, a fork — without touching the tracked pubspec.
 pubspec_overrides.yaml
+
+# fvm's per-project SDK link (the version itself is in .fvmrc, which is
+# committed)
+.fvm/

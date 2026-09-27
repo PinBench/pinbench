@@ -21,11 +21,10 @@ concurrency:
 permissions:
   contents: read
 
-env:
-  # Single source of truth — this was pinned separately in three jobs, which is
-  # how the removed --web-renderer flag survived the 3.44 upgrade in some steps
-  # and not others.
-  FLUTTER_VERSION: 3.44.4
+# The Flutter version is .fvmrc's, in every job here and in the workflows
+# elsewhere that build this app — one file, which fvm reads locally too. It was
+# pinned separately in three jobs once, which is how the removed
+# --web-renderer flag survived the 3.44 upgrade in some steps and not others.
 
 jobs:
   analyze-and-test:
@@ -35,8 +34,23 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # pinbench_cdl and pinbench_pdl are submodules.
+          # pinbench_cdl and pinbench_pdl are submodules. While their
+          # repositories are private the default token cannot clone them, so
+          # SUBMODULES_TOKEN (read access to both) is used when it is set.
+          # Drop it once they are public.
           submodules: recursive
+          token: ${{ secrets.SUBMODULES_TOKEN || github.token }}
+
+      # The per-package step below resolves each package on its own, and
+      # pinbench_parts and pinbench_sim depend on the format packages by git —
+      # which, while those repositories are private, needs the same token.
+      - name: Let pub fetch the private format packages
+        env:
+          SUBMODULES_TOKEN: ${{ secrets.SUBMODULES_TOKEN }}
+        run: |
+          if [ -n "${SUBMODULES_TOKEN:-}" ]; then
+            git config --global url."https://x-access-token:${SUBMODULES_TOKEN}@github.com/PinBench/".insteadOf "https://github.com/PinBench/"
+          fi
 
       # No GTK/clang/ninja here on purpose: this job only analyzes and runs
       # unit tests, which execute on the Dart VM and compile nothing native.
@@ -44,7 +58,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
+          flutter-version-file: .fvmrc
           channel: stable
           cache: true
 
@@ -183,13 +197,17 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # pinbench_cdl and pinbench_pdl are submodules.
+          # pinbench_cdl and pinbench_pdl are submodules. While their
+          # repositories are private the default token cannot clone them, so
+          # SUBMODULES_TOKEN (read access to both) is used when it is set.
+          # Drop it once they are public.
           submodules: recursive
+          token: ${{ secrets.SUBMODULES_TOKEN || github.token }}
 
       - name: Set up Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
+          flutter-version-file: .fvmrc
           channel: stable
           cache: true
 
@@ -290,8 +308,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # pinbench_cdl and pinbench_pdl are submodules.
+          # pinbench_cdl and pinbench_pdl are submodules. While their
+          # repositories are private the default token cannot clone them, so
+          # SUBMODULES_TOKEN (read access to both) is used when it is set.
+          # Drop it once they are public.
           submodules: recursive
+          token: ${{ secrets.SUBMODULES_TOKEN || github.token }}
 
       - name: Install Linux build dependencies
         if: matrix.platform == 'linux'
@@ -302,7 +324,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
+          flutter-version-file: .fvmrc
           channel: stable
           cache: true
 

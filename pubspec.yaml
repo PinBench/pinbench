@@ -8,6 +8,9 @@ publish_to: "none"
 
 environment:
   sdk: ^3.10.4
+  # The floor, so an older Flutter fails at `pub get` rather than somewhere
+  # stranger. The exact version everything is built with is in .fvmrc.
+  flutter: ">=3.47.5"
 
 dependencies:
   # Sparkle (macOS) / WinSparkle (Windows) behind one Dart API — the signed
