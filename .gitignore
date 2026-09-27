@@ -1,0 +1,87 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Node (compile_service and functions/ dependencies)
+node_modules/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+# Unanchored too: `/build/` only covers the repo root, so every package under
+# packages/ was committing its own build output — including a 60 MB test-cache
+# dill. Anything named build/ at any depth is generated.
+build/
+assets/templates/**/build/
+/coverage/
+analyze_output.txt
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Saropa / Reports
+.saropa/
+reports/
+
+# Generated files
+*.g.dart
+*.freezed.dart
+
+# Patrol (UI testing) — generated bundle + CLI artifacts
+patrol_test/test_bundle.dart
+.patrol/
+
+# graphify — code-graph tool output cache (not source)
+graphify-out/
+
+# Where the compile service runs: host, SSH user and key (see tools/deploy.env.example)
+tools/deploy.env
+
+# Grafana Cloud OTLP secrets (used by tools/run_otel.sh)
+.grafana.env
+
+# Local tracking state, not source
+.build_in_public_progress.json
+
+# Local dependency overrides. `pub` reads dependency_overrides from this file as
+# well as pubspec.yaml, so a checkout can point a package somewhere else — a
+# local clone, a fork — without touching the tracked pubspec.
+pubspec_overrides.yaml
+
+# Firebase CLI deploy cache (regenerated on every `firebase deploy`).
+.firebase/
+

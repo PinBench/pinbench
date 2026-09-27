@@ -1,0 +1,32 @@
+// Circuit description (.cdl) — kept in sync with the canvas.
+// Edit components and wires here or on the canvas; both update together.
+Circuit {
+    uno := ArduinoUno {
+        position: (-264, -168);
+    }
+    oled := OLEDDisplay {
+        position: (288, -48);
+        I2C Address: 0x3C;
+        Pixel Color: White;
+    }
+    Wire {
+        from: oled.GND;
+        to: uno.GND_2;
+        color: black;
+    }
+    Wire {
+        from: oled.VCC;
+        to: uno.5V;
+        color: red;
+    }
+    Wire {
+        from: oled.SCL;
+        to: uno.A5;
+        color: yellow;
+    }
+    Wire {
+        from: oled.SDA;
+        to: uno.A4;
+        color: blue;
+    }
+}

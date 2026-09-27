@@ -1,0 +1,5 @@
+#include "../../Flutter/Flutter-Debug.xcconfig"
+#include "Warnings.xcconfig"
+
+// Disable hardened runtime for debug builds to allow ad-hoc signing with entitlements
+ENABLE_HARDENED_RUNTIME = NO

@@ -1,0 +1,2 @@
+pubspecPath: 'pubspec.yaml'
+needRunPubGetAfterSorting: true

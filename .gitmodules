@@ -1,0 +1,44 @@
+[submodule "packages/pinbench_pdl"]
+	path = packages/pinbench_pdl
+	url = https://github.com/PinBench/pdl.git
+	branch = main
+[submodule "packages/pinbench_parts"]
+	path = packages/pinbench_parts
+	url = https://github.com/PinBench/parts.git
+	branch = main
+[submodule "packages/pinbench_pro"]
+	path = packages/pinbench_pro
+	url = https://github.com/PinBench/pro.git
+	branch = main
+[submodule "packages/pinbench_ui"]
+	path = packages/pinbench_ui
+	url = https://github.com/PinBench/ui.git
+	branch = main
+[submodule "packages/pinbench_cdl"]
+	path = packages/pinbench_cdl
+	url = https://github.com/PinBench/cdl.git
+	branch = main
+[submodule "packages/pinbench_sim"]
+	path = packages/pinbench_sim
+	url = https://github.com/PinBench/sim.git
+	branch = main
+[submodule "packages/pinbench_ai"]
+	path = packages/pinbench_ai
+	url = https://github.com/PinBench/ai.git
+	branch = main
+[submodule "packages/pinbench_cloud"]
+	path = packages/pinbench_cloud
+	url = https://github.com/PinBench/cloud.git
+	branch = main
+[submodule "packages/pinbench_terminal"]
+	path = packages/pinbench_terminal
+	url = https://github.com/PinBench/terminal.git
+	branch = main
+[submodule "site"]
+	path = site
+	url = https://github.com/PinBench/website.git
+	branch = main
+[submodule "compile_service"]
+	path = compile_service
+	url = https://github.com/PinBench/compile-server.git
+	branch = main

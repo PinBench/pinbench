@@ -1,0 +1,58 @@
+name: New component or board
+description: Request support for a part or board that isn't there yet
+labels: ["component"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Components are the most contributable part of this project — if you
+        fancy building it yourself, say so and we'll point you at the nearest
+        existing painter to copy.
+
+  - type: input
+    id: part
+    attributes:
+      label: Which part?
+      placeholder: DHT22 temperature/humidity sensor
+    validations:
+      required: true
+
+  - type: input
+    id: datasheet
+    attributes:
+      label: Datasheet or product page
+      description: |
+        Needed for the physical dimensions and the pinout — every part here is
+        drawn at true size, so we need real millimetres rather than a guess.
+      placeholder: https://…
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What does it need to do?
+      options:
+        - Visual and wiring only — I just want it on the canvas
+        - Simulated — it should actually respond in the running circuit
+    validations:
+      required: true
+
+  - type: textarea
+    id: behaviour
+    attributes:
+      label: If simulated, how should it behave?
+      description: |
+        Which pins, which protocol, what the sketch should observe. For example:
+        "one-wire, returns temperature and humidity when polled per the DHT
+        timing diagram."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Would you like to build it?
+      options:
+        - label: I'd be up for having a go at this myself
+          required: false

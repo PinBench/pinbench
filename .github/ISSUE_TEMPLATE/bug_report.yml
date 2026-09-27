@@ -1,0 +1,81 @@
+name: Bug report
+description: Something behaves differently from how it should
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this.
+
+        **If this is a security issue, please close this and use the Security
+        tab → Report a vulnerability instead.** See
+        [SECURITY.md](../blob/main/SECURITY.md).
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: And what did you expect instead?
+      placeholder: |
+        The LED stays dark when I run the sketch. It should blink once a second.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: How can we reproduce it?
+      description: |
+        Numbered steps. **Please paste the `.cdl` file and the sketch** — a
+        circuit we can open is worth far more than a description of one, and it
+        is usually the difference between a fix this week and a fix eventually.
+      placeholder: |
+        1. Open the `blink` example
+        2. Drag a resistor onto row 12
+        3. Press Run
+
+        <details><summary>circuit.cdl</summary>
+
+        ```
+        paste here
+        ```
+        </details>
+
+        <details><summary>sketch.ino</summary>
+
+        ```cpp
+        paste here
+        ```
+        </details>
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - macOS
+        - Windows
+        - Linux
+        - Web (browser)
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: From the About dialog, or the commit you built.
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: |
+        Screenshots, a screen recording, or errors from the Problems pane /
+        browser console. Drag files straight in.
+    validations:
+      required: false

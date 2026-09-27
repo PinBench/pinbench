@@ -1,0 +1,158 @@
+// Circuit description (.cdl) — kept in sync with the canvas.
+// Edit components and wires here or on the canvas; both update together.
+Circuit {
+    uno := ArduinoUno {
+        position: (-352.38, -176);
+        rotation: 90;
+    }
+    breadboard1 := FullBreadboard {
+        position: (16, -176);
+    }
+    led1 := LED {
+        position: (96, -96);
+        color: red;
+    }
+    led2 := LED {
+        position: (160, -96);
+        color: yellow;
+    }
+    led3 := LED {
+        position: (224, -96);
+        color: green;
+    }
+    button1 := PushButton {
+        position: (304, -32);
+    }
+    button2 := PushButton {
+        position: (384, -32);
+    }
+    button3 := PushButton {
+        position: (464, -32);
+    }
+    r1 := Resistor {
+        position: (112, -32);
+        rotation: 90;
+        resistance: 220;
+    }
+    r2 := Resistor {
+        position: (176, -32);
+        rotation: 90;
+        resistance: 220;
+    }
+    r3 := Resistor {
+        position: (240, -32);
+        rotation: 90;
+        resistance: 220;
+    }
+    buzzer1 := PiezoBuzzer {
+        position: (528, -80);
+    }
+    mic1 := MicSensor {
+        position: (656, -208);
+    }
+    Wire {
+        from: breadboard1.sig_right_j_16;
+        to: breadboard1.rail_right_minus_16;
+        color: black;
+    }
+    Wire {
+        from: breadboard1.sig_right_j_21;
+        to: breadboard1.rail_right_minus_21;
+        color: black;
+    }
+    Wire {
+        from: breadboard1.sig_right_j_26;
+        to: breadboard1.rail_right_minus_26;
+        color: black;
+    }
+    Wire {
+        from: breadboard1.rail_right_minus_4;
+        to: breadboard1.sig_left_e_4;
+        color: black;
+    }
+    Wire {
+        from: breadboard1.rail_right_minus_8;
+        to: breadboard1.sig_left_e_8;
+        color: black;
+    }
+    Wire {
+        from: breadboard1.rail_right_minus_12;
+        to: breadboard1.sig_left_e_12;
+        color: black;
+    }
+    Wire {
+        from: uno.10;
+        to: breadboard1.sig_right_g_5;
+        color: red;
+        bends: [(-16, 36)];
+    }
+    Wire {
+        from: uno.7;
+        to: breadboard1.sig_right_j_18;
+        color: red;
+        bends: [(-16, 84)];
+    }
+    Wire {
+        from: uno.6;
+        to: breadboard1.sig_right_j_23;
+        color: yellow;
+        bends: [(-16, 100), (420, 100)];
+    }
+    Wire {
+        from: uno.5;
+        to: breadboard1.sig_right_j_28;
+        color: green;
+        bends: [(-12, 112), (500, 112)];
+    }
+    Wire {
+        from: uno.9;
+        to: breadboard1.sig_right_g_9;
+        color: yellow;
+        bends: [(196, 52)];
+    }
+    Wire {
+        from: uno.8;
+        to: breadboard1.sig_right_g_13;
+        color: green;
+        bends: [(260, 68)];
+    }
+    Wire {
+        from: uno.5V;
+        to: breadboard1.rail_right_plus_3;
+        color: red;
+        bends: [(-384, 52), (-384, 288), (100, 288)];
+    }
+    Wire {
+        from: uno.2;
+        to: breadboard1.sig_right_j_42;
+        color: orange;
+        bends: [(-16, 192), (724, 192)];
+    }
+    Wire {
+        from: breadboard1.sig_right_j_40;
+        to: breadboard1.rail_right_minus_40;
+        color: black;
+    }
+    Wire {
+        from: breadboard1.rail_right_minus_2;
+        to: uno.GND_2;
+        color: black;
+        bends: [(84, 272), (-368, 272), (-368, 68)];
+    }
+    Wire {
+        from: breadboard1.sig_right_j_41;
+        to: breadboard1.rail_right_plus_41;
+        color: red;
+    }
+    Wire {
+        from: uno.3;
+        to: breadboard1.sig_right_j_32;
+        color: blue;
+        bends: [(-16, 176.04), (564, 176)];
+    }
+    Wire {
+        from: breadboard1.sig_right_j_34;
+        to: breadboard1.rail_right_minus_34;
+        color: black;
+    }
+}

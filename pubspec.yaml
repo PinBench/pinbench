@@ -1,0 +1,219 @@
+name: pinbench
+
+description: "FLutter app to design and simulate Arduino circuit"
+
+version: 0.0.1+1
+
+publish_to: "none"
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  # Only for `Client` — the shared session handle that `package:pinbench_cloud`
+  # hands back and takes in again. Every other Appwrite type lives in that
+  # package; see `AppwriteProjectRepository.forClient`.
+  appwrite: ^25.3.0
+  # Sparkle (macOS) / WinSparkle (Windows) behind one Dart API — the signed
+  # PWYW builds update themselves in place. Linux has no Sparkle equivalent
+  # and falls back to the notify-only path in `core/updates/`.
+  auto_updater: ^1.0.0
+  avr8_dart: ^0.1.0
+  collection: ^1.19.1
+  crypto: ^3.0.0
+  # feedback: ^3.2.0
+  dartastic_opentelemetry: ^0.9.5
+  dartastic_opentelemetry_api: 1.0.0-beta.2
+  feedback:
+    git:
+      url: https://github.com/burhankhanzada/feedback.git
+      # Pinned to a commit, not a branch: a moving ref lets `pub upgrade`
+      # swap third-party code underneath us with no diff in this repo.
+      # Bump deliberately. Was: branch desktop_card
+      ref: 026782046da874d9315082a426682dec39508dc1
+      path: feedback
+  file_selector: ^1.1.0
+  firebase_analytics: ^12.4.3
+  firebase_core: ^4.11.0
+  firebase_crashlytics: ^5.2.4
+  firebase_performance: ^0.11.4+3
+  firebase_remote_config: ^6.5.3
+  fl_chart: ^1.2.0
+  flutter:
+    sdk: flutter
+  flutter_email_sender: ^10.0.1
+  flutter_riverpod: ^3.4.2
+  flutter_soloud: ^4.0.10
+  flutter_svg: ^2.2.3
+  flutter_web_plugins:
+    sdk: flutter
+  go_router: ^17.3.0
+  google_fonts: ^8.1.0
+  http: ^1.6.0
+  interactive_viewer_plus: ^0.0.4
+  lucide_icons: ^0.257.0
+  # multiview_desktop: ^1.1.1
+  multiview_desktop:
+    git:
+      url: https://github.com/burhankhanzada/multi-view-desktop.git
+      # Pinned to a commit, not a branch: a moving ref lets `pub upgrade`
+      # swap third-party code underneath us with no diff in this repo.
+      # Bump deliberately. Was: branch main
+      ref: 2f42fae8d825c67c712cf6b1babb36bf092635b5
+  # Local pure-Dart port (no FFI / libngspice). API-compatible Ngspice facade.
+  ngspice_dart:
+    git:
+      url: https://github.com/burhankhanzada/ngspice_dart.git
+      # Pinned to a commit, not a branch: a moving ref lets `pub upgrade`
+      # swap third-party code underneath us with no diff in this repo.
+      # Bump deliberately. Was: branch main
+      ref: 1061e5f824186f73671495080fe6c37433b71a1c
+  # Held at 9.x: `appwrite` caps it below 10, and the only thing this is used
+  # for is reading the running build's version for the update check.
+  package_info_plus: ^9.0.1
+  path: ^1.9.1
+  path_provider: ^2.1.6
+  pinbench_ai:
+    path: packages/pinbench_ai
+  pinbench_cloud:
+    path: packages/pinbench_cloud
+  pinbench_parts:
+    path: packages/pinbench_parts
+  pinbench_pro:
+    path: packages/pinbench_pro
+  pinbench_sim:
+    path: packages/pinbench_sim
+  pinbench_terminal:
+    path: packages/pinbench_terminal
+  pinbench_ui:
+    path: packages/pinbench_ui
+  # plat: ^0.1.1
+  plat:
+    git:
+      url: https://github.com/burhankhanzada/plat.git
+      # Pinned to a commit, not a branch: a moving ref lets `pub upgrade`
+      # swap third-party code underneath us with no diff in this repo.
+      # Bump deliberately. Was: branch main
+      ref: aaf73e0c8314b8a06b72b98a00f05cca993bf221
+  # re_editor: ^0.9.0
+  # Use the re_editor fork: it drops the isolate_manager -> isolate_contactor ->
+  # dart:html chain so the app can be compiled to WebAssembly
+  re_editor:
+    git:
+      url: https://github.com/burhankhanzada/re-editor.git
+      # Pinned to a commit, not a branch: a moving ref lets `pub upgrade`
+      # swap third-party code underneath us with no diff in this repo.
+      # Bump deliberately. Was: branch wasm-support
+      # a779486 -> ba88a91: the editor no longer notifies its controller from
+      # inside `initState`/`didUpdateWidget`, which marked another editor on the
+      # same file dirty mid-build and threw on every open.
+      ref: ba88a914f93ce450400a5ec0d3df294d94f459ce
+  re_highlight: ^0.0.3
+  record: ^7.1.0
+  riverpod_annotation: ^4.0.6
+  shared_preferences: ^2.5.5
+  stack_trace: ^1.12.1
+  super_drag_and_drop: ^0.9.1
+  super_tree: ^0.2.1
+  talker: ^5.1.17
+  talker_flutter: ^5.1.16
+  talker_logger: ^5.1.17
+  talker_riverpod_logger: ^5.1.17
+  url_launcher: ^6.3.2
+  vector_math: ^2.2.0
+  web: ^1.1.1
+  yaml: ^3.1.3
+
+dev_dependencies:
+  all_lints: ^0.1.2
+  build_runner: ^2.15.0
+  flutter_test:
+    sdk: flutter
+  go_router_builder: ^4.3.0
+  # Lets tests point `getTemporaryDirectory()` at a scratch folder, which is
+  # what any test of the cloud-project open path needs — it downloads into a
+  # temp workspace before anything else happens.
+  path_provider_platform_interface: ^2.1.3
+  patrol: ^4.6.1
+  patrol_finders: ^3.5.0
+  patrol_log: ^0.9.0
+  patrol_mcp: ^0.1.4
+  plugin_platform_interface: ^2.1.8
+  riverpod_generator: ^4.0.8
+  sort_pubspec_dependencies: ^0.0.2
+  test_api: any
+
+flutter:
+  # Stays true, and not for this app's sake: nothing under `lib/` or
+  # `packages/` draws a Material icon — those are lucide's, shipped by
+  # `lucide_icons_flutter` and named through `AppIcons`, and
+  # `ui_library_boundary_test` is what keeps it that way.
+  #
+  # This flag bundles `MaterialIcons-Regular.otf`, and the widget libraries the
+  # app renders still draw from it: `super_tree` for the explorer's expand
+  # caret, `forui` for the tick in a select, `talker_flutter` in the log
+  # panes, plus `feedback` and `re_editor`. Setting it false does not fail the
+  # build — it makes every one of those glyphs render as a tofu box, which is
+  # exactly what happened to the explorer caret when it was tried.
+  #
+  # So this is not ours to turn off until those packages stop using Material,
+  # which is the same upstream migration `ui_library_boundary_test` tracks.
+  uses-material-design: true
+  assets:
+    - assets/templates/blink/
+    - assets/templates/breadboard/
+    - assets/templates/clap_rhythm/
+    - assets/templates/current_limiting/
+    - assets/templates/mic/
+    - assets/templates/oled/
+    - assets/templates/piezo_buzzer/
+    - assets/templates/servo/
+    - assets/templates/voltage_divider/
+
+# Patrol UI testing framework configuration.
+# Used by patrol_cli (`patrol test` / `patrol develop`) to locate the app
+# under test on each native platform. The macOS bundle id mirrors
+# macos/Runner/Configs/AppInfo.xcconfig (PRODUCT_BUNDLE_IDENTIFIER).
+patrol:
+  app_name: PinBench
+  android:
+    package_name: dev.pinbench.app
+  ios:
+    bundle_id: dev.pinbench.app
+  macos:
+    bundle_id: dev.pinbench.app
+
+better_imports:
+  comments: false
+  relative: true
+  folders:
+    - lib
+  ignore_files_like:
+    - ".*macos.*"
+    - ".*linux.*"
+    - ".*windows.*"
+    - ".*ephemeral.*"
+
+# packages/* are submodules, each its own repository. Their pubspecs depend
+# on one another by git, as a standalone package must; these overrides point
+# every one of them back at the checked-out submodule, so the app builds
+# exactly the commits it pins, and an edit to a package is picked up at once.
+dependency_overrides:
+  pinbench_ai:
+    path: packages/pinbench_ai
+  pinbench_cdl:
+    path: packages/pinbench_cdl
+  pinbench_cloud:
+    path: packages/pinbench_cloud
+  pinbench_parts:
+    path: packages/pinbench_parts
+  pinbench_pdl:
+    path: packages/pinbench_pdl
+  pinbench_pro:
+    path: packages/pinbench_pro
+  pinbench_sim:
+    path: packages/pinbench_sim
+  pinbench_terminal:
+    path: packages/pinbench_terminal
+  pinbench_ui:
+    path: packages/pinbench_ui

@@ -1,0 +1,25 @@
+// Circuit description (.cdl) — kept in sync with the canvas.
+// Edit components and wires here or on the canvas; both update together.
+Circuit {
+    uno := ArduinoUno {
+        position: (-264, -168);
+    }
+    servo := ServoMotor {
+        position: (-8, -480);
+    }
+    Wire {
+        from: servo.gnd;
+        to: uno.GND_1;
+        color: black;
+    }
+    Wire {
+        from: servo.vcc;
+        to: uno.5V;
+        color: red;
+    }
+    Wire {
+        from: servo.signal;
+        to: uno.9;
+        color: orange;
+    }
+}

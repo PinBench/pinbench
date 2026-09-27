@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <script>
+    // This hosted preview serves fresh assets via HTTP no-cache + ETags and
+    // ships no service worker (built with --pwa-strategy=none). Older visitors
+    // may still have a previously-registered Flutter service worker whose
+    // offline cache can serve stale assets (e.g. an out-of-date template).
+    // Unregister any such worker and drop its caches, reloading once so this
+    // session loads fresh content.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (regs) {
+        if (regs.length === 0) return;
+        Promise.all(regs.map(function (r) { return r.unregister(); }))
+          .then(function () {
+            return (window.caches && caches.keys)
+              ? caches.keys().then(function (keys) {
+                  return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+                })
+              : null;
+          })
+          .then(function () {
+            if (!sessionStorage.getItem('sw-cleared')) {
+              sessionStorage.setItem('sw-cleared', '1');
+              location.reload();
+            }
+          });
+      });
+    }
+  </script>
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Design and simulate Arduino circuits in your browser — no install required.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="PinBench">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>PinBench</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    /* Match the app's own surface so the pre-Flutter loader hands over
+       without a flash. These mirror what `fTheme(brightness).colors`
+       resolves to in lib/shared/theme/forui_theme.dart — background
+       #0A0A0A dark / #FFFFFF light, foreground #FAFAFA / #0A0A0A. The
+       spinner keeps the brand teal #009696 rather than the interactive
+       primary, because this is the logo's colour and there is no UI here
+       to be consistent with.
+
+       The OS preference is honoured because the app defaults to
+       ThemeMode.system. If the palette moves, these move with it — a
+       loader a shade off the app is a visible blink on every load. */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #0A0A0A; /* dark background (default) */
+    }
+    #loading {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      color: #FAFAFA;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: opacity 0.3s ease;
+    }
+    #loading .spinner {
+      width: 42px;
+      height: 42px;
+      border: 4px solid rgba(0, 150, 150, 0.2);
+      border-top-color: #009696; /* brand primary */
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    #loading .label {
+      font-size: 14px;
+      letter-spacing: 0.3px;
+      opacity: 0.85;
+    }
+    @media (prefers-color-scheme: light) {
+      html, body { background-color: #FFFFFF; } /* light background */
+      #loading { color: #0A0A0A; }
+      #loading .spinner { border-color: rgba(0, 150, 150, 0.25); border-top-color: #009696; }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading">
+    <div class="spinner"></div>
+    <div class="label">Loading PinBench…</div>
+  </div>
+  <script type="module" src="avr_bridge.js?v=6"></script>
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      var loader = document.getElementById('loading');
+      if (loader) {
+        loader.style.opacity = '0';
+        setTimeout(function () { loader.remove(); }, 300);
+      }
+    });
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

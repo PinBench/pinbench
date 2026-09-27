@@ -1,0 +1,9 @@
+# Test configuration. Tags let CI skip suites that need external toolchains.
+tags:
+  # Tests that shell out to a local `arduino-cli` to compile a sketch.
+  # Run them locally with `flutter test`; CI runs `flutter test --exclude-tags arduino`.
+  arduino:
+  # Tests that spawn the simulation background isolate (loads ngspice via FFI in
+  # a child isolate). Exclude with `--exclude-tags isolate` if a CI host lacks
+  # the native library.
+  isolate:

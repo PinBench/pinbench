@@ -1,0 +1,85 @@
+include: package:all_lints/flutter_stable.yaml
+
+plugins:
+  riverpod_lint: 3.1.8
+
+analyzer:
+  exclude:
+    - ".dart_tool/**"
+    - "build/**"
+    # Each package under packages/ is analyzed on its own terms, against its
+    # own analysis_options.yaml — see the "Analyze and test each package" step
+    # in .github/workflows/ci.yml. Excluding them here avoids analyzing the
+    # same files twice under two different configurations.
+    - "packages/**"
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/*.gr.dart"
+    - "**/*.arb"
+    - ".saropa/**"
+    - "reports/**"
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    # `all_lints` enables several pairs of mutually incompatible rules.
+    # The analyzer reports each pair against the include directive here,
+    # which is a finding nothing in this repo can act on.
+    included_file_warning: ignore
+    missing_required_param: error
+    missing_return: error
+    invalid_annotation_target: ignore
+
+formatter:
+  page_width: 100
+
+linter:
+  rules:
+    always_use_package_imports: false
+    always_put_control_body_on_new_line: false
+    always_put_required_named_parameters_first: false
+    always_specify_types: false
+    avoid_catches_without_on_clauses: false
+    avoid_classes_with_only_static_members: false
+    cascade_invocations: false
+    directives_ordering: false # https://github.com/oppahansi/better_imports/pull/14
+    diagnostic_describe_all_properties: false
+    lines_longer_than_80_chars: false
+    prefer_double_quotes: false
+    prefer_int_literals: false
+    public_member_api_docs: false
+    sort_constructors_first: false
+    sort_child_properties_last: false
+    specify_nonobvious_local_variable_types: false
+    specify_nonobvious_property_types: false
+    unnecessary_final: false
+    use_setters_to_change_properties: false
+    type_annotate_public_apis: false
+
+    # Dart 3.13 (Flutter 3.47) started reporting rules that contradict each
+    # other, and `all_lints` turns on both halves of several pairs. These two
+    # are ours to settle:
+    #
+    #   `async_return_with_no_await` wants `return await f();` inside an async
+    #   function; `unnecessary_await_in_return` wants the `await` gone again.
+    #   No code satisfies both. Keeping the second leaves the codebase as it
+    #   was written and is the quieter of the two.
+    #
+    #   `prefer_if_elements_to_conditional_expressions` rewrites
+    #   `if (meta) (isMac ? '⌘' : 'Ctrl')` into nested if/else elements, which
+    #   is longer and reads worse — see `shortcut_label.dart`, the only place
+    #   it fires.
+    #
+    # The pairs `all_lints` contradicts *itself* on are silenced by the
+    # `included_file_warning` entry above; they are its config, not ours.
+    async_return_with_no_await: false
+    prefer_if_elements_to_conditional_expressions: false
+
+    # provider_dependencies: false

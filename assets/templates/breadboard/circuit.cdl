@@ -1,0 +1,33 @@
+// Circuit description (.cdl) — kept in sync with the canvas.
+// Edit components and wires here or on the canvas; both update together.
+Circuit {
+    breadboard := HalfBreadboard {
+        position: (-200, -240);
+    }
+    uno := ArduinoUno {
+        position: (-314, -127.54);
+    }
+    led_red := LED {
+        position: (-184, -208);
+        color: red;
+    }
+    r_series := Resistor {
+        position: (-60, -80);
+        resistance: 220;
+    }
+    Wire {
+        from: uno.GND_1;
+        to: breadboard.sig_left_b_0;
+        color: black;
+    }
+    Wire {
+        from: uno.13;
+        to: r_series.left;
+        color: red;
+    }
+    Wire {
+        from: r_series.right;
+        to: breadboard.sig_left_b_1;
+        color: red;
+    }
+}

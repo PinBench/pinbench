@@ -1,0 +1,45 @@
+PinBench
+Copyright 2026 Burhan Khanzada
+
+This product includes software developed by Burhan Khanzada and the
+PinBench contributors.
+
+Licensed under the Apache License, Version 2.0 (see LICENSE), with the
+following exceptions:
+
+  * compile_service/  — licensed under the GNU Affero General Public
+    License v3.0 (see compile_service/LICENSE). A separate commercial
+    license is available; contact the maintainer.
+
+  * packages/pinbench_pro/ — the published implementation of this package is
+    proprietary and is NOT covered by the Apache License. Only the
+    open-source stub implementation is distributed under Apache-2.0.
+    See packages/pinbench_pro/README.md.
+
+TRADEMARKS
+----------
+"PinBench" and its logos are trademarks of Burhan
+Khanzada. The Apache-2.0 license grants rights to the code, not to the
+name or marks. See TRADEMARKS.md for the permitted-use policy.
+
+THIRD-PARTY COMPONENTS
+----------------------
+This product bundles or depends on third-party software with its own
+licenses, including but not limited to:
+
+  * Flutter and Dart               — BSD-3-Clause (Google LLC)
+  * ngspice                        — BSD-3-Clause / "New BSD"
+  * AVR8js / avr8_dart             — MIT (Uri Shaked and contributors)
+  * arduino-cli                    — GPL-3.0 (Arduino SA) — invoked as a
+                                     separate process, not linked
+  * Firebase SDKs                  — Apache-2.0 (Google LLC)
+  * OpenTelemetry / dartastic      — Apache-2.0
+  * Geist (site/fonts/)            — SIL Open Font License 1.1 (The Geist
+                                     Project Authors / Vercel). Redistributed
+                                     as woff2 subsets with the marketing site;
+                                     license text in site/fonts/OFL.txt
+
+"Arduino" is a trademark of Arduino SA. This project is not affiliated
+with, endorsed by, or sponsored by Arduino SA. Run `flutter pub deps` or
+see the in-app "Open source licenses" screen for the complete and
+authoritative dependency license list.

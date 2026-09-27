@@ -1,0 +1,31 @@
+// Circuit description (.cdl) — kept in sync with the canvas.
+// Edit components and wires here or on the canvas; both update together.
+Circuit {
+    uno := ArduinoUno {
+        position: (-240, -160);
+    }
+    r_series := Resistor {
+        position: (-96, -240);
+        rotation: 270;
+        resistance: 100;
+    }
+    led_red := LED {
+        position: (-112, -312);
+        color: red;
+    }
+    Wire {
+        from: uno.13;
+        to: r_series.left;
+        color: red;
+    }
+    Wire {
+        from: r_series.right;
+        to: led_red.anode;
+        color: red;
+    }
+    Wire {
+        from: led_red.cathode;
+        to: uno.GND_1;
+        color: black;
+    }
+}

@@ -1,0 +1,56 @@
+// Circuit description (.cdl) — kept in sync with the canvas.
+// Edit components and wires here or on the canvas; both update together.
+Circuit {
+    breadboard := HalfBreadboard {
+        position: (16, -168);
+    }
+    buzzer := PiezoBuzzer {
+        position: (64, -24);
+    }
+    mic := MicSensor {
+        position: (192, -152);
+    }
+    uno := ArduinoUno {
+        position: (-352.38, -200);
+        rotation: 90;
+    }
+    Wire {
+        from: uno.GND_2;
+        to: breadboard.rail_right_minus_0;
+        color: black;
+        bends: [(-368, 44), (-368, 240), (60, 240)];
+    }
+    Wire {
+        from: uno.5V;
+        to: breadboard.rail_right_plus_1;
+        color: red;
+        bends: [(-380, 28), (-380, 252), (76, 252)];
+    }
+    Wire {
+        from: uno.4;
+        to: breadboard.sig_right_j_3;
+        color: blue;
+        bends: [(-16, 108), (100, 108)];
+    }
+    Wire {
+        from: breadboard.rail_right_minus_4;
+        to: breadboard.sig_right_j_5;
+        color: red;
+    }
+    Wire {
+        from: breadboard.rail_right_minus_10;
+        to: breadboard.sig_right_j_11;
+        color: black;
+    }
+    Wire {
+        from: breadboard.rail_right_plus_12;
+        to: breadboard.sig_right_j_12;
+        color: red;
+    }
+    Wire {
+        from: uno.3;
+        to: breadboard.sig_right_j_13;
+        color: orange;
+        bends: [(-16, 120), (260, 120)];
+    }
+}
