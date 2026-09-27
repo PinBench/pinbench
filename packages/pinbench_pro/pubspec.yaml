@@ -1,0 +1,13 @@
+name: pinbench_pro
+description: Entitlement and feature-gating seam for PinBench. The open-source build ships a stub that reports the free tier; commercial builds swap in a proprietary implementation.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  meta: ^1.16.0
+
+dev_dependencies:
+  test: ^1.25.0

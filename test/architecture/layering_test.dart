@@ -162,10 +162,11 @@ void main() {
       'pinbench_pdl',
       'pinbench_cdl',
       'pinbench_sim',
-      'pinbench_ai',
       'pinbench_ui',
       'pinbench_terminal',
       'pinbench_cloud',
+      'pinbench_edition',
+      'pinbench_edition_api',
       'pinbench_pro',
     ]) {
       final files = Directory(
@@ -324,13 +325,6 @@ void main() {
       },
       key: (from, to) => '${layerOf(from).split('/')[1]} -> ${layerOf(to).split('/')[1]}',
       allowed: const {
-        // The assistant reads the workspace to build its context. Writing
-        // proposals back used to be listed here too, until the `.cdl` parser
-        // became `package:pinbench_cdl` and the auto-layout — which is about
-        // *assistant output*, not about the format — moved in beside its
-        // only caller.
-        'ai -> workspace',
-
         // Canvas widgets that read run state — the toolbar's play/stop, the
         // read-only lock while simulating, live values in the properties
         // panel. Placing them from the chrome would remove this edge.

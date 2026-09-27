@@ -23,9 +23,6 @@ migrate_working_dir/
 # is commented out by default.
 #.vscode/
 
-# Node (functions/ dependencies)
-node_modules/
-
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id

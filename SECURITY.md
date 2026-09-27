@@ -33,13 +33,9 @@ Please give us reasonable time to ship a fix before disclosing publicly.
   files outside a request's temp directory are all in scope.
 - **The app** — anything that lets a `.cdl` file or a sketch reach outside the
   workspace, execute host code, or exfiltrate data.
-- **Cloud data access** — any path that reads or writes another user's projects.
-  Authorization is per-row Appwrite permissions, written by the client in
-  `AppwriteProjectRepository._permissionsFor` and rewritten whenever sharing
-  changes (`tools/appwrite_schema.sh` creates them). Because those permissions are set by
-  application code rather than a server-side rule file, a row that is created
-  or re-shared with the wrong permission set is exactly the kind of finding we
-  want. So is any way to widen your own access to a project you do not own.
+- **Cloud data access** — in the hosted builds, any path that reads or writes
+  another user's projects, or widens your own access to a project you do not
+  own.
 
 ### Not vulnerabilities
 
@@ -49,12 +45,7 @@ Please do not report these — they are deliberate, documented decisions:
   `GoogleService-Info.plist`.** Firebase client keys are public by design. They
   identify the project; they do not authorise anything. Firebase here is only
   Analytics, Crashlytics, Performance and Remote Config — no user data
-  lives behind these keys. Project data is Appwrite's, and is controlled by the
-  per-row permissions described above.
-- **The Appwrite endpoint and project id in
-  `lib/core/cloud/appwrite/appwrite_config.dart`.** Same category: they name the
-  backend, they do not grant anything. Every request is still authorised
-  per-row against the signed-in session.
+  lives behind these keys.
 - **`COMPILE_API_TOKEN` being readable in the web bundle.** It ships in the
   JavaScript, and that is understood. It deters casual scripted abuse; the rate
   limiter and concurrency caps are the actual protection, and they apply to

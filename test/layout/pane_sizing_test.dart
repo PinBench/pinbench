@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:plat/plat.dart';
+import 'package:pinbench_edition_api/side_panel.dart';
+import 'package:pinbench/core/edition/edition_provider.dart';
 
 import 'package:pinbench/layout/components/pane_sizing.dart';
 import 'package:pinbench/layout/providers/layout_provider.dart';
@@ -36,12 +38,12 @@ void main() {
         ),
         const .leaf(id: 'center', size: .auto()),
         .slot(
-          id: assistantPane.id,
+          id: sidePanelPane.id,
           persistent: true,
           collapsible: true,
-          collapseThreshold: assistantPane.collapseThreshold,
-          size: assistantPane.size,
-          child: const .leaf(id: 'assistant'),
+          collapseThreshold: sidePanelPane.collapseThreshold,
+          size: sidePanelPane.size,
+          child: const .leaf(id: 'side_panel'),
         ),
       ],
     ),
@@ -54,12 +56,17 @@ void main() {
     // resize, still hide, and still look right in every screenshot — they just
     // cannot be closed by dragging, and a pane closed any other way takes its
     // divider with it and leaves nothing to reopen from. Nothing else in the
-    // suite would notice.
-    final container = ProviderContainer();
+    // suite would notice. With a side panel, since only then is there a right
+    // pane at all.
+    final container = ProviderContainer(
+      overrides: [
+        editionPanelProvider.overrideWithValue(SidePanel(build: (_) => const SizedBox())),
+      ],
+    );
     addTearDown(container.dispose);
     final controller = container.read(platControllerProvider);
 
-    for (final pane in [sidebarPane, assistantPane]) {
+    for (final pane in [sidebarPane, sidePanelPane]) {
       final slot = controller.snapshot(pane.id);
       expect(slot, isA<SlotSnapshot>(), reason: '${pane.id} must be a slot: only slots collapse');
       expect((slot! as SlotSnapshot).collapsible, isTrue, reason: '${pane.id} must be collapsible');
@@ -104,13 +111,13 @@ void main() {
     final c = panes();
     addTearDown(c.dispose);
 
-    c.setHidden(assistantPane.id, hidden: true);
-    expect(assistantPane.isCollapsed(c), isTrue);
+    c.setHidden(sidePanelPane.id, hidden: true);
+    expect(sidePanelPane.isCollapsed(c), isTrue);
   });
 
   // --- The window ----------------------------------------------------------
 
-  final wide = sidebarPane.minWidth + assistantPane.minWidth + contentMinWidth + 100;
+  final wide = sidebarPane.minWidth + sidePanelPane.minWidth + contentMinWidth + 100;
   final narrow = sidebarPane.minWidth + contentMinWidth - 1;
 
   /// Lays the pane region out at [width] and lets the post-frame measurement
@@ -132,18 +139,18 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('the assistant gives up its place before the sidebar', (tester) async {
+  testWidgets('the side panel gives up its place before the sidebar', (tester) async {
     final c = panes();
     addTearDown(c.dispose);
 
-    final roomForBoth = sidebarPane.minWidth + assistantPane.minWidth + contentMinWidth;
+    final roomForBoth = sidebarPane.minWidth + sidePanelPane.minWidth + contentMinWidth;
 
     await resizeTo(tester, c, roomForBoth + 100);
     expect(sidebarPane.isCollapsed(c), isFalse);
-    expect(assistantPane.isCollapsed(c), isFalse);
+    expect(sidePanelPane.isCollapsed(c), isFalse);
 
     await resizeTo(tester, c, roomForBoth - 1);
-    expect(assistantPane.isCollapsed(c), isTrue, reason: 'the wider pane goes first');
+    expect(sidePanelPane.isCollapsed(c), isTrue, reason: 'the wider pane goes first');
     expect(sidebarPane.isCollapsed(c), isFalse, reason: "and what it freed is the sidebar's");
 
     await resizeTo(tester, c, sidebarPane.minWidth + contentMinWidth - 1);
@@ -152,10 +159,10 @@ void main() {
     // All the way back: each returns where it left, in reverse.
     await resizeTo(tester, c, roomForBoth - 1);
     expect(sidebarPane.isCollapsed(c), isFalse);
-    expect(assistantPane.isCollapsed(c), isTrue);
+    expect(sidePanelPane.isCollapsed(c), isTrue);
 
     await resizeTo(tester, c, roomForBoth + 100);
-    expect(assistantPane.isCollapsed(c), isFalse);
+    expect(sidePanelPane.isCollapsed(c), isFalse);
   });
 
   testWidgets('leaves a pane the user closed closed', (tester) async {

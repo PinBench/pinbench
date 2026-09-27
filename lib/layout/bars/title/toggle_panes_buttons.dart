@@ -6,6 +6,7 @@ import 'package:pinbench_ui/ui/app_icon_button.dart';
 import 'package:pinbench_ui/strings.dart';
 import 'package:pinbench_ui/theme/app_icons.dart';
 
+import '../../../core/edition/edition_provider.dart';
 import '../../controllers/app_layout_controller.dart';
 
 class TogglePanesButtons extends ConsumerWidget {
@@ -15,6 +16,8 @@ class TogglePanesButtons extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final appLayoutController = ref.watch(appLayoutControllerProvider);
     final controller = appLayoutController.platController;
+    // No right-hand pane without an edition's side panel, so no toggle for it.
+    final hasSidePanel = ref.watch(editionPanelProvider) != null;
 
     return AnimatedBuilder(
       animation: controller,
@@ -41,13 +44,14 @@ class TogglePanesButtons extends ConsumerWidget {
               shortcutLabel: '⌘J',
               onPressed: () => appLayoutController.togglePane('bottom_pane'),
             ),
-            AppIconButton(
-              isActive: isRightPaneActive,
-              icon: AppIcons.panelRight,
-              tooltip: AppStrings.toggleRightPaneTooltip,
-              shortcutLabel: '⌥⌘B',
-              onPressed: () => appLayoutController.togglePane('right_pane'),
-            ),
+            if (hasSidePanel)
+              AppIconButton(
+                isActive: isRightPaneActive,
+                icon: AppIcons.panelRight,
+                tooltip: AppStrings.toggleRightPaneTooltip,
+                shortcutLabel: '⌥⌘B',
+                onPressed: () => appLayoutController.togglePane('right_pane'),
+              ),
           ],
         );
       },

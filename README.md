@@ -114,16 +114,17 @@ flutter run -d chrome --dart-define=COMPILE_API_URL=http://localhost:8080
 ```
 
 
-## Self-hosting
+## Building from source
 
-Everything the hosted version does, you can run yourself:
+A build from this repository is the full local app: the canvas, the
+simulator, the code editor and every component, with no account needed.
+Accounts, cloud projects, sharing and the circuit assistant belong to
+PinBench's hosted builds and are absent from a build from source.
 
-- **Compile service** — [`PinBench/compile-server`](https://github.com/PinBench/compile-server) is a small
-  Node service wrapping `arduino-cli`, with a Dockerfile and a hardening guide.
-- **Cloud sync** — point the app at your own Appwrite project (cloud or
-  self-hosted). `tools/appwrite_schema.sh` builds the schema for you.
-- **Everything enabled** — a self-hosted build turns on every Pro feature with
-  `SelfHostedProGateway`; see [`pinbench_pro`](https://github.com/PinBench/pro).
+The one service you may want alongside it is the compile service —
+[`PinBench/compile-server`](https://github.com/PinBench/compile-server), a small
+Node service wrapping `arduino-cli`, with a Dockerfile and a hardening guide —
+which lets the web build compile edited sketches.
 
 ## File formats
 

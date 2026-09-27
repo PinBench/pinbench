@@ -23,21 +23,26 @@ class AppLayoutController {
   /// Access to the underlying controller if natively needed by PlatView.
   PlatController get platController => _platController;
 
+  /// Whether this build has a right-hand pane — only when its edition supplies
+  /// a side panel (see `platController`).
+  bool get hasSidePanel => _platController.snapshot(sidePanelPane.id) != null;
+
   /// Closes the welcome tab and reveals the chrome that belongs with an open
-  /// project: the explorer, and the assistant pane.
+  /// project: the explorer, and the side panel if there is one.
   ///
-  /// The assistant is hidden on the welcome screen because that screen has a
-  /// prompt box of its own — two ways to say the same thing, side by side.
+  /// The side panel is hidden on the welcome screen because that screen
+  /// carries the panel's own entry — two ways to the same thing, side by side.
   /// Every path off the welcome screen goes through here, so this and
   /// [resetToWelcome] are the only two places the rule is expressed.
   void closeWelcome() {
     _platController.close(AppTabs.welcome);
     sidebarPane.reveal(_platController);
-    assistantPane.reveal(_platController);
+    if (hasSidePanel) sidePanelPane.reveal(_platController);
   }
 
   /// Toggles the visibility of a specified pane slot.
   void togglePane(String paneId) {
+    if (_isMissing(paneId)) return;
     _analytics.panelToggled(paneId);
     setPaneVisible(paneId, visible: isPaneHidden(paneId));
   }
@@ -48,6 +53,7 @@ class AppLayoutController {
   /// place in the tree at zero extent, so the divider that reopens it is still
   /// there, and its width survives the round trip. Hiding takes both away.
   void setPaneVisible(String paneId, {required bool visible}) {
+    if (_isMissing(paneId)) return;
     final pane = _sidePane(paneId);
     if (pane == null) {
       _platController.setHidden(paneId, hidden: !visible);
@@ -62,9 +68,13 @@ class AppLayoutController {
       _platController.snapshot(paneId)?.hidden ??
       true;
 
+  /// The side panel's slot in a build without one: its toggles are hidden, but
+  /// a shortcut or a stray command must still be a no-op rather than a crash.
+  bool _isMissing(String paneId) => paneId == sidePanelPane.id && !hasSidePanel;
+
   CollapsiblePane? _sidePane(String paneId) => switch (paneId) {
     _ when paneId == sidebarPane.id => sidebarPane,
-    _ when paneId == assistantPane.id => assistantPane,
+    _ when paneId == sidePanelPane.id => sidePanelPane,
     _ => null,
   };
 
@@ -192,9 +202,9 @@ class AppLayoutController {
 
       sidebarPane.collapse(_platController);
       _platController.setHidden('bottom_pane', hidden: true);
-      // The welcome screen carries its own prompt box, so the assistant pane
+      // The welcome screen carries the side panel's own entry, so the pane
       // would be a second one beside it. See [closeWelcome].
-      assistantPane.collapse(_platController);
+      if (hasSidePanel) sidePanelPane.collapse(_platController);
       _platController.focus('welcome');
     });
   }

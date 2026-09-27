@@ -7,15 +7,18 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger_observer.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger_settings.dart';
-import 'package:appwrite/appwrite.dart' show Client;
 import 'package:pinbench_sim/core/sim_log.dart';
+import 'package:pinbench_cloud/cloud_backend.dart';
 import 'package:pinbench_cloud/cloud_log.dart';
-import 'package:pinbench_cloud/auth/appwrite_auth_service.dart';
 import 'package:pinbench_cloud/auth/auth_service.dart';
-import 'package:pinbench_cloud/appwrite/appwrite_client.dart';
+import 'package:pinbench_edition/pinbench_edition.dart';
+import 'package:pinbench_edition_api/side_panel.dart';
+import 'package:pinbench_pro/pinbench_pro.dart';
 import 'package:pinbench_ui/ui/app_page_route.dart';
 
 import '../core/auth/auth_provider.dart';
+import '../core/cloud/project_providers.dart';
+import '../core/edition/edition_provider.dart';
 import '../core/remote_config/feature_flags.dart';
 import '../core/remote_config/feature_flags_provider.dart';
 import '../core/telemetry/analytics_milestones.dart';
@@ -32,6 +35,7 @@ import '../features/workspace/providers/recent_workspaces_provider.dart';
 import '../shell/menus/global_menu_wrapper.dart';
 import 'canvas_sync_bindings.dart';
 import 'chrome_bindings.dart';
+import 'edition_host_bindings.dart';
 import 'simulation/simulation_bindings.dart';
 
 /// Everything `main()` needs to bring up before the first frame: telemetry,
@@ -117,28 +121,33 @@ Future<TracingService> setupTracing() async {
   return tracing;
 }
 
-/// Brings up Appwrite Auth + TablesDB for the account and cloud-project
-/// features. Both are optional — the app works fully offline without signing
-/// in — so a failure here degrades to [DisabledAuthService] rather than
-/// stopping startup.
+/// Brings up the edition this build runs as — see `package:pinbench_edition`.
+///
+/// A build from source has none: the free tier, no cloud backend and no side
+/// panel, i.e. the full local app. A hosted build's edition registers its
+/// entitlements, connects its cloud backend and hands over its side panel.
+Future<({CloudSession cloud, SidePanel? panel})> setupEdition() async {
+  final edition = createEdition();
+  if (edition?.gateway case final gateway?) Pro.register(gateway);
+  return (cloud: await _connectCloud(edition?.cloud), panel: edition?.panel);
+}
+
+/// Connects [backend] for the account and cloud-project features. The app
+/// works offline without signing in, so no backend — or a failure here —
+/// degrades to [DisabledAuthService] rather than stopping startup.
 ///
 /// Async because the session has to be restored before the first frame. On web
-/// the OAuth flow redirects the whole page, so the app that resumes after
-/// sign-in is a fresh instance whose only evidence of success is the session
-/// cookie `refresh()` reads; without awaiting it here, a signed-in user would
+/// sign-in can redirect the whole page, so the app that resumes afterwards is a
+/// fresh instance; without awaiting the restore here, a signed-in user would
 /// see the signed-out UI until something else happened to re-check.
-Future<({AuthService authService, Client? client})> setupAuth() async {
+Future<CloudSession> _connectCloud(CloudBackend? backend) async {
+  const CloudSession offline = (auth: DisabledAuthService(), projects: null);
+  if (backend == null) return offline;
   try {
-    // One client for both: the session lives on it, so an Account that signed
-    // in and a TablesDB that reads rows must share an instance or every row
-    // permission would deny the reads.
-    final client = createAppwriteClient();
-    final auth = AppwriteAuthService.forClient(client);
-    await auth.refresh();
-    return (authService: auth, client: client);
+    return await backend.connect();
   } catch (e, st) {
-    _log.error('Appwrite init failed; continuing signed out', error: e, stackTrace: st);
-    return (authService: const DisabledAuthService(), client: null);
+    _log.error('Cloud backend init failed; continuing signed out', error: e, stackTrace: st);
+    return offline;
   }
 }
 
@@ -168,8 +177,8 @@ ProviderScope Function(Widget child) buildGlobalScope({
   required FirebaseTelemetry firebase,
   required TracingService tracing,
   required Milestones milestones,
-  required AuthService authService,
-  required Client? client,
+  required CloudSession cloud,
+  required SidePanel? panel,
   required FeatureFlags featureFlags,
 }) =>
     (child) => ProviderScope(
@@ -181,8 +190,9 @@ ProviderScope Function(Widget child) buildGlobalScope({
         crashReporterProvider.overrideWithValue(firebase.crashReporter),
         milestonesProvider.overrideWithValue(milestones),
         tracingProvider.overrideWithValue(tracing),
-        authServiceProvider.overrideWithValue(authService),
-        appwriteClientProvider.overrideWithValue(client),
+        authServiceProvider.overrideWithValue(cloud.auth),
+        projectRepositoryProvider.overrideWithValue(cloud.projects),
+        editionPanelProvider.overrideWithValue(panel),
         featureFlagsProvider.overrideWithValue(featureFlags),
         // What the simulation runs on, runs, and reports to. See
         // `app/simulation/` — the ports have no default binding.
@@ -191,6 +201,8 @@ ProviderScope Function(Widget child) buildGlobalScope({
         ...chromeBindings,
         // What the `.cdl` sync reads and writes. Likewise.
         ...canvasSyncBindings,
+        // What an edition's side panel can see of the app, and ask it to do.
+        ...editionHostBindings,
       ],
       observers: [
         TalkerRiverpodObserver(

@@ -6,10 +6,6 @@
 	path = packages/pinbench_parts
 	url = https://github.com/PinBench/parts.git
 	branch = main
-[submodule "packages/pinbench_pro"]
-	path = packages/pinbench_pro
-	url = https://github.com/PinBench/pro.git
-	branch = main
 [submodule "packages/pinbench_ui"]
 	path = packages/pinbench_ui
 	url = https://github.com/PinBench/ui.git
@@ -21,14 +17,6 @@
 [submodule "packages/pinbench_sim"]
 	path = packages/pinbench_sim
 	url = https://github.com/PinBench/sim.git
-	branch = main
-[submodule "packages/pinbench_ai"]
-	path = packages/pinbench_ai
-	url = https://github.com/PinBench/ai.git
-	branch = main
-[submodule "packages/pinbench_cloud"]
-	path = packages/pinbench_cloud
-	url = https://github.com/PinBench/cloud.git
 	branch = main
 [submodule "packages/pinbench_terminal"]
 	path = packages/pinbench_terminal

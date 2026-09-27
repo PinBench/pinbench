@@ -119,14 +119,14 @@ class _ShareProjectDialogState extends ConsumerState<_ShareProjectDialog> {
   }
 
   /// Says *why*, not just no. A quota that resets, a tier that never included
-  /// the feature, and a self-hosted build with no subscription attached each
-  /// need different words — the last one especially, since telling a
-  /// self-hoster to upgrade would be nonsense.
+  /// the feature, and a build with no subscription attached each need
+  /// different words — the last one especially, since there is nothing there
+  /// to upgrade.
   void _showUpgrade(ProDenialReason reason) {
     setState(() {
       _notice = null;
       _error = switch (reason) {
-        ProDenialReason.notAvailableInThisBuild => AppStrings.shareEmbedSelfHostBody,
+        ProDenialReason.notAvailableInThisBuild => AppStrings.shareEmbedUnavailableBody,
         _ => AppStrings.shareEmbedLockedBody,
       };
     });

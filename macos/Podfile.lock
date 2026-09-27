@@ -3,8 +3,6 @@ PODS:
     - FlutterMacOS
     - Sparkle
   - CocoaAsyncSocket (7.6.5)
-  - desktop_webview_window (0.0.1):
-    - FlutterMacOS
   - device_info_plus (0.0.1):
     - FlutterMacOS
   - file_selector_macos (0.0.1):
@@ -101,8 +99,6 @@ PODS:
     - FlutterMacOS
   - flutter_soloud (0.0.1):
     - FlutterMacOS
-  - flutter_web_auth_2 (5.0.0):
-    - FlutterMacOS
   - FlutterMacOS (1.0.0)
   - GoogleAppMeasurement/Core (12.15.0):
     - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
@@ -186,12 +182,9 @@ PODS:
     - FlutterMacOS
   - url_launcher_macos (0.0.1):
     - FlutterMacOS
-  - window_to_front (0.0.4):
-    - FlutterMacOS
 
 DEPENDENCIES:
   - auto_updater_macos (from `Flutter/ephemeral/.symlinks/plugins/auto_updater_macos/macos`)
-  - desktop_webview_window (from `Flutter/ephemeral/.symlinks/plugins/desktop_webview_window/macos`)
   - device_info_plus (from `Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos`)
   - file_selector_macos (from `Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos`)
   - firebase_analytics (from `Flutter/ephemeral/.symlinks/plugins/firebase_analytics/macos`)
@@ -201,7 +194,6 @@ DEPENDENCIES:
   - flutter_email_sender_method_channel (from `Flutter/ephemeral/.symlinks/plugins/flutter_email_sender_method_channel/macos`)
   - flutter_pty (from `Flutter/ephemeral/.symlinks/plugins/flutter_pty/macos`)
   - flutter_soloud (from `Flutter/ephemeral/.symlinks/plugins/flutter_soloud/macos`)
-  - flutter_web_auth_2 (from `Flutter/ephemeral/.symlinks/plugins/flutter_web_auth_2/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - irondash_engine_context (from `Flutter/ephemeral/.symlinks/plugins/irondash_engine_context/macos`)
   - multiview_desktop (from `Flutter/ephemeral/.symlinks/plugins/multiview_desktop/macos`)
@@ -212,7 +204,6 @@ DEPENDENCIES:
   - shared_preferences_foundation (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin`)
   - super_native_extensions (from `Flutter/ephemeral/.symlinks/plugins/super_native_extensions/macos`)
   - url_launcher_macos (from `Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos`)
-  - window_to_front (from `Flutter/ephemeral/.symlinks/plugins/window_to_front/macos`)
 
 SPEC REPOS:
   trunk:
@@ -240,8 +231,6 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   auto_updater_macos:
     :path: Flutter/ephemeral/.symlinks/plugins/auto_updater_macos/macos
-  desktop_webview_window:
-    :path: Flutter/ephemeral/.symlinks/plugins/desktop_webview_window/macos
   device_info_plus:
     :path: Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos
   file_selector_macos:
@@ -260,8 +249,6 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/flutter_pty/macos
   flutter_soloud:
     :path: Flutter/ephemeral/.symlinks/plugins/flutter_soloud/macos
-  flutter_web_auth_2:
-    :path: Flutter/ephemeral/.symlinks/plugins/flutter_web_auth_2/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
   irondash_engine_context:
@@ -282,13 +269,10 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/super_native_extensions/macos
   url_launcher_macos:
     :path: Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos
-  window_to_front:
-    :path: Flutter/ephemeral/.symlinks/plugins/window_to_front/macos
 
 SPEC CHECKSUMS:
   auto_updater_macos: 3a42f1a06be6981f1a18be37e6e7bf86aa732118
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
-  desktop_webview_window: 07ec5b575166556b3b9c96c5b7c962b2c044b452
   device_info_plus: 4fb280989f669696856f8b129e4a5e3cd6c48f76
   file_selector_macos: 9e9e068e90ebee155097d00e89ae91edb2374db7
   Firebase: a8539b633d474fbeb654c7043f9c1649e274045b
@@ -310,7 +294,6 @@ SPEC CHECKSUMS:
   flutter_email_sender_method_channel: c108d80abb135a584a3859df61074cfa832f95a3
   flutter_pty: 1e360feaf8b1a213d2d50da3c076005b8eef1eee
   flutter_soloud: 7c7fe8f2067868981037aa9928c9abba59de4383
-  flutter_web_auth_2: 7fe624ff12ddcb4c19e5dbcd56c9e9ea4899d967
   FlutterMacOS: c232990155153907050900a2e175c7773903ba4e
   GoogleAppMeasurement: a6d37949071d456e9147dac6789c4342e0e7a8c5
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
@@ -328,7 +311,6 @@ SPEC CHECKSUMS:
   Sparkle: 3ed3ee66c8526fcba244d06edef5f009d3bbc6ba
   super_native_extensions: c2795d6d9aedf4a79fae25cb6160b71b50549189
   url_launcher_macos: f87a979182d112f911de6820aefddaf56ee9fbfd
-  window_to_front: 2d7d31f268d0b13b7e63b26e31eb0a2e9612239e
 
 PODFILE CHECKSUM: e504072abea29f9208bf6e8da87249a63ecbec2e
 

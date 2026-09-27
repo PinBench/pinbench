@@ -10,10 +10,6 @@ environment:
   sdk: ^3.10.4
 
 dependencies:
-  # Only for `Client` — the shared session handle that `package:pinbench_cloud`
-  # hands back and takes in again. Every other Appwrite type lives in that
-  # package; see `AppwriteProjectRepository.forClient`.
-  appwrite: ^25.3.0
   # Sparkle (macOS) / WinSparkle (Windows) behind one Dart API — the signed
   # PWYW builds update themselves in place. Linux has no Sparkle equivalent
   # and falls back to the notify-only path in `core/updates/`.
@@ -68,15 +64,20 @@ dependencies:
       # swap third-party code underneath us with no diff in this repo.
       # Bump deliberately. Was: branch main
       ref: 1061e5f824186f73671495080fe6c37433b71a1c
-  # Held at 9.x: `appwrite` caps it below 10, and the only thing this is used
-  # for is reading the running build's version for the update check.
+  # Held at 9.x deliberately: the only thing this is used for is reading the
+  # running build's version for the update check, and 10.x is not needed for
+  # that. Check every build configuration still resolves before bumping.
   package_info_plus: ^9.0.1
   path: ^1.9.1
   path_provider: ^2.1.6
-  pinbench_ai:
-    path: packages/pinbench_ai
   pinbench_cloud:
     path: packages/pinbench_cloud
+  # The edition this build runs as. This repository's copy has none, so a
+  # build from source is the full local app; see packages/pinbench_edition.
+  pinbench_edition:
+    path: packages/pinbench_edition
+  pinbench_edition_api:
+    path: packages/pinbench_edition_api
   pinbench_parts:
     path: packages/pinbench_parts
   pinbench_pro:
@@ -194,17 +195,19 @@ better_imports:
     - ".*windows.*"
     - ".*ephemeral.*"
 
-# packages/* are submodules, each its own repository. Their pubspecs depend
-# on one another by git, as a standalone package must; these overrides point
-# every one of them back at the checked-out submodule, so the app builds
+# Most of packages/* are submodules, each its own repository. Their pubspecs
+# depend on one another by git, as a standalone package must; these overrides
+# point every one of them back at the checked-out copy, so the app builds
 # exactly the commits it pins, and an edit to a package is picked up at once.
 dependency_overrides:
-  pinbench_ai:
-    path: packages/pinbench_ai
   pinbench_cdl:
     path: packages/pinbench_cdl
   pinbench_cloud:
     path: packages/pinbench_cloud
+  pinbench_edition:
+    path: packages/pinbench_edition
+  pinbench_edition_api:
+    path: packages/pinbench_edition_api
   pinbench_parts:
     path: packages/pinbench_parts
   pinbench_pdl:

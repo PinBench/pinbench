@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:pinbench_ui/strings.dart';
 import 'package:pinbench_ui/theme/text.dart';
@@ -7,7 +8,7 @@ import 'package:pinbench_ui/theme/app_colors.dart';
 import 'package:pinbench_ui/theme/app_icons.dart';
 import 'package:pinbench_ui/ui/app_divider.dart';
 
-import '../../../features/ai/widgets/ai_settings_panel.dart';
+import '../../../core/edition/edition_provider.dart';
 import '../../updates/update_panel.dart';
 
 /// App settings, as a document in the center pane.
@@ -16,10 +17,9 @@ import '../../updates/update_panel.dart';
 /// key and a model name in a 200px column wrap onto three lines each, and the
 /// panel closed the moment the user opened the explorer to check something.
 /// As a tab it gets the width of the editor, stays open beside the work, and
-/// is the *one* place these settings live — the welcome screen and the
-/// assistant pane now send people here rather than each carrying a copy of the
-/// same form.
-class SettingsTabView extends StatelessWidget {
+/// is the *one* place these settings live — anything else that needs a setting
+/// changed sends people here rather than carrying its own copy of the form.
+class SettingsTabView extends ConsumerWidget {
   const SettingsTabView({super.key});
 
   /// Settings read as a form, not as a wall: past roughly this width the eye
@@ -27,7 +27,7 @@ class SettingsTabView extends StatelessWidget {
   static const _contentWidth = 720.0;
 
   @override
-  Widget build(BuildContext context) => Align(
+  Widget build(BuildContext context, WidgetRef ref) => Align(
     alignment: Alignment.topCenter,
     child: SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.xxxl),
@@ -40,12 +40,14 @@ class SettingsTabView extends StatelessWidget {
             Gap.vXs,
             Text(AppStrings.settingsSubtitle, style: AppTextStyles.smallMuted(context)),
             Gap.vXxxl,
-            const _Section(
-              icon: AppIcons.assistant,
-              title: AppStrings.buildWithAgentHeading,
-              description: AppStrings.settingsAssistantDescription,
-              child: AiSettingsPanel(),
-            ),
+            // The edition's side panel settings, when it has any.
+            if (ref.watch(editionPanelProvider)?.settings case final section?)
+              _Section(
+                icon: section.icon,
+                title: section.title,
+                description: section.description,
+                child: Builder(builder: section.build),
+              ),
             const _Section(
               icon: AppIcons.update,
               title: AppStrings.updatesSectionTitle,

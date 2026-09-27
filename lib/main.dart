@@ -27,7 +27,7 @@ void main() async {
   final firebase = await setupFirebase();
   final featureFlags = await setupRemoteConfig();
   final tracing = await setupTracing();
-  final auth = await setupAuth();
+  final edition = await setupEdition();
   final storage = await setupLocalStorage();
   FeedbackService.onFeedbackSent = firebase.analytics.feedbackSent;
 
@@ -40,8 +40,8 @@ void main() async {
     firebase: firebase,
     tracing: tracing,
     milestones: milestones,
-    authService: auth.authService,
-    client: auth.client,
+    cloud: edition.cloud,
+    panel: edition.panel,
     featureFlags: featureFlags,
   );
 

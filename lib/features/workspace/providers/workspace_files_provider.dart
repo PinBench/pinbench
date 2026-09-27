@@ -439,8 +439,9 @@ class WorkspaceFiles extends _$WorkspaceFiles {
   /// file on disk are identical at that point — leaving the tab marked unsaved
   /// would invite the user to "save" a file that is already written.
   ///
-  /// Returns the path written, or null if no workspace is open. Backs the AI
-  /// assistant's Apply button; see `ProposalApplier`.
+  /// Returns the path written, or null if no workspace is open. Backs
+  /// `HostActions.writeWorkspaceFile`, an edition side panel's way to write
+  /// into the project; see `app/edition_host_bindings.dart`.
   Future<String?> writeWorkspaceFile(String fileName, String content) async {
     final wsPath = state.workspacePath;
     if (wsPath == null || fileName.trim().isEmpty) return null;

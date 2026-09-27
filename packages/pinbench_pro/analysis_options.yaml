@@ -1,0 +1,52 @@
+# This package is its own pub package, so it needs its own analyzer config.
+#
+# Without this file the analyzer walks up and picks up the repository root's
+# analysis_options.yaml, which does `include: package:all_lints/...`. Package
+# URIs resolve against the *enclosing package's* .dart_tool/package_config.json
+# — and this package depends only on meta and test, so all_lints is not there.
+# Every `dart format`/`dart analyze` run touching this directory printed:
+#
+#   Warning: Package resolution error when reading "analysis_options.yaml" file:
+#   Failed to resolve package URI "package:all_lints/flutter_stable.yaml"
+#
+# Deliberately no `include:` — this package is intentionally minimal (it is the
+# open-source seam a fork must be able to build), and adding a lint dependency
+# just to satisfy an include would work against that.
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    # `all_lints` enables several pairs of mutually incompatible rules.
+    # The analyzer reports each pair against the include directive here,
+    # which is a finding nothing in this repo can act on.
+    included_file_warning: ignore
+    # This package defines a public API for an implementation that lives in
+    # another repository. Undocumented public members are a real defect here.
+    public_member_api_docs: warning
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
+
+formatter:
+  # Match the repository root. The two are formatted by separate invocations
+  # (the root's CI check is scoped to tracked lib/ and test/ files, which
+  # excludes packages/), so without this they silently drift to different
+  # widths — which is exactly what happened once already.
+  page_width: 100
+
+linter:
+  rules:
+    - avoid_print
+    - prefer_final_locals
+    - prefer_single_quotes
+    - public_member_api_docs
+    - require_trailing_commas
+    - unawaited_futures
