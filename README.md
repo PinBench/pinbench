@@ -97,7 +97,7 @@ arduino-cli lib install "Adafruit SSD1306"
 
 The browser cannot run `arduino-cli`, so the web build compiles edited sketches
 through a small remote service. Without one it still runs the bundled examples.
-See [`PinBench/compile-server`](https://github.com/PinBench/compile-server) to run your own.
+See [`PinBench/compile-service`](https://github.com/PinBench/compile-service) to run your own.
 
 ## Development
 
@@ -108,7 +108,7 @@ flutter test --exclude-tags arduino
 # Formatting — CI enforces this at the project's page_width of 100
 dart format lib test
 
-# Web preview with local compilation: start PinBench/compile-server on :8080
+# Web preview with local compilation: start PinBench/compile-service on :8080
 # (see its README), then
 flutter run -d chrome --dart-define=COMPILE_API_URL=http://localhost:8080
 ```
@@ -122,7 +122,7 @@ Accounts, cloud projects, sharing and the circuit assistant belong to
 PinBench's hosted builds and are absent from a build from source.
 
 The one service you may want alongside it is the compile service —
-[`PinBench/compile-server`](https://github.com/PinBench/compile-server), a small
+[`PinBench/compile-service`](https://github.com/PinBench/compile-service), a small
 Node service wrapping `arduino-cli`, with a Dockerfile and a hardening guide —
 which lets the web build compile edited sketches.
 
@@ -149,7 +149,7 @@ Security issues should **not** go in a public issue — see
 
 - The app is **Apache-2.0** — see [`LICENSE`](LICENSE).
 - The compile service is **AGPL-3.0** — see
-  [`PinBench/compile-server`](https://github.com/PinBench/compile-server/blob/main/LICENSE). A commercial licence is
+  [`PinBench/compile-service`](https://github.com/PinBench/compile-service/blob/main/LICENSE). A commercial licence is
   available if you need to run a modified copy as a closed service.
 
 Apache-2.0 covers the code, not the name. See [`TRADEMARKS.md`](TRADEMARKS.md) —

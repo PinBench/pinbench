@@ -22,7 +22,7 @@
             "flutterMode": "release"
         },
         {
-            // Web + local compile service. Start PinBench/compile-server first
+            // Web + local compile service. Start PinBench/compile-service first
             // (see its README; it listens on :8080).
             // Then run this config so the web preview can compile edited
             // sketches instead of only the bundled precompiled templates.

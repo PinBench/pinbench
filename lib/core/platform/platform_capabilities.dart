@@ -22,7 +22,7 @@ abstract final class PlatformCapabilities {
 
   /// Whether Arduino sketches are compiled by a local `arduino-cli`
   /// toolchain. False on web, which compiles custom sketches via a remote
-  /// compile service instead (PinBench/compile-server) and falls back to
+  /// compile service instead (PinBench/compile-service) and falls back to
   /// bundled precompiled template hex files when none is configured.
   static bool get supportsLocalCompile => !kIsWeb;
 }
