@@ -21,8 +21,8 @@ dependencies:
   collection: ^1.19.1
   crypto: ^3.0.0
   # feedback: ^3.2.0
-  dartastic_opentelemetry: ^0.9.5
-  dartastic_opentelemetry_api: 1.0.0-beta.2
+  dartastic_opentelemetry: ^0.11.0
+  dartastic_opentelemetry_api: ^0.11.0
   feedback:
     git:
       url: https://github.com/burhankhanzada/feedback.git
@@ -32,6 +32,11 @@ dependencies:
       ref: 026782046da874d9315082a426682dec39508dc1
       path: feedback
   file_selector: ^1.1.0
+  # The Firebase plugins move together, and are held at the versions in
+  # pubspec.lock (core 4.12.1): the set released with firebase_remote_config
+  # 6.7.0 declares macOS 10.13 but pulls an SDK that needs more, and Flutter
+  # 3.47's pod check refuses the macOS build. Upgrade them as a set once that is
+  # fixed upstream, and build macOS before merging.
   firebase_analytics: ^12.4.3
   firebase_core: ^4.11.0
   firebase_crashlytics: ^5.2.4
@@ -42,11 +47,11 @@ dependencies:
     sdk: flutter
   flutter_email_sender: ^10.0.1
   flutter_riverpod: ^3.4.2
-  flutter_soloud: ^4.0.10
+  flutter_soloud: ^5.1.2
   flutter_svg: ^2.2.3
   flutter_web_plugins:
     sdk: flutter
-  go_router: ^17.3.0
+  go_router: ^18.0.1
   google_fonts: ^8.1.0
   http: ^1.6.0
   interactive_viewer_plus: ^0.0.4
@@ -67,9 +72,9 @@ dependencies:
       # swap third-party code underneath us with no diff in this repo.
       # Bump deliberately. Was: branch main
       ref: 1061e5f824186f73671495080fe6c37433b71a1c
-  # Held at 9.x deliberately: the only thing this is used for is reading the
-  # running build's version for the update check, and 10.x is not needed for
-  # that. Check every build configuration still resolves before bumping.
+  # Only reads the running build's version for the update check. Held at 9.x:
+  # every 10.x needs win32 ^6, and super_drag_and_drop 0.9.1 (the latest) still
+  # caps it below 6 through device_info_plus. Recheck when that moves.
   package_info_plus: ^9.0.1
   path: ^1.9.1
   path_provider: ^2.1.6

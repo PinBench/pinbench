@@ -293,7 +293,7 @@ SPEC CHECKSUMS:
   FirebaseSharedSwift: 3f5c2758484d32099d693f269f110d3249c3f7e3
   flutter_email_sender_method_channel: c108d80abb135a584a3859df61074cfa832f95a3
   flutter_pty: 1e360feaf8b1a213d2d50da3c076005b8eef1eee
-  flutter_soloud: 7c7fe8f2067868981037aa9928c9abba59de4383
+  flutter_soloud: fd7e85d03f0511c834c4cfd32c8888cf92712152
   FlutterMacOS: c232990155153907050900a2e175c7773903ba4e
   GoogleAppMeasurement: a6d37949071d456e9147dac6789c4342e0e7a8c5
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
