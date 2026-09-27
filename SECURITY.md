@@ -26,7 +26,7 @@ Please give us reasonable time to ship a fix before disclosing publicly.
 
 ### In scope
 
-- **The compile service** (`compile_service/`) — this is the most interesting
+- **The compile service** ([`PinBench/compile-server`](https://github.com/PinBench/compile-server)) — this is the most interesting
   target and we know it. It accepts untrusted source and runs a compiler on it.
   Sandbox escapes, resource exhaustion that survives the documented limits,
   bypasses of the rate limiter or origin allow-list, and anything that reads
@@ -69,7 +69,7 @@ Please do not report these — they are deliberate, documented decisions:
 ## Running it yourself, safely
 
 If you self-host the compile service, read
-[`compile_service/README.md` § Security](https://github.com/PinBench/compile-server#-security). The short
+[the compile-server README § Security](https://github.com/PinBench/compile-server#-security). The short
 version: it cannot sandbox itself. Run it unprivileged, with a read-only root, a
 tmpfs `/tmp`, dropped capabilities, memory and PID limits, and no outbound
 network — the AVR toolchain is baked into the image, so it never needs any.

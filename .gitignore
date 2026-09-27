@@ -23,7 +23,7 @@ migrate_working_dir/
 # is commented out by default.
 #.vscode/
 
-# Node (compile_service and functions/ dependencies)
+# Node (functions/ dependencies)
 node_modules/
 
 # Flutter/Dart/Pub related
@@ -67,9 +67,6 @@ patrol_test/test_bundle.dart
 
 # graphify — code-graph tool output cache (not source)
 graphify-out/
-
-# Where the compile service runs: host, SSH user and key (see tools/deploy.env.example)
-tools/deploy.env
 
 # Grafana Cloud OTLP secrets (used by tools/run_otel.sh)
 .grafana.env

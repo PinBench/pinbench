@@ -53,7 +53,6 @@ dart format lib test                  # page_width is 100, set in analysis_optio
 flutter test --exclude-tags arduino
 for p in packages/*/; do [ -d "$p/test" ] && (cd "$p" && flutter test); done
                                       # packages are not covered by the root run
-cd compile_service && npm test        # only if you touched compile_service/
 ```
 
 Packages under `packages/` carry their own `pubspec.yaml` and

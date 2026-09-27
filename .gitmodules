@@ -34,7 +34,3 @@
 	path = packages/pinbench_terminal
 	url = https://github.com/PinBench/terminal.git
 	branch = main
-[submodule "compile_service"]
-	path = compile_service
-	url = https://github.com/PinBench/compile-server.git
-	branch = main

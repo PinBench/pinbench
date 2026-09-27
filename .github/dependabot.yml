@@ -16,18 +16,6 @@ updates:
       actions:
         patterns: ["*"]
 
-  # The compile service's only runtime dependency is prom-client, but it is a
-  # public-facing endpoint, so security updates should not wait to be noticed.
-  - package-ecosystem: npm
-    directory: /compile_service
-    schedule:
-      interval: monthly
-    commit-message:
-      prefix: "build"
-    groups:
-      compile-service:
-        patterns: ["*"]
-
   # pub is deliberately absent: Flutter/Dart constraints here are tightly
   # interlocked (firebase_*, riverpod codegen, the pinned dartastic beta), and
   # Dependabot cannot run build_runner to check a bump actually compiles.
