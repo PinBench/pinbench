@@ -9,10 +9,10 @@ import 'feature_flags.dart';
 /// unsupported platform, or if the fetch fails (offline, throttled, no
 /// Firebase project configured), this returns [FeatureFlags.disabled] and the
 /// app runs with every placeholder feature hidden — exactly as before this
-/// existed. Call **after** `setupFirebase()` so `Firebase.initializeApp` has
-/// already run.
-Future<FeatureFlags> setupRemoteConfig() async {
-  if (!TelemetrySupport.remoteConfig) return const FeatureFlags.disabled();
+/// existed. [firebaseReady] is whether `setupFirebase()` initialised Firebase —
+/// a build without telemetry never does, and Remote Config cannot run then.
+Future<FeatureFlags> setupRemoteConfig({required bool firebaseReady}) async {
+  if (!firebaseReady || !TelemetrySupport.remoteConfig) return const FeatureFlags.disabled();
 
   try {
     final remoteConfig = FirebaseRemoteConfig.instance;

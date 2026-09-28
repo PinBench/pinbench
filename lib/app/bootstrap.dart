@@ -12,7 +12,9 @@ import 'package:pinbench_cloud/cloud_backend.dart';
 import 'package:pinbench_cloud/cloud_log.dart';
 import 'package:pinbench_cloud/auth/auth_service.dart';
 import 'package:pinbench_edition/pinbench_edition.dart';
+import 'package:pinbench_edition_api/edition.dart';
 import 'package:pinbench_edition_api/side_panel.dart';
+import 'package:pinbench_edition_api/telemetry.dart';
 import 'package:pinbench_entitlements/pinbench_entitlements.dart';
 import 'package:pinbench_ui/ui/app_page_route.dart';
 
@@ -23,6 +25,7 @@ import '../core/remote_config/feature_flags.dart';
 import '../core/remote_config/feature_flags_provider.dart';
 import '../core/telemetry/analytics_milestones.dart';
 import '../core/telemetry/firebase_bootstrap.dart';
+import '../core/telemetry/telemetry_consent.dart';
 import '../core/telemetry/otel_backend.dart';
 import '../core/telemetry/otel_config.dart';
 import '../core/telemetry/telemetry_context.dart';
@@ -95,17 +98,24 @@ void installCloudLogSink() {
   };
 }
 
+/// Brings up the telemetry [config] describes — none in a build from source —
+/// collecting only if the user has agreed ([consent]); see
+/// `core/telemetry/telemetry_consent.dart`.
+///
 /// Must run after `initAppLogger()` so the Talker error handler is chained
 /// ahead of Crashlytics; no-ops on unsupported platforms and returns disabled
 /// handles, so the rest of startup is unaffected.
-Future<FirebaseTelemetry> setupFirebase() async {
-  final firebase = await initFirebaseTelemetry();
+Future<FirebaseTelemetry> setupFirebase({
+  required TelemetryConfig? config,
+  required TelemetryConsent consent,
+}) async {
+  final firebase = await initFirebaseTelemetry(
+    config: config,
+    granted: consent == TelemetryConsent.granted,
+  );
   firebase.analytics
     ..setAppContext(platform: runPlatform)
-    ..setAppVersion(appVersion)
-    // Preserves current behaviour; a consent banner should drive this to
-    // `granted: false` until the user opts in (esp. on the EU web build).
-    ..setConsent(granted: true);
+    ..setAppVersion(appVersion);
   return firebase;
 }
 
@@ -121,13 +131,16 @@ Future<TracingService> setupTracing() async {
   return tracing;
 }
 
+/// The edition this build runs as — see `package:pinbench_edition`. Loaded
+/// first, because telemetry comes from it too.
+Edition? loadEdition() => createEdition();
+
 /// Brings up the edition this build runs as — see `package:pinbench_edition`.
 ///
 /// A build from source has none: the free tier, no cloud backend and no side
 /// panel, i.e. the full local app. A hosted build's edition registers its
 /// entitlements, connects its cloud backend and hands over its side panel.
-Future<({CloudSession cloud, SidePanel? panel})> setupEdition() async {
-  final edition = createEdition();
+Future<({CloudSession cloud, SidePanel? panel})> setupEdition(Edition? edition) async {
   if (edition?.gateway case final gateway?) Pro.register(gateway);
   return (cloud: await _connectCloud(edition?.cloud), panel: edition?.panel);
 }
@@ -188,6 +201,7 @@ ProviderScope Function(Widget child) buildGlobalScope({
         appTempDirProvider.overrideWithValue(appTempDir),
         analyticsProvider.overrideWithValue(firebase.analytics),
         crashReporterProvider.overrideWithValue(firebase.crashReporter),
+        telemetryControlProvider.overrideWithValue(firebase.control),
         milestonesProvider.overrideWithValue(milestones),
         tracingProvider.overrideWithValue(tracing),
         authServiceProvider.overrideWithValue(cloud.auth),

@@ -10,6 +10,7 @@ import 'core/routing/url_strategy.dart';
 import 'core/remote_config/remote_config_bootstrap.dart';
 import 'core/services/feedback_service.dart';
 import 'core/telemetry/analytics_milestones.dart';
+import 'core/telemetry/telemetry_consent.dart';
 import 'core/utils/logger.dart';
 import 'shell/window.dart';
 
@@ -24,11 +25,15 @@ void main() async {
 
   // Telemetry + auth bootstrap (see app/bootstrap.dart) — each step is
   // best-effort and degrades to a disabled/no-op handle on failure.
-  final firebase = await setupFirebase();
-  final featureFlags = await setupRemoteConfig();
-  final tracing = await setupTracing();
-  final edition = await setupEdition();
+  final edition = loadEdition();
   final storage = await setupLocalStorage();
+  final firebase = await setupFirebase(
+    config: edition?.telemetry,
+    consent: readTelemetryConsent(storage.sharedPreferences),
+  );
+  final featureFlags = await setupRemoteConfig(firebaseReady: firebase.initialized);
+  final tracing = await setupTracing();
+  final editionSetup = await setupEdition(edition);
   FeedbackService.onFeedbackSent = firebase.analytics.feedbackSent;
 
   // Fire-once activation events (GA4 key events) need persistence + analytics.
@@ -40,8 +45,8 @@ void main() async {
     firebase: firebase,
     tracing: tracing,
     milestones: milestones,
-    cloud: edition.cloud,
-    panel: edition.panel,
+    cloud: editionSetup.cloud,
+    panel: editionSetup.panel,
     featureFlags: featureFlags,
   );
 

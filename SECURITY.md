@@ -41,11 +41,9 @@ Please give us reasonable time to ship a fix before disclosing publicly.
 
 Please do not report these — they are deliberate, documented decisions:
 
-- **Firebase API keys in `lib/firebase_options.dart` and
-  `GoogleService-Info.plist`.** Firebase client keys are public by design. They
-  identify the project; they do not authorise anything. Firebase here is only
-  Analytics, Crashlytics, Performance and Remote Config — no user data
-  lives behind these keys.
+- **Firebase API keys inside the hosted builds.** Firebase client keys are
+  public by design. They identify a project; they do not authorise anything.
+  (A build from this repository has no Firebase configuration at all.)
 - **`COMPILE_API_TOKEN` being readable in the web bundle.** It ships in the
   JavaScript, and that is understood. It deters casual scripted abuse; the rate
   limiter and concurrency caps are the actual protection, and they apply to
