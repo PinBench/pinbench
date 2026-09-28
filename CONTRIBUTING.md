@@ -156,8 +156,9 @@ change is very hard to review, and impossible to revert cleanly.
 
 ## The CLA
 
-First PR triggers a bot asking you to sign the [CLA](CLA.md). One click, once,
-covering all future PRs.
+Your first PR gets a comment from a bot asking you to sign the [CLA](CLA.md):
+reply with the sentence it gives you. Once per repository, covering all your
+future PRs there.
 
 You keep your copyright — it is a licence, not an assignment — and it grants you
 an explicit licence back to your own contribution. It exists so the project can
