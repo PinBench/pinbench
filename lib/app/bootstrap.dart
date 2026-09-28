@@ -24,6 +24,7 @@ import '../core/edition/edition_provider.dart';
 import '../core/remote_config/feature_flags.dart';
 import '../core/remote_config/feature_flags_provider.dart';
 import '../core/telemetry/analytics_milestones.dart';
+import '../core/telemetry/consent_gated_tracing.dart';
 import '../core/telemetry/firebase_bootstrap.dart';
 import '../core/telemetry/telemetry_consent.dart';
 import '../core/telemetry/otel_backend.dart';
@@ -108,32 +109,54 @@ void installCloudLogSink() {
 Future<FirebaseTelemetry> setupFirebase({
   required TelemetryConfig? config,
   required TelemetryConsent consent,
-}) async {
-  final firebase = await initFirebaseTelemetry(
-    config: config,
-    granted: consent == TelemetryConsent.granted,
-  );
-  firebase.analytics
+}) => initFirebaseTelemetry(
+  config: config,
+  granted: consent == TelemetryConsent.granted,
+  // Set whenever analytics starts sending, not at startup: until the user
+  // agrees there is nothing to set them on.
+  onAnalyticsOn: (analytics) => analytics
     ..setAppContext(platform: runPlatform)
-    ..setAppVersion(appVersion);
-  return firebase;
-}
+    ..setAppVersion(appVersion),
+);
 
 /// Brings up OpenTelemetry (native only — its OTLP exporter needs `dart:io`).
 /// This is the cross-platform tracing/metrics layer that also covers
 /// Windows/Linux, where Firebase has no support. Dormant unless the Grafana
-/// Cloud OTLP endpoint is supplied via `--dart-define` (see
-/// the telemetry setup); chains its error handlers after Firebase's so both
-/// reporters see every error. No-op on the web.
-Future<TracingService> setupTracing() async {
-  final tracing = await initOpenTelemetry(OtelConfig.fromEnvironment(platform: runPlatform));
-  if (tracing.enabled) _chainTracingErrorHandlers(tracing);
-  return tracing;
+/// Cloud OTLP endpoint is supplied via `--dart-define`; chains its error
+/// handlers after Firebase's so both reporters see every error. No-op on the
+/// web.
+///
+/// Like Firebase it follows the user's answer: started only if they have
+/// already agreed ([granted]), and gated so that withdrawing stops it at once.
+/// The returned control is null when OpenTelemetry is not configured at all,
+/// so there is nothing to ask about.
+Future<({TracingService tracing, TelemetryControl? control})> setupTracing({
+  required bool granted,
+}) async {
+  final config = OtelConfig.fromEnvironment(platform: runPlatform);
+  if (kIsWeb || !config.isConfigured) {
+    return (tracing: const TracingService.disabled(), control: null);
+  }
+  final inner = granted ? await initOpenTelemetry(config) : const TracingService.disabled();
+  final gated = ConsentGatedTracing(inner, granted: granted);
+  if (inner.enabled) _chainTracingErrorHandlers(gated);
+  return (tracing: gated, control: gated);
 }
 
 /// The edition this build runs as — see `package:pinbench_edition`. Loaded
 /// first, because telemetry comes from it too.
-Edition? loadEdition() => createEdition();
+///
+/// Best-effort like every other step: an edition that fails to construct
+/// (a missing define, bad options) leaves the full local app rather than a
+/// blank window.
+Edition? loadEdition() {
+  try {
+    return createEdition();
+  } catch (e, st) {
+    _log.error('Edition failed to load; running as the local app', error: e, stackTrace: st);
+    return null;
+  }
+}
 
 /// Brings up the edition this build runs as — see `package:pinbench_edition`.
 ///
@@ -189,6 +212,7 @@ ProviderScope Function(Widget child) buildGlobalScope({
   required String? appTempDir,
   required FirebaseTelemetry firebase,
   required TracingService tracing,
+  required TelemetryControl telemetryControl,
   required Milestones milestones,
   required CloudSession cloud,
   required SidePanel? panel,
@@ -201,7 +225,7 @@ ProviderScope Function(Widget child) buildGlobalScope({
         appTempDirProvider.overrideWithValue(appTempDir),
         analyticsProvider.overrideWithValue(firebase.analytics),
         crashReporterProvider.overrideWithValue(firebase.crashReporter),
-        telemetryControlProvider.overrideWithValue(firebase.control),
+        telemetryControlProvider.overrideWithValue(telemetryControl),
         milestonesProvider.overrideWithValue(milestones),
         tracingProvider.overrideWithValue(tracing),
         authServiceProvider.overrideWithValue(cloud.auth),

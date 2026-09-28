@@ -3,6 +3,14 @@
         android:label="PinBench"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- Telemetry starts off: nothing is collected until the user agrees in
+             the app (core/telemetry/telemetry_consent.dart). -->
+        <meta-data android:name="firebase_analytics_collection_enabled" android:value="false" />
+        <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="false" />
+        <meta-data android:name="firebase_performance_collection_enabled" android:value="false" />
+        <meta-data android:name="google_analytics_default_allow_ad_storage" android:value="false" />
+        <meta-data android:name="google_analytics_default_allow_ad_user_data" android:value="false" />
+        <meta-data android:name="google_analytics_default_allow_ad_personalization_signals" android:value="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

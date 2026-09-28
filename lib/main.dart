@@ -27,13 +27,17 @@ void main() async {
   // best-effort and degrades to a disabled/no-op handle on failure.
   final edition = loadEdition();
   final storage = await setupLocalStorage();
-  final firebase = await setupFirebase(
-    config: edition?.telemetry,
-    consent: readTelemetryConsent(storage.sharedPreferences),
-  );
-  final featureFlags = await setupRemoteConfig(firebaseReady: firebase.initialized);
-  final tracing = await setupTracing();
-  final editionSetup = await setupEdition(edition);
+  final consent = readTelemetryConsent(storage.sharedPreferences);
+  final granted = consent == TelemetryConsent.granted;
+  final firebase = await setupFirebase(config: edition?.telemetry, consent: consent);
+  // Independent of one another, so together: startup waits for the slowest
+  // (a Remote Config fetch, a cloud session restore), not for the sum.
+  final (featureFlags, tracingSetup, editionSetup) = await (
+    setupRemoteConfig(firebaseReady: firebase.initialized, granted: granted),
+    setupTracing(granted: granted),
+    setupEdition(edition),
+  ).wait;
+  final tracing = tracingSetup.tracing;
   FeedbackService.onFeedbackSent = firebase.analytics.feedbackSent;
 
   // Fire-once activation events (GA4 key events) need persistence + analytics.
@@ -44,6 +48,7 @@ void main() async {
     appTempDir: storage.appTempDir,
     firebase: firebase,
     tracing: tracing,
+    telemetryControl: CombinedTelemetryControl([firebase.control, ?tracingSetup.control]),
     milestones: milestones,
     cloud: editionSetup.cloud,
     panel: editionSetup.panel,

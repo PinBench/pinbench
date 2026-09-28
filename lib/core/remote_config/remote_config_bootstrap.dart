@@ -11,8 +11,14 @@ import 'feature_flags.dart';
 /// app runs with every placeholder feature hidden — exactly as before this
 /// existed. [firebaseReady] is whether `setupFirebase()` initialised Firebase —
 /// a build without telemetry never does, and Remote Config cannot run then.
-Future<FeatureFlags> setupRemoteConfig({required bool firebaseReady}) async {
-  if (!firebaseReady || !TelemetrySupport.remoteConfig) return const FeatureFlags.disabled();
+///
+/// Fetching registers a Firebase installation and contacts Google's servers,
+/// so it waits for the user's consent ([granted]) like the rest of telemetry;
+/// until then every flag keeps its default.
+Future<FeatureFlags> setupRemoteConfig({required bool firebaseReady, required bool granted}) async {
+  if (!firebaseReady || !granted || !TelemetrySupport.remoteConfig) {
+    return const FeatureFlags.disabled();
+  }
 
   try {
     final remoteConfig = FirebaseRemoteConfig.instance;

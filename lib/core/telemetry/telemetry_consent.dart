@@ -66,3 +66,29 @@ class TelemetryConsentController extends Notifier<TelemetryConsent> {
     await ref.read(sharedPreferencesProvider).setString(_prefsKey, state.name);
   }
 }
+
+/// Several telemetry backends behind one consent answer: available if any is,
+/// and every one switched together.
+class CombinedTelemetryControl implements TelemetryControl {
+  const CombinedTelemetryControl(this._controls);
+
+  final List<TelemetryControl> _controls;
+
+  @override
+  bool get available => _controls.any((control) => control.available);
+
+  @override
+  String? get privacyPolicyUrl {
+    for (final control in _controls) {
+      if (control.privacyPolicyUrl case final url?) return url;
+    }
+    return null;
+  }
+
+  @override
+  void applyConsent({required bool granted}) {
+    for (final control in _controls) {
+      control.applyConsent(granted: granted);
+    }
+  }
+}

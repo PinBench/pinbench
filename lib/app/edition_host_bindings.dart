@@ -45,9 +45,22 @@ class _AppHostActions implements HostActions {
 
   final Ref _ref;
 
+  /// A blank workspace being created, so overlapping calls share it — the path
+  /// stays null until `openWorkspace` finishes, and without this each caller
+  /// would create its own and the second would close the first.
+  Future<void>? _ensuring;
+
+  /// A panel's settings live under their own prefix, so one can never read or
+  /// overwrite the app's own (the consent answer, layout, milestones).
+  static const _settingsPrefix = 'edition.';
+
   @override
-  Future<void> ensureWorkspace() async {
-    if (_ref.read(workspaceFilesProvider).workspacePath != null) return;
+  Future<void> ensureWorkspace() {
+    if (_ref.read(workspaceFilesProvider).workspacePath != null) return Future.value();
+    return _ensuring ??= _createBlankWorkspace().whenComplete(() => _ensuring = null);
+  }
+
+  Future<void> _createBlankWorkspace() async {
     final path = await _ref.read(templateServiceProvider).createBlankWorkspace();
     await _ref.read(workspaceFilesProvider.notifier).openWorkspace(path, isTemporary: true);
   }
@@ -71,11 +84,12 @@ class _AppHostActions implements HostActions {
   void openSettings() => _ref.read(chromeCommandsProvider).openSettingsTab();
 
   @override
-  String? readSetting(String key) => _ref.read(sharedPreferencesProvider).getString(key);
+  String? readSetting(String key) =>
+      _ref.read(sharedPreferencesProvider).getString('$_settingsPrefix$key');
 
   @override
   Future<void> writeSetting(String key, String value) async {
-    await _ref.read(sharedPreferencesProvider).setString(key, value);
+    await _ref.read(sharedPreferencesProvider).setString('$_settingsPrefix$key', value);
   }
 
   @override
