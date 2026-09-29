@@ -17,7 +17,7 @@ Works fully offline on desktop. No account required.
 &nbsp;·&nbsp; [What it is](https://pinbench.web.app/)
 &nbsp;·&nbsp; [Download for desktop](https://pinbench.web.app/download)
 
-![The circuit canvas: an Arduino Uno wired across a breadboard to three LEDs, three push buttons, a piezo buzzer and a microphone module](https://raw.githubusercontent.com/PinBench/website/main/screens/canvas-light.jpg)
+![The circuit canvas: an Arduino Uno wired across a breadboard to three LEDs, three push buttons, a piezo buzzer and a microphone module](.github/readme/canvas-light.jpg)
 
 <!-- Shared with the landing page rather than kept separately, so there is one
      set of screenshots to keep honest instead of two.
@@ -135,8 +135,9 @@ specified, with pure-Dart readers any tool can use, in their own repositories:
 
 ## Contributing
 
-Contributions are welcome — components, board definitions, bug fixes, and
-translations especially.
+Contributions are welcome — components, board definitions and bug fixes
+especially. (The interface is English-only for now; it has no translation
+support yet.)
 
 Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) first. Note that we ask
 contributors to sign a [CLA](CLA.md); it takes one click, you keep your

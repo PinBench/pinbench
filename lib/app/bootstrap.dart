@@ -12,7 +12,9 @@ import 'package:pinbench_cloud/cloud_backend.dart';
 import 'package:pinbench_cloud/cloud_log.dart';
 import 'package:pinbench_cloud/auth/auth_service.dart';
 import 'package:pinbench_edition/pinbench_edition.dart';
+import 'package:pinbench_edition_api/edition.dart';
 import 'package:pinbench_edition_api/side_panel.dart';
+import 'package:pinbench_edition_api/telemetry.dart';
 import 'package:pinbench_entitlements/pinbench_entitlements.dart';
 import 'package:pinbench_ui/ui/app_page_route.dart';
 
@@ -22,7 +24,9 @@ import '../core/edition/edition_provider.dart';
 import '../core/remote_config/feature_flags.dart';
 import '../core/remote_config/feature_flags_provider.dart';
 import '../core/telemetry/analytics_milestones.dart';
+import '../core/telemetry/consent_gated_tracing.dart';
 import '../core/telemetry/firebase_bootstrap.dart';
+import '../core/telemetry/telemetry_consent.dart';
 import '../core/telemetry/otel_backend.dart';
 import '../core/telemetry/otel_config.dart';
 import '../core/telemetry/telemetry_context.dart';
@@ -95,30 +99,63 @@ void installCloudLogSink() {
   };
 }
 
+/// Brings up the telemetry [config] describes — none in a build from source —
+/// collecting only if the user has agreed ([consent]); see
+/// `core/telemetry/telemetry_consent.dart`.
+///
 /// Must run after `initAppLogger()` so the Talker error handler is chained
 /// ahead of Crashlytics; no-ops on unsupported platforms and returns disabled
 /// handles, so the rest of startup is unaffected.
-Future<FirebaseTelemetry> setupFirebase() async {
-  final firebase = await initFirebaseTelemetry();
-  firebase.analytics
+Future<FirebaseTelemetry> setupFirebase({
+  required TelemetryConfig? config,
+  required TelemetryConsent consent,
+}) => initFirebaseTelemetry(
+  config: config,
+  granted: consent == TelemetryConsent.granted,
+  // Set whenever analytics starts sending, not at startup: until the user
+  // agrees there is nothing to set them on.
+  onAnalyticsOn: (analytics) => analytics
     ..setAppContext(platform: runPlatform)
-    ..setAppVersion(appVersion)
-    // Preserves current behaviour; a consent banner should drive this to
-    // `granted: false` until the user opts in (esp. on the EU web build).
-    ..setConsent(granted: true);
-  return firebase;
-}
+    ..setAppVersion(appVersion),
+);
 
 /// Brings up OpenTelemetry (native only — its OTLP exporter needs `dart:io`).
 /// This is the cross-platform tracing/metrics layer that also covers
 /// Windows/Linux, where Firebase has no support. Dormant unless the Grafana
-/// Cloud OTLP endpoint is supplied via `--dart-define` (see
-/// the telemetry setup); chains its error handlers after Firebase's so both
-/// reporters see every error. No-op on the web.
-Future<TracingService> setupTracing() async {
-  final tracing = await initOpenTelemetry(OtelConfig.fromEnvironment(platform: runPlatform));
-  if (tracing.enabled) _chainTracingErrorHandlers(tracing);
-  return tracing;
+/// Cloud OTLP endpoint is supplied via `--dart-define`; chains its error
+/// handlers after Firebase's so both reporters see every error. No-op on the
+/// web.
+///
+/// Like Firebase it follows the user's answer: started only if they have
+/// already agreed ([granted]), and gated so that withdrawing stops it at once.
+/// The returned control is null when OpenTelemetry is not configured at all,
+/// so there is nothing to ask about.
+Future<({TracingService tracing, TelemetryControl? control})> setupTracing({
+  required bool granted,
+}) async {
+  final config = OtelConfig.fromEnvironment(platform: runPlatform);
+  if (kIsWeb || !config.isConfigured) {
+    return (tracing: const TracingService.disabled(), control: null);
+  }
+  final inner = granted ? await initOpenTelemetry(config) : const TracingService.disabled();
+  final gated = ConsentGatedTracing(inner, granted: granted);
+  if (inner.enabled) _chainTracingErrorHandlers(gated);
+  return (tracing: gated, control: gated);
+}
+
+/// The edition this build runs as — see `package:pinbench_edition`. Loaded
+/// first, because telemetry comes from it too.
+///
+/// Best-effort like every other step: an edition that fails to construct
+/// (a missing define, bad options) leaves the full local app rather than a
+/// blank window.
+Edition? loadEdition() {
+  try {
+    return createEdition();
+  } catch (e, st) {
+    _log.error('Edition failed to load; running as the local app', error: e, stackTrace: st);
+    return null;
+  }
 }
 
 /// Brings up the edition this build runs as — see `package:pinbench_edition`.
@@ -126,8 +163,7 @@ Future<TracingService> setupTracing() async {
 /// A build from source has none: the free tier, no cloud backend and no side
 /// panel, i.e. the full local app. A hosted build's edition registers its
 /// entitlements, connects its cloud backend and hands over its side panel.
-Future<({CloudSession cloud, SidePanel? panel})> setupEdition() async {
-  final edition = createEdition();
+Future<({CloudSession cloud, SidePanel? panel})> setupEdition(Edition? edition) async {
   if (edition?.gateway case final gateway?) Pro.register(gateway);
   return (cloud: await _connectCloud(edition?.cloud), panel: edition?.panel);
 }
@@ -176,6 +212,7 @@ ProviderScope Function(Widget child) buildGlobalScope({
   required String? appTempDir,
   required FirebaseTelemetry firebase,
   required TracingService tracing,
+  required TelemetryControl telemetryControl,
   required Milestones milestones,
   required CloudSession cloud,
   required SidePanel? panel,
@@ -188,6 +225,7 @@ ProviderScope Function(Widget child) buildGlobalScope({
         appTempDirProvider.overrideWithValue(appTempDir),
         analyticsProvider.overrideWithValue(firebase.analytics),
         crashReporterProvider.overrideWithValue(firebase.crashReporter),
+        telemetryControlProvider.overrideWithValue(telemetryControl),
         milestonesProvider.overrideWithValue(milestones),
         tracingProvider.overrideWithValue(tracing),
         authServiceProvider.overrideWithValue(cloud.auth),

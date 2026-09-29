@@ -16,14 +16,24 @@ import '../utils/logger.dart';
 /// name ≤ 40 chars, string values ≤ 100 chars). Parameter values must be
 /// `String` or `num` (booleans are encoded as 0/1).
 class AnalyticsService {
-  const AnalyticsService(this._analytics);
+  const AnalyticsService(FirebaseAnalytics analytics) : _fixed = analytics, _slot = null;
 
   /// A disabled instance: every call is a no-op. Used as the provider default
   /// and whenever Firebase init is skipped or fails.
-  const AnalyticsService.disabled() : _analytics = null;
+  const AnalyticsService.disabled() : _fixed = null, _slot = null;
 
-  final FirebaseAnalytics? _analytics;
+  /// Analytics that stays off — every call a no-op, the SDK not even created —
+  /// until something puts an instance in [slot]. The consent control does that
+  /// when the user agrees, and empties it again if they withdraw.
+  const AnalyticsService.switchable(AnalyticsSlot slot) : _fixed = null, _slot = slot;
 
+  final FirebaseAnalytics? _fixed;
+  final AnalyticsSlot? _slot;
+
+  FirebaseAnalytics? get _analytics => _fixed ?? _slot?.instance;
+
+  /// Whether events are being sent right now. For a switchable service this
+  /// follows the user's consent.
   bool get enabled => _analytics != null;
 
   // ── Generic primitives ─────────────────────────────────────────────────────
@@ -55,15 +65,17 @@ class AnalyticsService {
   /// Records which app the user is running against (web vs desktop, etc.).
   void setAppContext({required String platform}) => setUserProperty('run_platform', platform);
 
-  /// Sets the consent state (GDPR/consent mode). Call `granted: false` until the
-  /// user opts in via a consent banner; applies to analytics + ad storage.
+  /// Sets the consent state (consent mode) from the user's answer. Ad storage is
+  /// always denied: the app shows no ads, so there is nothing to consent to.
   void setConsent({required bool granted}) {
     final analytics = _analytics;
     if (analytics == null) return;
     _guard(
       () => analytics.setConsent(
         analyticsStorageConsentGranted: granted,
-        adStorageConsentGranted: granted,
+        adStorageConsentGranted: false,
+        adUserDataConsentGranted: false,
+        adPersonalizationSignalsConsentGranted: false,
       ),
     );
   }
@@ -178,4 +190,10 @@ class AnalyticsService {
       }),
     );
   }
+}
+
+/// Holds the SDK instance a [AnalyticsService.switchable] sends through; null
+/// while analytics is off.
+class AnalyticsSlot {
+  FirebaseAnalytics? instance;
 }

@@ -79,3 +79,8 @@ pubspec_overrides.yaml
 # fvm's per-project SDK link (the version itself is in .fvmrc, which is
 # committed)
 .fvm/
+
+# Firebase configuration. Only builds with telemetry have one: PinBench/pro's
+# tools/link.sh puts these in place, and a build from source has none.
+/firebase.json
+/macos/Runner/GoogleService-Info.plist

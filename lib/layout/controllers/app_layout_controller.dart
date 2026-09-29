@@ -3,6 +3,7 @@ import 'package:plat/plat.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../core/chrome/chrome_commands.dart';
+import '../../core/edition/edition_provider.dart';
 import '../../core/telemetry/analytics_service.dart';
 import '../../core/telemetry/telemetry_providers.dart';
 import '../../core/utils/logger.dart';
@@ -18,14 +19,16 @@ class AppLayoutController {
   final PlatController _platController;
   final AnalyticsService _analytics;
 
-  AppLayoutController(this._platController, this._analytics);
+  AppLayoutController(this._platController, this._analytics, {required this.hasSidePanel});
 
   /// Access to the underlying controller if natively needed by PlatView.
   PlatController get platController => _platController;
 
   /// Whether this build has a right-hand pane — only when its edition supplies
-  /// a side panel (see `platController`).
-  bool get hasSidePanel => _platController.snapshot(sidePanelPane.id) != null;
+  /// a side panel. From `editionPanelProvider`, the same answer the toolbar and
+  /// menus use. Revealing or collapsing a pane that is not in the tree is
+  /// already a no-op in the layout, so only [togglePane] needs this.
+  final bool hasSidePanel;
 
   /// Closes the welcome tab and reveals the chrome that belongs with an open
   /// project: the explorer, and the side panel if there is one.
@@ -37,12 +40,14 @@ class AppLayoutController {
   void closeWelcome() {
     _platController.close(AppTabs.welcome);
     sidebarPane.reveal(_platController);
-    if (hasSidePanel) sidePanelPane.reveal(_platController);
+    sidePanelPane.reveal(_platController);
   }
 
   /// Toggles the visibility of a specified pane slot.
   void togglePane(String paneId) {
-    if (_isMissing(paneId)) return;
+    // The shortcut exists in every build; don't report toggling a pane that
+    // isn't there.
+    if (paneId == sidePanelPane.id && !hasSidePanel) return;
     _analytics.panelToggled(paneId);
     setPaneVisible(paneId, visible: isPaneHidden(paneId));
   }
@@ -53,7 +58,6 @@ class AppLayoutController {
   /// place in the tree at zero extent, so the divider that reopens it is still
   /// there, and its width survives the round trip. Hiding takes both away.
   void setPaneVisible(String paneId, {required bool visible}) {
-    if (_isMissing(paneId)) return;
     final pane = _sidePane(paneId);
     if (pane == null) {
       _platController.setHidden(paneId, hidden: !visible);
@@ -67,10 +71,6 @@ class AppLayoutController {
       _sidePane(paneId)?.isCollapsed(_platController) ??
       _platController.snapshot(paneId)?.hidden ??
       true;
-
-  /// The side panel's slot in a build without one: its toggles are hidden, but
-  /// a shortcut or a stray command must still be a no-op rather than a crash.
-  bool _isMissing(String paneId) => paneId == sidePanelPane.id && !hasSidePanel;
 
   CollapsiblePane? _sidePane(String paneId) => switch (paneId) {
     _ when paneId == sidebarPane.id => sidebarPane,
@@ -204,7 +204,7 @@ class AppLayoutController {
       _platController.setHidden('bottom_pane', hidden: true);
       // The welcome screen carries the side panel's own entry, so the pane
       // would be a second one beside it. See [closeWelcome].
-      if (hasSidePanel) sidePanelPane.collapse(_platController);
+      sidePanelPane.collapse(_platController);
       _platController.focus('welcome');
     });
   }
@@ -222,5 +222,9 @@ class AppLayoutController {
 @Riverpod(keepAlive: true)
 AppLayoutController appLayoutController(Ref ref) {
   final platController = ref.watch(platControllerProvider);
-  return AppLayoutController(platController, ref.watch(analyticsProvider));
+  return AppLayoutController(
+    platController,
+    ref.watch(analyticsProvider),
+    hasSidePanel: ref.read(editionPanelProvider) != null,
+  );
 }

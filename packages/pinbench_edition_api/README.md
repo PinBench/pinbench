@@ -5,17 +5,20 @@ talk to the app.
 
 ```
 lib/
-  edition.dart      Edition: a ProGateway, a CloudBackend and a SidePanel,
-                    each optional
+  edition.dart      Edition: a ProGateway, a CloudBackend, a SidePanel and a
+                    TelemetryConfig, each optional
   side_panel.dart   SidePanel: the right-hand pane, plus its settings section
                     and welcome-screen entry
+  telemetry.dart    TelemetryConfig: where telemetry goes, and its privacy
+                    policy
   host.dart         the app as a side panel sees it: the open workspace,
                     problems, the part catalog, and a few actions
 ```
 
 The app asks `package:pinbench_edition` for an `Edition` at startup. The copy in
 this repository returns none, so a build from source is the full local app with
-none of these: no sign-in, no cloud projects, no right-hand pane. PinBench's
+none of these: no sign-in, no cloud projects, no right-hand pane, and no
+telemetry. PinBench's
 hosted builds supply their own `pinbench_edition`.
 
 ## The host API

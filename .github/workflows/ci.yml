@@ -148,6 +148,18 @@ jobs:
             echo "::endgroup::"
           done
 
+      # The figure, where it is seen: the run's summary page. It counts the
+      # lines of files the tests load, so files no test touches are missing
+      # from both sides — read it as a trend, not an absolute.
+      - name: Coverage summary
+        if: always()
+        run: |
+          if [ -f coverage/lcov.info ]; then
+            awk -F'[:,]' '/^DA:/ { t++; if ($3 > 0) h++ }
+              END { if (t) printf "**Line coverage: %.1f%%** (%d of %d lines, in the files the tests load)\n", 100 * h / t, h, t }' \
+              coverage/lcov.info >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       # Nice to have, never a reason to fail the gate. A full artifact
       # storage quota once turned a run with clean analysis and 431 passing
       # tests into a red X, which reads as "the code is broken" and is not

@@ -78,7 +78,8 @@ abstract interface class HostActions {
   /// Opens the settings tab, where the panel's `SidePanel.settings` is shown.
   void openSettings();
 
-  /// A persisted setting, or null when unset.
+  /// A persisted setting, or null when unset. Keys are the panel's own: the
+  /// app keeps them apart from its settings, so no key can collide with those.
   String? readSetting(String key);
 
   /// Persists a setting.

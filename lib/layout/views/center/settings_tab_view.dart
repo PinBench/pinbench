@@ -9,7 +9,9 @@ import 'package:pinbench_ui/theme/app_icons.dart';
 import 'package:pinbench_ui/ui/app_divider.dart';
 
 import '../../../core/edition/edition_provider.dart';
+import '../../../core/telemetry/telemetry_consent.dart';
 import '../../updates/update_panel.dart';
+import 'privacy_panel.dart';
 
 /// App settings, as a document in the center pane.
 ///
@@ -54,6 +56,14 @@ class SettingsTabView extends ConsumerWidget {
               description: AppStrings.settingsUpdatesDescription,
               child: UpdatePanel(),
             ),
+            // Only a build with telemetry has anything to share.
+            if (ref.watch(telemetryControlProvider).available)
+              const _Section(
+                icon: AppIcons.info,
+                title: AppStrings.privacySectionTitle,
+                description: AppStrings.settingsPrivacyDescription,
+                child: PrivacyPanel(),
+              ),
           ],
         ),
       ),

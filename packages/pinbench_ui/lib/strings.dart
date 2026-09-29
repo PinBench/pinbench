@@ -177,6 +177,21 @@ class AppStrings {
   static const settingsTitle = 'Settings';
   static const settingsSubtitle = 'These apply to the app, not to one project.';
   static const settingsUpdatesDescription = 'How this app finds and installs new releases.';
+  static const settingsPrivacyDescription = 'What this app shares, and with whom.';
+
+  // ── Privacy: usage statistics and crash reports ──────────────────────────
+  static const privacySectionTitle = 'Privacy';
+  static const telemetryConsentTitle = 'Help improve PinBench?';
+  static const telemetryConsentBody =
+      'Share anonymous usage statistics and crash reports. They show what to fix '
+      'and what to build next. Your circuits and sketches are never included, '
+      'and you can change this at any time in Settings.';
+  static const telemetryConsentAccept = 'Share';
+  static const telemetryConsentDecline = 'No thanks';
+  static const telemetrySwitchLabel = 'Share usage statistics and crash reports';
+  static const telemetrySwitchDescription =
+      'Anonymous. Never includes your circuits or sketches.';
+  static const privacyPolicyLink = 'Privacy policy';
 
   // ── Empty workspace / empty editor placeholders ──────────────────────────
 
