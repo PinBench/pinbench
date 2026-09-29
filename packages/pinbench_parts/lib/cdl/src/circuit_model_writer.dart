@@ -61,8 +61,7 @@ abstract final class CircuitModelWriter {
     return PartData(
       id: id,
       type: ParserUtils.typeToken(node.part.name),
-      x: node.position.dx,
-      y: node.position.dy,
+      position: CdlPoint(node.position.dx, node.position.dy),
       rotationAngle: node.rotationAngle,
       flipHorizontal: node.flipHorizontal,
       flipVertical: node.flipVertical,

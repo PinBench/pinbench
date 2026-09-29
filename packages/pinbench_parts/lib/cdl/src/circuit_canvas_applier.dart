@@ -46,7 +46,7 @@ abstract final class CircuitCanvasApplier {
         outNodes.add(
           ComponentInstance(
             key: key,
-            position: Offset(element.x, element.y),
+            position: Offset(element.position.x, element.position.y),
             part: partModel,
             rotationAngle: element.rotationAngle,
             flipHorizontal: element.flipHorizontal,

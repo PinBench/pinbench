@@ -186,8 +186,7 @@ Circuit {
       final led = data.parts[0];
       expect(led.id, 'led_red');
       expect(led.type, 'LED'); // the type token round-trips (LED == LED)
-      expect(led.x, 30.0);
-      expect(led.y, 40.0);
+      expect(led.position, const CdlPoint(30, 40));
       // 90deg is stored internally as radians.
       expect(led.rotationAngle, closeTo(1.5708, 0.0001));
       expect(led.flipHorizontal, isTrue);
@@ -271,10 +270,8 @@ Circuit {
 }
 ''');
 
-      expect(data.parts[0].x, 30.0);
-      expect(data.parts[0].y, 40.0);
-      expect(data.parts[1].x, -10.0);
-      expect(data.parts[1].y, -20.0);
+      expect(data.parts[0].position, const CdlPoint(30, 40));
+      expect(data.parts[1].position, const CdlPoint(-10, -20));
       expect(data.wires[0].bendPoints, [const CdlPoint(1, 2), const CdlPoint(3, 4)]);
       // The pre-comma spelling (points separated by spaces) still parses.
       expect(data.wires[1].bendPoints, [const CdlPoint(5, 6), const CdlPoint(7, 8)]);

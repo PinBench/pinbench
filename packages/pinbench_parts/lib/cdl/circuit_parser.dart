@@ -32,8 +32,7 @@ abstract final class CircuitParser {
           PartData(
             type: part.type,
             id: part.id,
-            x: part.x,
-            y: part.y,
+            position: part.position,
             rotationAngle: part.rotationAngle,
             flipHorizontal: part.flipHorizontal,
             flipVertical: part.flipVertical,
