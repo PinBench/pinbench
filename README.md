@@ -29,7 +29,8 @@ Works fully offline on desktop. No account required.
 There are other Arduino simulators. This one is different in three ways:
 
 - **A real analog solver.** Component values matter. Voltage dividers divide,
-  RC curves curve, and an under-sized current-limiting resistor dims the LED.
+  and an under-sized current-limiting resistor over-drives the LED instead of
+  being silently ignored.
 - **Native desktop, fully offline.** No browser, no account, no connection —
   which matters in locked-down school labs and on unreliable networks.
 - **Open source, open format.** Circuits are plain-text `.cdl` files you can

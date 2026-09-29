@@ -26,8 +26,8 @@ These are trademarks of Burhan Khanzada, whether or not registered.
 ## What requires permission
 
 - Naming your **fork or derivative product** "PinBench"
-  or anything confusingly similar (e.g. "PinBench Pro",
-  "FlutterArduino Studio"). Name your fork something distinctly your own.
+  or anything confusingly similar (e.g. "PinBench Pro", "PinBench Plus",
+  "PinBnch"). Name your fork something distinctly your own.
 - Distributing **modified** builds under the project name or logo. If you
   change the code, change the name — users must be able to tell whose
   software they are running.
@@ -50,11 +50,13 @@ always will be — just do it under your own name.
 
 **"Arduino"** is a trademark of Arduino SA. **"Flutter"** and **"Dart"** are
 trademarks of Google LLC. This project is independent and is not affiliated
-with, endorsed by, or sponsored by either. The name is descriptive of what
-the software does, used in a nominative-fair-use sense.
+with, endorsed by, or sponsored by either. Where the project names these
+marks, it does so only to describe what the software works with or is built
+on, in a nominative-fair-use sense; the PinBench name and logo do not use
+them.
 
-> ⚠️ Because the project name contains two third-party marks, it is worth
-> getting legal advice before attempting to register it.
+> **Note:** before anyone files to register "PinBench", the name should get
+> a professional trademark clearance search, and ideally legal advice.
 
 ## Questions
 
