@@ -66,7 +66,7 @@
        without a flash. These mirror what `fTheme(brightness).colors`
        resolves to in lib/shared/theme/forui_theme.dart — background
        #0A0A0A dark / #FFFFFF light, foreground #FAFAFA / #0A0A0A. The
-       spinner keeps the brand teal #009696 rather than the interactive
+       spinner keeps the brand PCB teal #00878F rather than the interactive
        primary, because this is the logo's colour and there is no UI here
        to be consistent with.
 
@@ -94,8 +94,8 @@
     #loading .spinner {
       width: 42px;
       height: 42px;
-      border: 4px solid rgba(0, 150, 150, 0.2);
-      border-top-color: #009696; /* brand primary */
+      border: 4px solid rgba(0, 135, 143, 0.2);
+      border-top-color: #00878F; /* brand primary */
       border-radius: 50%;
       animation: spin 0.9s linear infinite;
     }
@@ -107,7 +107,7 @@
     @media (prefers-color-scheme: light) {
       html, body { background-color: #FFFFFF; } /* light background */
       #loading { color: #0A0A0A; }
-      #loading .spinner { border-color: rgba(0, 150, 150, 0.25); border-top-color: #009696; }
+      #loading .spinner { border-color: rgba(0, 135, 143, 0.25); border-top-color: #00878F; }
     }
     @keyframes spin {
       to { transform: rotate(360deg); }
