@@ -37,7 +37,7 @@ class const PortLocation({required final Key nodeKey, required final String port
           portId == other.portId;
 
   @override
-  int get hashCode => nodeKey.hashCode ^ portId.hashCode;
+  int get hashCode => Object.hash(nodeKey, portId);
 
   @override
   String toString() => 'PortLocation(node: $nodeKey, port: $portId)';

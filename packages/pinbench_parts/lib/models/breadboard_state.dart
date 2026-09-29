@@ -35,7 +35,7 @@ class const BreadboardHoverState({
           isRightSide == other.isRightSide;
 
   @override
-  int get hashCode => channel.hashCode ^ rowIndex.hashCode ^ isRightSide.hashCode;
+  int get hashCode => Object.hash(channel, rowIndex, isRightSide);
 
   @override
   String toString() =>
