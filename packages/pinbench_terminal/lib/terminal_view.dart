@@ -9,9 +9,7 @@ import 'package:pinbench_ui/theme/app_icons.dart';
 
 import 'terminal_controller.dart';
 
-class TerminalView extends ConsumerWidget {
-  const TerminalView({super.key});
-
+class const TerminalView({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final terminalState = ref.watch(terminalControllerProvider);
@@ -78,12 +76,11 @@ class TerminalView extends ConsumerWidget {
   }
 }
 
-class TerminalViewWrapper extends StatefulWidget {
-  final xterm.Terminal terminal;
-  final xterm.TerminalTheme theme;
-
-  const TerminalViewWrapper({super.key, required this.terminal, required this.theme});
-
+class const TerminalViewWrapper({
+  super.key,
+  required final xterm.Terminal terminal,
+  required final xterm.TerminalTheme theme,
+}) extends StatefulWidget {
   @override
   State<TerminalViewWrapper> createState() => _TerminalViewWrapperState();
 }

@@ -5,18 +5,10 @@ import 'package:flutter/widgets.dart';
 /// Kept separate from the view so the shortcut/action wiring is declared in one
 /// place and the view file stays focused on rendering and state.
 
-class DeleteNodeIntent extends Intent {
-  const DeleteNodeIntent();
-}
+class const DeleteNodeIntent() extends Intent;
 
-class RenameNodeIntent extends Intent {
-  const RenameNodeIntent();
-}
+class const RenameNodeIntent() extends Intent;
 
-class NewFileIntent extends Intent {
-  const NewFileIntent();
-}
+class const NewFileIntent() extends Intent;
 
-class NewFolderIntent extends Intent {
-  const NewFolderIntent();
-}
+class const NewFolderIntent() extends Intent;

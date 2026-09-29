@@ -106,9 +106,8 @@ Future<double> _mirrorMismatch(ui.Image image, {required int fromY}) async {
 ui.Image _renderLed(double scale) {
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder)..scale(scale);
-  LEDPainter(
-    properties: const {ComponentProps.color: 'Red'},
-  ).paint(canvas, const Size(LEDPainter.width, LEDPainter.height));
+  LEDPainter(properties: const {ComponentProps.color: 'Red'})
+      .paint(canvas, const Size(LEDPainter.width, LEDPainter.height));
   return recorder.endRecording().toImageSync(
     (LEDPainter.width * scale).ceil(),
     (LEDPainter.height * scale).ceil(),

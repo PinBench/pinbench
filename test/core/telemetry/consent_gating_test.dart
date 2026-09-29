@@ -51,15 +51,8 @@ class _RecordingTracing implements TracingService {
   Future<void> flush() async => flushes++;
 }
 
-class _Control implements TelemetryControl {
-  _Control({required this.available, this.privacyPolicyUrl});
-
-  @override
-  final bool available;
-
-  @override
-  final String? privacyPolicyUrl;
-
+class _Control({@override required final bool available, @override final String? privacyPolicyUrl})
+    implements TelemetryControl {
   final applied = <bool>[];
 
   @override

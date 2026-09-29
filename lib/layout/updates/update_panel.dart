@@ -23,14 +23,14 @@ import '../../core/updates/update_status.dart';
 /// Shared by the Settings sidebar and the "Check for Updates…" dialog rather
 /// than written twice — a settings panel and a dialog disagreeing about the
 /// state of the same check is exactly the bug this avoids.
-class UpdatePanel extends ConsumerWidget {
-  const UpdatePanel({super.key, this.showAutomaticToggle = true});
+class const UpdatePanel({
+  super.key,
 
   /// The dialog hides the preference: someone who opened it pressed a button
   /// to ask a question, and answering it with a settings control is a change
   /// of subject.
-  final bool showAutomaticToggle;
-
+  final bool showAutomaticToggle = true,
+}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final status = ref.watch(updateControllerProvider);
@@ -77,11 +77,7 @@ class UpdatePanel extends ConsumerWidget {
 
 /// One line saying where the check got to. Renders nothing when idle — an
 /// empty panel is the honest depiction of "no check has run yet".
-class _StatusLine extends StatelessWidget {
-  const _StatusLine({required this.status});
-
-  final UpdateStatus status;
-
+class const _StatusLine({required final UpdateStatus status}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
@@ -128,11 +124,7 @@ class _StatusLine extends StatelessWidget {
 /// the moment the check found it — so all a button can usefully do is
 /// re-check with the native UI visible, which brings up Sparkle's own
 /// progress-and-restart window. On Linux it opens the download page.
-class _ActOnUpdate extends ConsumerWidget {
-  const _ActOnUpdate({required this.update});
-
-  final UpdateAvailable update;
-
+class const _ActOnUpdate({required final UpdateAvailable update}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) => Row(
     mainAxisSize: MainAxisSize.min,
@@ -164,9 +156,7 @@ class _ActOnUpdate extends ConsumerWidget {
   );
 }
 
-class _AutomaticChecksRow extends ConsumerWidget {
-  const _AutomaticChecksRow();
-
+class const _AutomaticChecksRow() extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final enabled = ref.watch(automaticUpdateChecksProvider);

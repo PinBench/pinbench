@@ -14,11 +14,7 @@ import '../../features/workspace/services/workspace_sketch_compiler.dart';
 /// itself by reading four of the workspace's providers directly: which buffer
 /// is the sketch, whether there is a directory to build, whether a template
 /// shipped a prebuilt image, and when the whole workspace has been swapped.
-class WorkspaceSimulationSketch extends ChangeNotifier implements SimulationSketch {
-  WorkspaceSimulationSketch(this._ref);
-
-  final Ref _ref;
-
+class WorkspaceSimulationSketch(final Ref _ref) extends ChangeNotifier implements SimulationSketch {
   /// Read at call time rather than captured: a run starts against whatever is
   /// open *now*, and the adapter outlives any particular workspace.
   @override

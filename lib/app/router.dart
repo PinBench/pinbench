@@ -59,9 +59,7 @@ GoRouter createAppRouter() => GoRouter(routes: $appRoutes);
     TypedGoRoute<ProjectRoute>(path: '/p/:projectId'),
   ],
 )
-class WorkspaceShellRoute extends ShellRouteData {
-  const WorkspaceShellRoute();
-
+class const WorkspaceShellRoute() extends ShellRouteData {
   @override
   Widget builder(BuildContext context, GoRouterState state, Widget navigator) =>
       ShareLinkOptions.fromQuery(state.uri.queryParameters).embed
@@ -69,11 +67,7 @@ class WorkspaceShellRoute extends ShellRouteData {
       : _WorkspaceShell(navigator: navigator);
 }
 
-class _WorkspaceShell extends StatelessWidget {
-  const _WorkspaceShell({required this.navigator});
-
-  final Widget navigator;
-
+class const _WorkspaceShell({required final Widget navigator}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Stack(
     children: [
@@ -87,9 +81,7 @@ class _WorkspaceShell extends StatelessWidget {
   );
 }
 
-class HomeRoute extends GoRouteData with $HomeRoute {
-  const HomeRoute();
-
+class const HomeRoute() extends GoRouteData with $HomeRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) => const _HomeView();
 
@@ -101,11 +93,9 @@ class HomeRoute extends GoRouteData with $HomeRoute {
 // Sibling (not child) of HomeRoute so navigating between `/` and `/t/...`
 // replaces the page — this rebuilds `_HomeView` on browser-back, closing the
 // workspace so the welcome screen matches the URL.
-class TemplateRoute extends GoRouteData with $TemplateRoute {
-  const TemplateRoute({required this.template});
-
-  final String template;
-
+class const TemplateRoute({required final String template})
+    extends GoRouteData
+    with $TemplateRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) => _TemplateView(template: template);
 
@@ -116,11 +106,7 @@ class TemplateRoute extends GoRouteData with $TemplateRoute {
 
 // `/p/<projectId>` — opens a cloud project by id, so the browser URL (and
 // back/forward/refresh) always reflects which project is open.
-class ProjectRoute extends GoRouteData with $ProjectRoute {
-  const ProjectRoute({required this.projectId});
-
-  final String projectId;
-
+class const ProjectRoute({required final String projectId}) extends GoRouteData with $ProjectRoute {
   // `?embed=1` renders the chrome-less view meant to sit in an <iframe> on
   // someone else's page, and `?live=1` subscribes it to the author's edits.
   // Query parameters rather than separate routes, so an embed URL is the share
@@ -139,9 +125,7 @@ class ProjectRoute extends GoRouteData with $ProjectRoute {
 
 /// `/` — shows the welcome screen. Entering this route (including via browser
 /// back) closes any open workspace so the view matches the URL.
-class _HomeView extends ConsumerStatefulWidget {
-  const _HomeView();
-
+class const _HomeView() extends ConsumerStatefulWidget {
   @override
   ConsumerState<_HomeView> createState() => _HomeViewState();
 }
@@ -165,11 +149,7 @@ class _HomeViewState extends ConsumerState<_HomeView> {
 }
 
 /// `/t/<template>` — opens the named template as a temporary workspace.
-class _TemplateView extends ConsumerStatefulWidget {
-  const _TemplateView({required this.template});
-
-  final String template;
-
+class const _TemplateView({required final String template}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<_TemplateView> createState() => _TemplateViewState();
 }
@@ -223,13 +203,11 @@ Future<void> openTemplateWorkspace(ProviderContainer container, String template)
 }
 
 /// `/p/<projectId>` — downloads and opens the named cloud project.
-class _ProjectView extends ConsumerStatefulWidget {
-  const _ProjectView({required this.projectId, this.embed = false, this.live = false});
-
-  final String projectId;
-  final bool embed;
-  final bool live;
-
+class const _ProjectView({
+  required final String projectId,
+  final bool embed = false,
+  final bool live = false,
+}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<_ProjectView> createState() => _ProjectViewState();
 }

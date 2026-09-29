@@ -7,9 +7,7 @@ import 'package:pinbench_ui/theme/app_icons.dart';
 
 import '../../../features/workspace/providers/debug_console_provider.dart';
 
-class DebugConsoleView extends ConsumerWidget {
-  const DebugConsoleView({super.key});
-
+class const DebugConsoleView({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) => LogsViewer(
     title: AppStrings.debugConsoleTitle,

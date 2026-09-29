@@ -50,3 +50,6 @@ linter:
     - public_member_api_docs
     - require_trailing_commas
     - unawaited_futures
+    - use_declaring_parameters
+    - unnecessary_primary_constructor_body
+    - use_null_aware_elements

@@ -27,11 +27,9 @@ import 'parts/component_legs_node.dart';
 /// 21.74 × 10.86 mm, so its 128 columns land just over one canvas pixel apart
 /// at 100 % zoom. A real 0.96" display is genuinely this tiny next to the
 /// breadboard it sits on.
-class OledDisplayPainter extends BaseComponentPainter with PortProvider, PaintTreeComponent {
-  final Map<String, dynamic>? properties;
-
-  OledDisplayPainter({this.properties, super.isOutline});
-
+class OledDisplayPainter({final Map<String, dynamic>? properties, super.isOutline})
+    extends BaseComponentPainter
+    with PortProvider, PaintTreeComponent {
   // --- The module ----------------------------------------------------------
 
   /// The blue 4-pin module every "OLED tutorial" search returns: 27.3 × 27.8 mm
@@ -146,11 +144,8 @@ class OledDisplayPainter extends BaseComponentPainter with PortProvider, PaintTr
       (oldDelegate.frame != frame || oldDelegate.pixelColor != pixelColor);
 }
 
-class _OledBodyNode extends PaintNode {
-  final OledDisplayPainter painter;
+class _OledBodyNode(final OledDisplayPainter painter) extends PaintNode {
   final _paint = Paint();
-
-  _OledBodyNode(this.painter);
 
   @override
   Size get size => OledDisplayPainter.componentSize;

@@ -14,23 +14,16 @@ import 'spice_engine.dart';
 /// One per placed component per run — it caches the port→pin tracing, which is
 /// a netlist walk that cannot change mid-run because the canvas is read-only
 /// while simulating.
-class EnginePinApi implements PartPinApi {
-  final ComponentInstance node;
-  final CircuitNetlist netlist;
-  final ComponentInstance? unoNode;
+class EnginePinApi({
+  required final ComponentInstance node,
+  required final CircuitNetlist netlist,
+  required final ComponentInstance? unoNode,
 
   /// What the emulator has been asked to measure, shared across every
   /// instance so the engine reconciles it once — see [EmulatorMeasurements].
-  final EmulatorMeasurements measurements;
-
+  required final EmulatorMeasurements measurements,
+}) implements PartPinApi {
   final _traced = <String, List<String>>{};
-
-  EnginePinApi({
-    required this.node,
-    required this.netlist,
-    required this.unoNode,
-    required this.measurements,
-  });
 
   @override
   int? connectedTo(String portId) {
@@ -142,9 +135,7 @@ class EmulatorMeasurements {
 /// Claiming on every drain is deliberate — it costs a set insertion and means
 /// a display dropped onto a running canvas starts being recorded the first
 /// frame its logic runs, with no separate registration step to forget.
-class EngineI2cApi implements PartI2cApi {
-  const EngineI2cApi();
-
+class const EngineI2cApi() implements PartI2cApi {
   @override
   List<List<int>> drain(int address) {
     AVRBridge.listenI2c(address);
@@ -153,15 +144,11 @@ class EngineI2cApi implements PartI2cApi {
 }
 
 /// [PartSpiceApi] backed by the running solver.
-class EngineSpiceApi implements PartSpiceApi {
-  final ComponentInstance node;
-  final SpiceEngine spiceEngine;
-
-  @override
-  final bool isActive;
-
-  const EngineSpiceApi({required this.node, required this.spiceEngine, required this.isActive});
-
+class const EngineSpiceApi({
+  required final ComponentInstance node,
+  required final SpiceEngine spiceEngine,
+  @override required final bool isActive,
+}) implements PartSpiceApi {
   @override
   double current() => isActive ? spiceEngine.getLedCurrent(node.key.toString()) : 0;
 }

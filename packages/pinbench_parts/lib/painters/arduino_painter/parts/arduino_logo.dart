@@ -8,12 +8,7 @@ import '../../../painting/paint_node.dart';
 import '../arduino_painter.dart';
 import '../../../painting/part_palette.dart';
 
-class LogoNode extends PaintNode {
-  @override
-  final Size size;
-
-  LogoNode({this.size = const Size(150, 50)});
-
+class LogoNode({@override final Size size = const Size(150, 50)}) extends PaintNode {
   @override
   void paint(Canvas canvas, Offset offset) {
     final image = ArduinoPainter.image;

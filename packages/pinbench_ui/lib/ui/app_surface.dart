@@ -5,7 +5,7 @@ import '../theme/app_colors.dart';
 import '../theme/theme.dart';
 
 /// The role a surface plays, which fixes its fill and radius.
-enum AppSurfaceVariant {
+enum AppSurfaceVariant() {
   /// Raised content block on the pane background. Card fill, hairline border.
   card,
 
@@ -25,30 +25,20 @@ enum AppSurfaceVariant {
 /// same shape with radii drifting across 2, 4, 6 and 8. Use this for anything
 /// card-shaped; `PaneSurface` remains separate because a pane is structural
 /// chrome — flat, square and edge-to-edge — rather than content.
-class AppSurface extends StatelessWidget {
-  const AppSurface({
-    super.key,
-    required this.child,
-    this.variant = AppSurfaceVariant.card,
-    this.padding = AppInsets.card,
-    this.margin,
-    this.radius = AppRadii.mdAll,
-    this.bordered = true,
-    this.onTap,
-  });
-
-  final Widget child;
-  final AppSurfaceVariant variant;
-  final EdgeInsetsGeometry? padding;
-  final EdgeInsetsGeometry? margin;
-  final BorderRadius radius;
+class const AppSurface({
+  super.key,
+  required final Widget child,
+  final AppSurfaceVariant variant = AppSurfaceVariant.card,
+  final EdgeInsetsGeometry? padding = AppInsets.card,
+  final EdgeInsetsGeometry? margin,
+  final BorderRadius radius = AppRadii.mdAll,
 
   /// Set false to drop the hairline border while keeping the fill.
-  final bool bordered;
+  final bool bordered = true,
 
   /// When set, the surface becomes clickable and gains a hover fill.
-  final VoidCallback? onTap;
-
+  final VoidCallback? onTap,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = context.appColors;

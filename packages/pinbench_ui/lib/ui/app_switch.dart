@@ -7,13 +7,12 @@ import 'package:forui/forui.dart';
 /// Wraps the widget library so the rest of the app never names it. Controlled,
 /// like `AppSelect`: the value belongs to whatever the switch is a view of,
 /// and one that remembered its own answer would drift from it.
-class AppSwitch extends StatelessWidget {
-  const AppSwitch({super.key, required this.value, required this.onChanged, this.enabled = true});
-
-  final bool value;
-  final ValueChanged<bool> onChanged;
-  final bool enabled;
-
+class const AppSwitch({
+  super.key,
+  required final bool value,
+  required final ValueChanged<bool> onChanged,
+  final bool enabled = true,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => FSwitch(
     value: value,

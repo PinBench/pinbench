@@ -26,32 +26,32 @@ import 'package:pinbench_pdl/pinbench_pdl.dart';
 typedef PartLogic = void Function(PartLogicContext context);
 
 /// What a [PartLogic] may read and write for one placed component.
-class PartLogicContext {
+class const PartLogicContext({
   /// The `.pdl` definition, or null for a hand-painted part that names a logic
   /// without being data-driven.
-  final PartDefinition? definition;
+  required final PartDefinition? definition,
 
   /// The component's runtime state, already populated by `BEHAVIOR` rules and
   /// by the previous frame. **Mutable** — write results here and they are
   /// queued to the canvas and carried into the next frame.
-  final Map<String, Object?> state;
+  required final Map<String, Object?> state,
 
   /// User-edited properties. Treat as read-only: writing here would fight the
   /// properties panel and persist into the saved circuit.
-  final Map<String, Object?> properties;
+  required final Map<String, Object?> properties,
 
   /// SPICE element parameters — `resistance`, `voltage`, `capacitance`.
   /// **Mutable**; whichever one matches the part's `PHYSICS` type is applied.
-  final Map<String, double> physics;
+  required final Map<String, double> physics,
 
   /// Simulated time since the run started. Excludes paused time, so a hold
   /// measured against this means simulated seconds — the same clock
   /// `millis()` sees.
-  final Duration elapsed;
+  required final Duration elapsed,
 
   /// Solved voltage on one of this component's pins. 0 V when there is no
   /// circuit, which is what an unconnected pin reads anyway.
-  final double Function(String pinId) analog;
+  required final double Function(String pinId) analog,
 
   /// The emulated board: which of this component's ports reach which Arduino
   /// pin, and what those pins are doing.
@@ -60,26 +60,14 @@ class PartLogicContext {
   /// servo needs the pulse width on whichever pin its signal line happens to
   /// be wired to — a question about *this circuit*, which the part cannot
   /// answer and the engine should not have to answer on its behalf.
-  final PartPinApi pins;
+  required final PartPinApi pins,
 
   /// The analog model, as far as this one component can see it.
-  final PartSpiceApi spice;
+  required final PartSpiceApi spice,
 
   /// The board's I²C bus, as far as this one component can see it.
-  final PartI2cApi i2c;
-
-  const PartLogicContext({
-    required this.definition,
-    required this.state,
-    required this.properties,
-    required this.physics,
-    required this.elapsed,
-    required this.analog,
-    required this.pins,
-    required this.spice,
-    this.i2c = const NoI2cBus(),
-  });
-
+  final PartI2cApi i2c = const NoI2cBus(),
+}) {
   bool digital(String pinId, [double threshold = 2.5]) => analog(pinId) >= threshold;
 
   /// Reads a numeric property, falling back to [orElse] when it is absent or
@@ -191,7 +179,7 @@ abstract interface class PartPinApi {
 /// sketch's side of the conversation.
 // One method today, and still an interface: it is the seam a fake bus is
 // installed at in tests, and the shape the other capability APIs here take.
-abstract interface class PartI2cApi {
+abstract interface class PartI2cApi() {
   /// Every transaction the sketch has addressed to [address] since the last
   /// call, oldest first, each holding the bytes that followed the address.
   ///
@@ -204,9 +192,7 @@ abstract interface class PartI2cApi {
 
 /// The bus a part sees when there is no emulator behind it — in a unit test,
 /// or before a run starts. Always silent, never null.
-class NoI2cBus implements PartI2cApi {
-  const NoI2cBus();
-
+class const NoI2cBus() implements PartI2cApi {
   @override
   List<List<int>> drain(int address) => const [];
 }

@@ -12,12 +12,11 @@ import '../syntax/cdl_syntax.dart';
 import '../syntax/pdl_syntax.dart';
 import 'autocomplete_view.dart';
 
-class CustomCodeEditor extends StatelessWidget {
-  final CodeLineEditingController controller;
-  final String filePath;
-
-  const CustomCodeEditor({super.key, required this.controller, required this.filePath});
-
+class const CustomCodeEditor({
+  super.key,
+  required final CodeLineEditingController controller,
+  required final String filePath,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Drive everything off the app's own brightness, not Material `Theme.of`.

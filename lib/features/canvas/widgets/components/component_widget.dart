@@ -8,24 +8,15 @@ import 'package:pinbench_parts/painting/dsl_component_painter.dart';
 import 'package:pinbench_parts/models/part_model.dart';
 import 'package:pinbench_ui/theme/theme.dart';
 
-class ComponentWidget extends StatelessWidget {
-  final PartModel part;
-  final Offset? hoveredLocalPosition;
-  final BreadboardHoverState? breadboardHover;
-  final Map<String, dynamic>? properties;
-  final bool isOutline;
-  final Size? customSize;
-
-  const ComponentWidget({
-    super.key,
-    required this.part,
-    this.hoveredLocalPosition,
-    this.breadboardHover,
-    this.properties,
-    this.isOutline = false,
-    this.customSize,
-  });
-
+class const ComponentWidget({
+  super.key,
+  required final PartModel part,
+  final Offset? hoveredLocalPosition,
+  final BreadboardHoverState? breadboardHover,
+  final Map<String, dynamic>? properties,
+  final bool isOutline = false,
+  final Size? customSize,
+}) extends StatelessWidget {
   // Cache default property maps by definition ID to avoid Map rebuilds.
   static final _defaultPropsCache = <String, Map<String, dynamic>>{};
   static final _svgThemeCache = <String?, SvgTheme>{};

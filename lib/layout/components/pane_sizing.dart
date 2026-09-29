@@ -15,36 +15,27 @@ import 'package:plat/plat.dart';
 /// lane open for the sash once the pane was gone. All of it is deleted. What is
 /// left is this description of the two panes and the one rule the layout engine
 /// has no way to know: that a window can be too narrow to hold them at all.
-class CollapsiblePane {
-  const CollapsiblePane({
-    required this.id,
-    required this.initialWidth,
-    required this.minWidth,
-    required this.maxWidth,
-    required this.contentAlignment,
-  });
-
+class const CollapsiblePane({
   /// The collapsible slot in the layout tree this describes.
-  final String id;
+  required final String id,
 
   /// What the pane opens at, and what it reopens at after a collapse. Over
   /// [minWidth], so it never opens already sitting on its own floor.
-  final double initialWidth;
+  required final double initialWidth,
 
   /// The narrowest the pane is drawn before the divider stops. Below this its
   /// contents stop being readable rather than merely cramped — a properties row
   /// is a label beside a 70px field, so under this the label has nowhere to go
   /// and breaks mid-word ("Colo / r").
-  final double minWidth;
-
-  final double maxWidth;
+  required final double minWidth,
+  required final double maxWidth,
 
   /// Which edge the pane's contents stay pinned to while it is narrower than
   /// [minWidth] — the edge it hinges on. The sidebar closes leftwards, so its
   /// contents slide out under their own left edge; the side panel closes the
   /// other way. See [PaneContentFloor].
-  final Alignment contentAlignment;
-
+  required final Alignment contentAlignment,
+}) {
   /// How far past the stop the drag has to insist before the pane closes.
   ///
   /// Half the minimum is `plat`'s own default and is about right: far enough
@@ -134,12 +125,11 @@ CollapsiblePane? paneForLeaf(String leafId) => switch (leafId) {
 /// instead, pinned to the edge the pane hinges on. Nothing changes above it:
 /// the pane is laid out exactly as before, and this is not a place to say how
 /// wide a pane is — the slot's own size does that.
-class PaneContentFloor extends StatelessWidget {
-  const PaneContentFloor({required this.pane, required this.child, super.key});
-
-  final CollapsiblePane pane;
-  final Widget child;
-
+class const PaneContentFloor({
+  required final CollapsiblePane pane,
+  required final Widget child,
+  super.key,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
@@ -184,12 +174,11 @@ const contentMinWidth = 160.0;
 ///    width, and nothing re-decides until the width changes again.
 ///  - It only restores what it collapsed. A pane the user closed themselves
 ///    stays closed when the window grows back.
-class PaneFit extends StatefulWidget {
-  const PaneFit({required this.controller, required this.child, super.key});
-
-  final PlatController controller;
-  final Widget child;
-
+class const PaneFit({
+  required final PlatController controller,
+  required final Widget child,
+  super.key,
+}) extends StatefulWidget {
   @override
   State<PaneFit> createState() => _PaneFitState();
 }

@@ -15,6 +15,7 @@ import 'package:pinbench_parts/models/port_model.dart';
 
 import '../../support/harness.dart';
 import '../../support/simulation_bindings.dart';
+
 import 'package:pinbench_ui/theme/theme.dart';
 
 /// These exercise the *whole* canvas widget tree, not just the pointer layer.

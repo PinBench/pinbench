@@ -11,120 +11,76 @@ import 'dart:isolate';
 /// registry on the far side).
 
 /// A command sent from the UI isolate to the simulation isolate.
-sealed class SimCommand {}
+sealed class SimCommand;
 
 /// Start a run: the compiled HEX plus the circuit as JSON.
-class StartSim extends SimCommand {
-  StartSim({required this.hex, required this.nodesJson, required this.wiresJson});
-  final String hex;
-  final List<Map<String, dynamic>> nodesJson;
-  final List<Map<String, dynamic>> wiresJson;
-}
+class StartSim({
+  required final String hex,
+  required final List<Map<String, dynamic>> nodesJson,
+  required final List<Map<String, dynamic>> wiresJson,
+}) extends SimCommand;
 
-class StopSim extends SimCommand {}
+class StopSim extends SimCommand;
 
-class PauseSim extends SimCommand {}
+class PauseSim extends SimCommand;
 
-class ResumeSim extends SimCommand {}
+class ResumeSim extends SimCommand;
 
 /// Text typed into the Serial Monitor, delivered to the sketch's RX.
-class SerialInput extends SimCommand {
-  SerialInput(this.text);
-  final String text;
-}
+class SerialInput(final String text) extends SimCommand;
 
 /// A microphone reading streamed from the UI isolate (~60 Hz while a mic
 /// sensor is present), injected into the ADC/SPICE model.
-class MicReading extends SimCommand {
-  MicReading(this.volts, {required this.isHigh});
-  final double volts;
-  final bool isHigh;
-}
+class MicReading(final double volts, {required final bool isHigh}) extends SimCommand;
 
 /// Current pressed-state of every push button, keyed by node-key string.
-class ButtonStates extends SimCommand {
-  ButtonStates(this.states);
-  final Map<String, bool> states;
-}
+class ButtonStates(final Map<String, bool> states) extends SimCommand;
 
 /// Rebuild the netlist + SPICE model from a fresh circuit snapshot (e.g. after
 /// a potentiometer is turned), without recompiling the sketch.
-class RebuildCircuit extends SimCommand {
-  RebuildCircuit({required this.nodesJson, required this.wiresJson});
-  final List<Map<String, dynamic>> nodesJson;
-  final List<Map<String, dynamic>> wiresJson;
-}
+class RebuildCircuit({
+  required final List<Map<String, dynamic>> nodesJson,
+  required final List<Map<String, dynamic>> wiresJson,
+}) extends SimCommand;
 
 /// An event sent from the simulation isolate back to the UI isolate.
-sealed class SimEvent {}
+sealed class SimEvent;
 
 /// First message after spawn: the port the UI isolate sends [SimCommand]s to.
-class IsolateReady extends SimEvent {
-  IsolateReady(this.commandPort);
-  final SendPort commandPort;
-}
+class IsolateReady(final SendPort commandPort) extends SimEvent;
 
 /// A batch of per-node visual property changes, keyed by node-key string.
-class FrameUpdates extends SimEvent {
-  FrameUpdates(this.updates);
-  final Map<String, Map<String, dynamic>> updates;
-}
+class FrameUpdates(final Map<String, Map<String, dynamic>> updates) extends SimEvent;
 
 /// Solved current (amps) in each drawn wire, keyed by wire id and signed so a
 /// positive value runs from the wire's `start` port to its `end`.
 ///
 /// Wire ids are plain strings that survive the trip verbatim, so unlike
 /// [FrameUpdates] these need no re-mapping on the far side.
-class WireCurrents extends SimEvent {
-  WireCurrents(this.currents);
-  final Map<String, double> currents;
-}
+class WireCurrents(final Map<String, double> currents) extends SimEvent;
 
-class SerialPrint extends SimEvent {
-  SerialPrint(this.text);
-  final String text;
-}
+class SerialPrint(final String text) extends SimEvent;
 
-class SpiceLog extends SimEvent {
-  SpiceLog(this.text);
-  final String text;
-}
+class SpiceLog(final String text) extends SimEvent;
 
-class DebugLog extends SimEvent {
-  DebugLog(this.text);
-  final String text;
-}
+class DebugLog(final String text) extends SimEvent;
 
 /// The detected buzzer tone changed (Hz, or null when it stopped). The UI
 /// isolate turns this into real audio.
-class BuzzerFreq extends SimEvent {
-  BuzzerFreq(this.hz);
-  final double? hz;
-}
+class BuzzerFreq(final double? hz) extends SimEvent;
 
 /// The run loop has fully stopped.
-class SimStopped extends SimEvent {}
+class SimStopped extends SimEvent;
 
 /// Rolling frame statistics from the profiler (~2s window at 60 fps). Sent
 /// periodically while the simulation is running so the UI can gauge performance
 /// in Grafana / Crashlytics keys.
-class FrameStatsEvent extends SimEvent {
-  FrameStatsEvent({
-    required this.avgFps,
-    required this.avgTotalMs,
-    required this.avgAvrMs,
-    required this.avgSpiceMs,
-    required this.droppedFrames,
-  });
+class FrameStatsEvent({
+  required final double avgFps,
+  required final double avgTotalMs,
+  required final double avgAvrMs,
+  required final double avgSpiceMs,
+  required final int droppedFrames,
+}) extends SimEvent;
 
-  final double avgFps;
-  final double avgTotalMs;
-  final double avgAvrMs;
-  final double avgSpiceMs;
-  final int droppedFrames;
-}
-
-class SimError extends SimEvent {
-  SimError(this.message);
-  final String message;
-}
+class SimError(final String message) extends SimEvent;

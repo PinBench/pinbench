@@ -6,22 +6,14 @@ import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../ui/app_selection_area.dart';
 
-class LogsViewer extends StatelessWidget {
-  final String title;
-  final List<String> logs;
-  final VoidCallback onClear;
-  final IconData? emptyIcon;
-  final String? emptyMessage;
-
-  const LogsViewer({
-    super.key,
-    required this.title,
-    required this.logs,
-    required this.onClear,
-    this.emptyIcon,
-    this.emptyMessage,
-  });
-
+class const LogsViewer({
+  super.key,
+  required final String title,
+  required final List<String> logs,
+  required final VoidCallback onClear,
+  final IconData? emptyIcon,
+  final String? emptyMessage,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // The default shad `small`/`muted` text styles carry no color, so they'd

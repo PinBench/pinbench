@@ -15,7 +15,7 @@ import 'workspace_fs_web.dart' if (dart.library.io) 'workspace_fs_io.dart';
 /// [isDirectory] here.
 abstract interface class WorkspaceFs {
   /// Creates the platform-appropriate implementation.
-  factory WorkspaceFs() = WorkspaceFsImpl;
+  factory() = WorkspaceFsImpl;
 
   /// Base directory under which throwaway/temporary workspaces are created.
   /// On native this is the OS temp dir; on web it is a synthetic in-memory root.

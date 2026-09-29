@@ -47,9 +47,7 @@ abstract interface class AuthService {
 /// Exists so "no backend" is expressed once, here, rather than as a null check
 /// at every call site — the app runs fully offline with local workspaces, and
 /// only the cloud features are absent.
-class DisabledAuthService implements AuthService {
-  const DisabledAuthService();
-
+class const DisabledAuthService() implements AuthService {
   @override
   bool get enabled => false;
 

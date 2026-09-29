@@ -16,14 +16,13 @@ import '../../../painting/part_palette.dart';
 /// are separate nodes.
 ///
 /// The node's origin is its first lettered line (`a` or `f`); rows run along x.
-class BreadboardTerminalStripNode extends PaintNode {
-  final BreadboardPainter painter;
+class BreadboardTerminalStripNode(
+  final BreadboardPainter painter, {
 
   /// The `f`–`j` bank. Called "right" because that is what its port ids say.
-  final bool isRight;
+  required final bool isRight,
+}) extends PaintNode {
   final _paint = Paint();
-
-  BreadboardTerminalStripNode(this.painter, {required this.isRight});
 
   @override
   Size get size =>

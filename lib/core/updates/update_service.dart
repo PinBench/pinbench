@@ -55,9 +55,7 @@ abstract class UpdateService {
 }
 
 /// The no-op: web, mobile, anywhere without a signed desktop build.
-class DisabledUpdateService implements UpdateService {
-  const DisabledUpdateService();
-
+class const DisabledUpdateService() implements UpdateService {
   @override
   bool get isSupported => false;
 
@@ -82,12 +80,12 @@ class DisabledUpdateService implements UpdateService {
 /// callbacks into an [UpdateStatus] the app's own UI can render — the point
 /// being that "an update is ready" should be visible in the app's language,
 /// not only in Sparkle's window.
-class SparkleUpdateService with UpdaterListener implements UpdateService {
-  SparkleUpdateService(this.platform) {
+class SparkleUpdateService(final TargetPlatform platform)
+    with UpdaterListener
+    implements UpdateService {
+  this {
     autoUpdater.addListener(this);
   }
-
-  final TargetPlatform platform;
 
   /// Completed by whichever callback resolves the in-flight check. Sparkle's
   /// `checkForUpdates` future returns as soon as the native call is *made*,
@@ -215,16 +213,14 @@ class SparkleUpdateService with UpdaterListener implements UpdateService {
 /// Linux: fetch `latest.json`, compare, and link out.
 ///
 /// Notify-only on purpose. See `UpdateConfig.linuxManifestUrl`.
-class ManifestUpdateService implements UpdateService {
-  ManifestUpdateService({required this.currentVersion, http.Client? client})
-    : _client = client ?? http.Client();
-
+class ManifestUpdateService({
   /// The running build's version, as `CFBundleShortVersionString` and friends
   /// report it. Null when it could not be read, which disables the check —
   /// with nothing to compare against, every manifest would look newer.
-  final String? currentVersion;
-
-  final http.Client _client;
+  required final String? currentVersion,
+  http.Client? client,
+}) implements UpdateService {
+  final http.Client _client = client ?? http.Client();
 
   @override
   bool get isSupported => ReleaseVersion.tryParse(currentVersion) != null;

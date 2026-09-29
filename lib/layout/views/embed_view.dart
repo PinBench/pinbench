@@ -26,9 +26,7 @@ import '../../features/workspace/services/share_link.dart';
 ///
 /// Also dropped: the minimap (meaningless at embed size) and the canvas
 /// toolbar (component/wire tools).
-class EmbedView extends ConsumerWidget {
-  const EmbedView({super.key});
-
+class const EmbedView({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.appColors;
@@ -60,11 +58,7 @@ class EmbedView extends ConsumerWidget {
 /// top-left and the zoom cluster bottom-right, which this originally collided
 /// with. It also carries its own backing, since canvas content scrolls beneath
 /// it and bare text over the grid is unreadable.
-class _OpenInPlayground extends StatelessWidget {
-  const _OpenInPlayground({required this.projectId});
-
-  final String projectId;
-
+class const _OpenInPlayground({required final String projectId}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;

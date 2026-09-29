@@ -5,10 +5,7 @@
 /// swapping in ARB-based lookups later touches this one file instead of every
 /// widget again. Grouped by feature area for readability, matching the style
 /// of `AppTextStyles` in `shared/theme/`.
-class AppStrings {
-  AppStrings._();
-
-  // ── App ────────────────────────────────────────────────────────────────
+class AppStrings._() {
   /// App display name (window menu label, empty-workspace heading, About dialog).
   static const appName = 'PinBench';
 
@@ -189,8 +186,7 @@ class AppStrings {
   static const telemetryConsentAccept = 'Share';
   static const telemetryConsentDecline = 'No thanks';
   static const telemetrySwitchLabel = 'Share usage statistics and crash reports';
-  static const telemetrySwitchDescription =
-      'Anonymous. Never includes your circuits or sketches.';
+  static const telemetrySwitchDescription = 'Anonymous. Never includes your circuits or sketches.';
   static const privacyPolicyLink = 'Privacy policy';
 
   // ── Empty workspace / empty editor placeholders ──────────────────────────

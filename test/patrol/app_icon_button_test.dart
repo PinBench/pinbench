@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 
 import 'package:pinbench_ui/ui/app_icon_button.dart';
+
 import '../support/harness.dart';
+
 import 'package:pinbench_ui/theme/app_icons.dart';
 
 /// Widget-level Patrol tests.

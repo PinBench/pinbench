@@ -10,18 +10,22 @@ import '../theme/tokens.dart';
 /// constructor arguments, so without this every call site would carry its own
 /// style delta. Naming the three kinds instead keeps them consistent and says
 /// what each is for.
-enum _DividerKind { menu, section, toolbar }
+enum _DividerKind() {
+  menu,
+  section,
+  toolbar,
+}
 
 class AppDivider extends StatelessWidget {
   /// Between groups of items in a menu or context menu.
-  const AppDivider.menu({super.key}) : _kind = _DividerKind.menu;
+  const new menu({super.key}) : _kind = _DividerKind.menu;
 
   /// Between sections of a panel. Heavier, because it separates regions rather
   /// than neighbouring rows.
-  const AppDivider.section({super.key}) : _kind = _DividerKind.section;
+  const new section({super.key}) : _kind = _DividerKind.section;
 
   /// Upright, between groups of buttons in a toolbar. Sized by its parent.
-  const AppDivider.toolbar({super.key}) : _kind = _DividerKind.toolbar;
+  const new toolbar({super.key}) : _kind = _DividerKind.toolbar;
 
   final _DividerKind _kind;
 

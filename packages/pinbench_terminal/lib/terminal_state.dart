@@ -12,9 +12,4 @@ import 'package:xterm/xterm.dart';
 /// to [TerminalController] rather than in `domain/`. The handle is typed as
 /// [Object] to keep this file free of the native `flutter_pty` dependency,
 /// which cannot compile for the web.
-class TerminalState {
-  final Terminal terminal;
-  final Object? pty;
-
-  const TerminalState({required this.terminal, this.pty});
-}
+class const TerminalState({required final Terminal terminal, final Object? pty});

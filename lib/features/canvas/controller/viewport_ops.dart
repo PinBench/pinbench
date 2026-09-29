@@ -6,10 +6,7 @@ import 'canvas_controller.dart';
 
 /// Viewport/matrix math for the canvas: fitting the visible content into a
 /// given viewport size. Extracted from `CanvasController`.
-class ViewportOps {
-  final CanvasController controller;
-  ViewportOps(this.controller);
-
+class ViewportOps(final CanvasController controller) {
   void fitToContent(Size viewportSize) {
     if (controller.nodes.isEmpty) {
       controller.centerOrigin(viewportSize);

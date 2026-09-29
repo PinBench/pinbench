@@ -3,23 +3,29 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'problems_provider.g.dart';
 
 /// Severity of a [Problem], ordered most-severe first for sorting.
-enum ProblemSeverity { error, warning, info }
+enum ProblemSeverity() {
+  error,
+  warning,
+  info,
+}
 
 /// Which subsystem reported a [Problem]. Used to group/replace problems by
 /// origin so, e.g., re-validating the circuit only swaps circuit problems.
-enum ProblemSource { circuit, compiler, parser }
+enum ProblemSource() {
+  circuit,
+  compiler,
+  parser,
+}
 
 /// A single diagnostic shown in the Problems pane.
-class Problem {
-  const Problem({required this.severity, required this.source, required this.message, this.detail});
-
-  final ProblemSeverity severity;
-  final ProblemSource source;
-  final String message;
+class const Problem({
+  required final ProblemSeverity severity,
+  required final ProblemSource source,
+  required final String message,
 
   /// Optional secondary line (e.g. compiler stderr, a file path).
-  final String? detail;
-}
+  final String? detail,
+});
 
 /// Aggregates diagnostics from the circuit validator, the compiler and the CDL
 /// parser. Problems are stored per [ProblemSource] so each subsystem can replace

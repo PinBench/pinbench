@@ -34,16 +34,14 @@ import 'theme.dart' show AppPalette, primary;
 /// the theme's import list to carry two colours. It is a plain value now,
 /// looked up by brightness — which is all the extension slot ever did with it,
 /// since both pairs are compile-time constants that never interpolate.
-final class AppColors {
-  const AppColors({required this.accent, required this.accentForeground});
-
+final class const AppColors({
   /// Wash behind an active/selected control.
-  final Color accent;
+  required final Color accent,
 
   /// Ink on [accent]. Checked against it for WCAG AA, as every pair in
   /// `AppPalette` is — see `theme.dart`.
-  final Color accentForeground;
-
+  required final Color accentForeground,
+}) {
   AppColors copyWith({Color? accent, Color? accentForeground}) => AppColors(
     accent: accent ?? this.accent,
     accentForeground: accentForeground ?? this.accentForeground,

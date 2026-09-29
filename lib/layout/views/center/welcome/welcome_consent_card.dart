@@ -19,9 +19,7 @@ import '../../../../core/telemetry/telemetry_consent.dart';
 /// of anything. The welcome screen is where every session starts, which makes
 /// it the one place the question is sure to be seen without interrupting work.
 /// Settings keeps the switch for changing the answer later.
-class WelcomeConsentCard extends ConsumerWidget {
-  const WelcomeConsentCard({super.key});
-
+class const WelcomeConsentCard({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final control = ref.watch(telemetryControlProvider);

@@ -6,12 +6,11 @@ import 'package:pinbench_ui/theme/app_colors.dart';
 import 'package:pinbench_ui/theme/theme.dart';
 import 'package:pinbench_ui/ui/app_button.dart';
 
-class AutocompleteOptionsView extends StatelessWidget implements PreferredSizeWidget {
-  final ValueNotifier<CodeAutocompleteEditingValue> notifier;
-  final ValueChanged<CodeAutocompleteResult> onSelected;
-
-  const AutocompleteOptionsView({super.key, required this.notifier, required this.onSelected});
-
+class const AutocompleteOptionsView({
+  super.key,
+  required final ValueNotifier<CodeAutocompleteEditingValue> notifier,
+  required final ValueChanged<CodeAutocompleteResult> onSelected,
+}) extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size(250, 250);
 

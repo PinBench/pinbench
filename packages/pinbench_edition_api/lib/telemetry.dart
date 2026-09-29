@@ -8,13 +8,11 @@ import 'package:flutter/foundation.dart' show immutable;
 /// collected until the user agrees — the app asks once, and Settings can change
 /// the answer.
 @immutable
-class TelemetryConfig {
-  const TelemetryConfig({required this.firebase, required this.privacyPolicyUrl});
-
+class const TelemetryConfig({
   /// The Firebase project analytics, crash reports, performance traces and
   /// remote config belong to.
-  final FirebaseOptions firebase;
+  required final FirebaseOptions firebase,
 
   /// Linked wherever the app asks for consent.
-  final String privacyPolicyUrl;
-}
+  required final String privacyPolicyUrl,
+});

@@ -11,11 +11,8 @@ import 'breadboard_utils.dart';
 /// two halves are separate nodes — and it is the gap a DIP chip straddles,
 /// which is why it is exactly wide enough for one — see
 /// `BreadboardConfig.centerNotchCells`.
-class BreadboardCenterNotchNode extends PaintNode {
-  final BreadboardPainter painter;
+class BreadboardCenterNotchNode(final BreadboardPainter painter) extends PaintNode {
   final _paint = Paint();
-
-  BreadboardCenterNotchNode(this.painter);
 
   @override
   Size get size => Size(painter.config.boardLength, painter.config.centerNotchThickness);

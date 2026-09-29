@@ -9,12 +9,10 @@ import 'package:pinbench_parts/part_registry.dart';
 
 import '../core/circuit_netlist.dart';
 
-class CircuitValidatorResult {
-  final String? errorMessage;
-  final Map<LocalKey, Map<String, dynamic>> updatedProperties;
-
-  CircuitValidatorResult({this.errorMessage, this.updatedProperties = const {}});
-}
+class CircuitValidatorResult({
+  final String? errorMessage,
+  final Map<LocalKey, Map<String, dynamic>> updatedProperties = const {},
+});
 
 class CircuitValidator {
   /// The ATmega328P's typical GPIO output resistance, in series with whatever

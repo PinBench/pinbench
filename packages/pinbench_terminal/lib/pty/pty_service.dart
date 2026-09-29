@@ -13,7 +13,7 @@ import 'pty_service_web.dart' if (dart.library.io) 'pty_service_io.dart';
 /// process.
 abstract interface class PtyService {
   /// Creates the platform-appropriate implementation.
-  factory PtyService() = PtyServiceImpl;
+  factory() = PtyServiceImpl;
 
   /// Starts a shell process. Uses [shell] when provided, otherwise resolves a
   /// platform default. Returns an opaque handle, or `null` when the platform

@@ -83,8 +83,7 @@ void main() {
 
 /// No speaker and no microphone — these tests never reach the emulator, and a
 /// unit test should not open a host device to find that out.
-class _SilentTone implements ToneOutput {
-  const _SilentTone();
+class const _SilentTone() implements ToneOutput {
   @override
   Future<void> init() async {}
   @override
@@ -95,8 +94,7 @@ class _SilentTone implements ToneOutput {
   void dispose() {}
 }
 
-class _NoMicrophone implements MicrophoneDevice {
-  const _NoMicrophone();
+class const _NoMicrophone() implements MicrophoneDevice {
   @override
   double get analogVoltage => 0;
   @override

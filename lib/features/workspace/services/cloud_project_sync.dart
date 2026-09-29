@@ -18,18 +18,11 @@ import '../providers/editor_state_provider.dart';
 /// needs direct access to that notifier's `_contentHashes` cache to keep the
 /// two staying in sync (a cloud pull must rebaseline the same hash a local
 /// save would).
-class CloudProjectSync {
-  CloudProjectSync({
-    required this.ref,
-    required WorkspaceFs fs,
-    required Map<String, int> contentHashes,
-  }) : _fs = fs,
-       _contentHashes = contentHashes;
-
-  final Ref ref;
-  final WorkspaceFs _fs;
-  final Map<String, int> _contentHashes;
-
+class CloudProjectSync({
+  required final Ref ref,
+  required final WorkspaceFs _fs,
+  required final Map<String, int> _contentHashes,
+}) {
   StreamSubscription<List<ProjectFile>>? _filesSubscription;
 
   /// Whether a project is currently linked (subscription active).

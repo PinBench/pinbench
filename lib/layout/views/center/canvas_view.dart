@@ -6,9 +6,7 @@ import '../../../features/canvas/widgets/controls/toolbar.dart';
 import '../../../features/canvas/widgets/controls/zoom_controls.dart';
 import '../../../features/canvas/widgets/controls/minimap_view.dart';
 
-class CanvasView extends StatelessWidget {
-  const CanvasView({super.key});
-
+class const CanvasView({super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => const Stack(
     children: [CanvasArea(), SimulationControls(), CanvasToolbar(), ZoomControls(), MinimapView()],

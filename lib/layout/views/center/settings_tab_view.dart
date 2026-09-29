@@ -21,9 +21,7 @@ import 'privacy_panel.dart';
 /// As a tab it gets the width of the editor, stays open beside the work, and
 /// is the *one* place these settings live — anything else that needs a setting
 /// changed sends people here rather than carrying its own copy of the form.
-class SettingsTabView extends ConsumerWidget {
-  const SettingsTabView({super.key});
-
+class const SettingsTabView({super.key}) extends ConsumerWidget {
   /// Settings read as a form, not as a wall: past roughly this width the eye
   /// loses the line, so the content column stops and the pane keeps the rest.
   static const _contentWidth = 720.0;
@@ -74,19 +72,12 @@ class SettingsTabView extends ConsumerWidget {
 /// One settings group: a heading, a line saying what it is for, and the
 /// controls, separated from the next group by a rule rather than by a card —
 /// stacked cards on a full-width surface read as a dashboard, not as settings.
-class _Section extends StatelessWidget {
-  const _Section({
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.child,
-  });
-
-  final IconData icon;
-  final String title;
-  final String description;
-  final Widget child;
-
+class const _Section({
+  required final IconData icon,
+  required final String title,
+  required final String description,
+  required final Widget child,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;

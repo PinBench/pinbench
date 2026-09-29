@@ -19,9 +19,7 @@ const _shortcuts = <(String, List<String>)>[
   (AppStrings.newUntitledFileShortcutLabel, ['⌘', 'N']),
 ];
 
-class EmptyEditorView extends StatelessWidget {
-  const EmptyEditorView({super.key});
-
+class const EmptyEditorView({super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ColoredBox(
     color: context.appColors.background,

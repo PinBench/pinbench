@@ -6,12 +6,8 @@ import 'tracing_service.dart';
 /// OpenTelemetry is started at launch only if they already had, so agreeing
 /// later takes effect on the next launch; withdrawing takes effect at once —
 /// this stops every span, error and metric immediately.
-class ConsentGatedTracing implements TracingService, TelemetryControl {
-  ConsentGatedTracing(this._inner, {required bool granted}) : _granted = granted;
-
-  final TracingService _inner;
-  bool _granted;
-
+class ConsentGatedTracing(final TracingService _inner, {required var bool _granted})
+    implements TracingService, TelemetryControl {
   // ── TelemetryControl ─────────────────────────────────────────────────────
 
   @override

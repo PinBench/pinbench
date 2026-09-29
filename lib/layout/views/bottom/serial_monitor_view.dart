@@ -13,9 +13,7 @@ import 'package:pinbench_ui/theme/app_icons.dart';
 import '../../../features/simulation/providers/simulation_provider.dart';
 import '../../../features/workspace/providers/debug_console_provider.dart';
 
-class SerialMonitorView extends ConsumerStatefulWidget {
-  const SerialMonitorView({super.key});
-
+class const SerialMonitorView({super.key}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<SerialMonitorView> createState() => _SerialMonitorViewState();
 }
@@ -57,13 +55,11 @@ class _SerialMonitorViewState extends ConsumerState<SerialMonitorView> {
   }
 }
 
-class _SerialInputBar extends StatelessWidget {
-  const _SerialInputBar({required this.controller, required this.enabled, required this.onSend});
-
-  final TextEditingController controller;
-  final bool enabled;
-  final VoidCallback onSend;
-
+class const _SerialInputBar({
+  required final TextEditingController controller,
+  required final bool enabled,
+  required final VoidCallback onSend,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.xs, AppSpacing.md, AppSpacing.md),

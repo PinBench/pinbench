@@ -24,14 +24,10 @@ WireModel _wire(ComponentInstance a, String ap, ComponentInstance b, String bp) 
   end: PortLocation(nodeKey: b.key, portId: bp),
 );
 
-class _FakeOutput implements SimulationOutput {
-  _FakeOutput(this.simulationNodes, this.simulationWires);
-
-  @override
-  final List<ComponentInstance> simulationNodes;
-  @override
-  final List<WireModel> simulationWires;
-
+class _FakeOutput(
+  @override final List<ComponentInstance> simulationNodes,
+  @override final List<WireModel> simulationWires,
+) implements SimulationOutput {
   @override
   void applyNodeUpdates(Map<LocalKey, Map<String, dynamic>> updates) {}
 }

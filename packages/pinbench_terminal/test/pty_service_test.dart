@@ -12,11 +12,7 @@ import 'package:pinbench_terminal/pty/pty_service_io.dart';
 /// controllable output stream. It cannot extend [Pty] (whose only constructor
 /// spawns a native process), so it `implements` the interface and routes any
 /// unused members through [noSuchMethod].
-class _FakePty implements Pty {
-  _FakePty(this._output);
-
-  final Stream<Uint8List> _output;
-
+class _FakePty(final Stream<Uint8List> _output) implements Pty {
   final writes = <Uint8List>[];
   final resizes = <List<int>>[];
   var killed = false;

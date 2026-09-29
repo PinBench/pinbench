@@ -29,7 +29,7 @@ import 'package:meta/meta.dart';
 /// Every value here must pass the gating test:
 /// it costs real money to operate, or it is inherently multi-user. If a
 /// feature is neither, it belongs in the free core, not in this enum.
-enum ProFeature {
+enum ProFeature() {
   /// Storing projects in the hosted cloud. Costs storage + reads. Free tier
   /// gets a small quota; see [ProLimits.cloudProjects].
   cloudProjects,
@@ -65,7 +65,14 @@ enum ProFeature {
 }
 
 /// Subscription tier. Ordered: a higher [rank] includes everything below it.
-enum ProTier {
+enum ProTier(
+  /// Ordering only. A higher rank includes everything below it; never gate on
+  /// this directly, use [ProGateway.check] so quotas are accounted for too.
+  final int rank,
+
+  /// Human-readable name for UI.
+  final String label,
+) {
   /// No subscription. The default, and a real product in its own right.
   free(0, 'Free'),
 
@@ -78,15 +85,6 @@ enum ProTier {
   /// Institutional tier. Same rank as [team]; differs in pricing, not access.
   education(2, 'Education');
 
-  const ProTier(this.rank, this.label);
-
-  /// Ordering only. A higher rank includes everything below it; never gate on
-  /// this directly, use [ProGateway.check] so quotas are accounted for too.
-  final int rank;
-
-  /// Human-readable name for UI.
-  final String label;
-
   /// Whether this tier is paid for. `false` only for [free].
   bool get isPaid => rank > 0;
 }
@@ -94,14 +92,22 @@ enum ProTier {
 /// Numeric quotas that vary by tier. Unlimited is represented by `null`,
 /// never by a sentinel like `-1` or `9999`.
 @immutable
-class ProLimits {
+class const ProLimits({
+  /// Maximum projects stored in the hosted cloud. `null` = unlimited.
+  final int? cloudProjects,
+
+  /// Hosted compiles per rolling 24h. `null` = unlimited.
+  final int? remoteCompilesPerDay,
+
+  /// AI assistant requests per billing month. `null` = unlimited.
+  final int? aiRequestsPerMonth,
+
+  /// Collaborators invitable to a single cloud project, excluding the
+  /// owner. `null` = unlimited.
+  final int? collaboratorsPerProject,
+}) {
   /// Creates a set of quotas. Any omitted value means unlimited.
-  const ProLimits({
-    this.cloudProjects,
-    this.remoteCompilesPerDay,
-    this.aiRequestsPerMonth,
-    this.collaboratorsPerProject,
-  });
+  this;
 
   /// The quotas an unauthenticated or free-tier user gets.
   ///
@@ -118,26 +124,13 @@ class ProLimits {
   /// No quotas at all. Used by paid tiers.
   static const unlimited = ProLimits();
 
-  /// Maximum projects stored in the hosted cloud. `null` = unlimited.
-  final int? cloudProjects;
-
-  /// Hosted compiles per rolling 24h. `null` = unlimited.
-  final int? remoteCompilesPerDay;
-
-  /// AI assistant requests per billing month. `null` = unlimited.
-  final int? aiRequestsPerMonth;
-
-  /// Collaborators invitable to a single cloud project, excluding the
-  /// owner. `null` = unlimited.
-  final int? collaboratorsPerProject;
-
   /// Whether [used] is still within [limit]. A `null` limit never blocks.
   static bool withinLimit(int used, int? limit) => limit == null || used < limit;
 }
 
 /// Why a feature was denied — lets the UI say something useful instead of a
 /// generic "upgrade" wall.
-enum ProDenialReason {
+enum ProDenialReason() {
   /// The tier does not include this feature at all.
   notInTier,
 
@@ -155,7 +148,7 @@ enum ProDenialReason {
 /// The result of an entitlement check.
 @immutable
 sealed class ProAccess {
-  const ProAccess();
+  const new();
 
   /// Convenience: `true` only for [ProAllowed].
   bool get isAllowed => this is ProAllowed;
@@ -163,27 +156,27 @@ sealed class ProAccess {
 
 /// The caller may proceed.
 @immutable
-final class ProAllowed extends ProAccess {
+final class const ProAllowed() extends ProAccess {
   /// Creates an allow result.
-  const ProAllowed();
+  this;
 }
 
 /// The caller may not proceed. [reason] should drive the UI copy.
 @immutable
-final class ProDenied extends ProAccess {
-  /// Creates a denial carrying [reason], and optionally copy and a link.
-  const ProDenied(this.reason, {this.message, this.upgradeUrl});
-
+final class const ProDenied(
   /// Why access was denied. Should drive the wording the user sees.
-  final ProDenialReason reason;
+  final ProDenialReason reason, {
 
   /// Human-readable explanation, if the implementation has a better one
   /// than the caller could generate from [reason] alone.
-  final String? message;
+  final String? message,
 
   /// Where to send a user who wants to unlock this. `null` for
   /// [ProDenialReason.notAvailableInThisBuild].
-  final String? upgradeUrl;
+  final String? upgradeUrl,
+}) extends ProAccess {
+  /// Creates a denial carrying [reason], and optionally copy and a link.
+  this;
 }
 
 /// The interface a commercial implementation satisfies.
@@ -212,9 +205,9 @@ abstract interface class ProGateway {
 /// Everything that costs the maintainer money is denied with
 /// [ProDenialReason.notAvailableInThisBuild] — because a build from source
 /// has no maintainer-run backend to charge for.
-final class FreeProGateway implements ProGateway {
+final class const FreeProGateway() implements ProGateway {
   /// Creates the free-tier gateway.
-  const FreeProGateway();
+  this;
 
   @override
   ProTier get tier => ProTier.free;

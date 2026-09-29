@@ -17,16 +17,14 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 abstract interface class FeatureFlags {
   /// All flags off — the provider default and the fallback when Remote
   /// Config is unavailable or hasn't fetched yet.
-  const factory FeatureFlags.disabled() = _DisabledFeatureFlags;
+  const factory disabled() = _DisabledFeatureFlags;
 
   /// The title bar's global workspace search (placeholder UI, not yet
   /// implemented).
   bool get globalSearchEnabled;
 }
 
-class _DisabledFeatureFlags implements FeatureFlags {
-  const _DisabledFeatureFlags();
-
+class const _DisabledFeatureFlags() implements FeatureFlags {
   @override
   bool get globalSearchEnabled => false;
 }
@@ -36,11 +34,7 @@ class _DisabledFeatureFlags implements FeatureFlags {
 /// has run during startup (see `remote_config_bootstrap.dart`) — and fall back
 /// to the defaults passed to [FirebaseRemoteConfig.setDefaults] if a fetch
 /// never lands.
-class RemoteFeatureFlags implements FeatureFlags {
-  RemoteFeatureFlags(this._remoteConfig);
-
-  final FirebaseRemoteConfig _remoteConfig;
-
+class RemoteFeatureFlags(final FirebaseRemoteConfig _remoteConfig) implements FeatureFlags {
   static const keyGlobalSearchEnabled = 'feature_global_search_enabled';
 
   /// Ship every flag off by default — enabling one is an explicit decision

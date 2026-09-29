@@ -25,9 +25,7 @@ import '../../providers/layout_provider.dart';
 /// only in that state, so the centre of the title bar was empty the rest of the
 /// time. Saving lives in the File menu, which is where a menu-bar app's Save
 /// belongs.
-class WorkspaceTitle extends ConsumerWidget {
-  const WorkspaceTitle({super.key});
-
+class const WorkspaceTitle({super.key}) extends ConsumerWidget {
   /// Between the two halves. An em dash with spaces, not a hyphen: file names
   /// contain hyphens and a separator has to be one.
   static const _separator = ' — ';

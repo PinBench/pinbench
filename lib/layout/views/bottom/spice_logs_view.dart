@@ -7,9 +7,7 @@ import 'package:pinbench_ui/theme/app_icons.dart';
 
 import '../../../features/workspace/providers/debug_console_provider.dart';
 
-class SpiceLogsView extends ConsumerWidget {
-  const SpiceLogsView({super.key});
-
+class const SpiceLogsView({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) => LogsViewer(
     title: AppStrings.spiceLogsTitle,

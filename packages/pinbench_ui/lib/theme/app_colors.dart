@@ -15,11 +15,7 @@ import 'theme.dart';
 ///
 /// Deliberately smaller than any library's scheme: it carries the tokens the
 /// app actually paints with. Add one when a surface needs it, not in advance.
-class AppColorScheme {
-  const AppColorScheme._(this._colors);
-
-  final FColors _colors;
-
+class const AppColorScheme._(final FColors _colors) {
   /// The recessed ground the floating panes sit on.
   Color get background => _colors.background;
 
@@ -67,11 +63,7 @@ class AppColorScheme {
 }
 
 /// Type scale, in the app's terms. Same reasoning as [AppColorScheme].
-class AppTypography {
-  const AppTypography._(this._typography);
-
-  final FTypography _typography;
-
+class const AppTypography._(final FTypography _typography) {
   TextStyle get xs => _typography.body.xs;
   TextStyle get sm => _typography.body.sm;
   TextStyle get md => _typography.body.md;

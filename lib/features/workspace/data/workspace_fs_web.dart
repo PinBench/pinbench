@@ -156,10 +156,7 @@ class WorkspaceFsImpl implements WorkspaceFs {
 
 /// Minimal stand-in for `dart:io`'s `FileSystemException`, so the web store can
 /// signal a missing file without importing `dart:io`.
-class FileSystemException implements Exception {
-  final String message;
-  final String path;
-  FileSystemException(this.message, this.path);
+class FileSystemException(final String message, final String path) implements Exception {
   @override
   String toString() => 'FileSystemException: $message, path = $path';
 }

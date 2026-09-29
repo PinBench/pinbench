@@ -9,9 +9,7 @@ import 'package:pinbench_ui/theme/theme.dart';
 
 import '../../../features/workspace/providers/problems_provider.dart';
 
-class ProblemsView extends ConsumerWidget {
-  const ProblemsView({super.key});
-
+class const ProblemsView({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.appColors;
@@ -42,11 +40,7 @@ class ProblemsView extends ConsumerWidget {
   }
 }
 
-class _ProblemRow extends StatelessWidget {
-  const _ProblemRow({required this.problem});
-
-  final Problem problem;
-
+class const _ProblemRow({required final Problem problem}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;

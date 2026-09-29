@@ -7,20 +7,12 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../painting/paint_node.dart';
 import '../../../painting/part_palette.dart';
 
-class SmdLedNode extends PaintNode {
-  final String label;
-  final Color ledColor;
-  final bool labelOnRight;
-  @override
-  final Size size;
-
-  SmdLedNode({
-    required this.label,
-    this.ledColor = const Color(0xFFF9F1A5),
-    this.labelOnRight = false,
-    this.size = const Size(14.0, 8.0),
-  });
-
+class SmdLedNode({
+  required final String label,
+  final Color ledColor = const Color(0xFFF9F1A5),
+  final bool labelOnRight = false,
+  @override final Size size = const Size(14.0, 8.0),
+}) extends PaintNode {
   static const _baseLedWidth = 10.0;
   static const _baseLedHeight = 4.0;
   static const _basePadWidth = 2.0;

@@ -13,12 +13,9 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 /// passing against a no-op. [filesStream] is a broadcast controller the test
 /// drives itself, which is what makes it possible to assert that a live shared
 /// view actually pulls a later edit.
-class FakeProjectRepository implements ProjectRepository {
-  FakeProjectRepository({required this.project, List<ProjectFile> files = const []})
-    : _files = List.of(files);
-
-  final Project project;
-  List<ProjectFile> _files;
+class FakeProjectRepository({required final Project project, List<ProjectFile> files = const []})
+    implements ProjectRepository {
+  List<ProjectFile> _files = List.of(files);
 
   /// Emits the project's file list. Kept open so a test can push an edit after
   /// the workspace is already open.
@@ -61,11 +58,9 @@ class FakeProjectRepository implements ProjectRepository {
 
 /// Points `getTemporaryDirectory()` at [path] so the cloud-open path writes its
 /// downloaded workspace somewhere the test controls and deletes afterwards.
-class FakePathProvider extends PathProviderPlatform with MockPlatformInterfaceMixin {
-  FakePathProvider(this.path);
-
-  final String path;
-
+class FakePathProvider(final String path)
+    extends PathProviderPlatform
+    with MockPlatformInterfaceMixin {
   @override
   Future<String?> getTemporaryPath() async => path;
 

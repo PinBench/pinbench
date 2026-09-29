@@ -8,12 +8,11 @@ import 'package:pinbench_ui/theme/app_colors.dart';
 import '../../controller/canvas_controller.dart';
 import '../components/component_widget.dart';
 
-class CanvasNodeWidget extends StatelessWidget {
-  final ComponentInstance node;
-  final CanvasController controller;
-
-  const CanvasNodeWidget({super.key, required this.node, required this.controller});
-
+class const CanvasNodeWidget({
+  super.key,
+  required final ComponentInstance node,
+  required final CanvasController controller,
+}) extends StatelessWidget {
   Widget _generateSmoothOutline(Widget child, Color color, double thickness, double blurSigma) {
     final offsets = [
       Offset(-thickness, -thickness),

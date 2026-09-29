@@ -16,11 +16,7 @@ abstract class CanvasCommand {
 }
 
 /// Adds a single node and selects it.
-class AddNodeCommand implements CanvasCommand {
-  final ComponentInstance node;
-
-  AddNodeCommand(this.node);
-
+class AddNodeCommand(final ComponentInstance node) implements CanvasCommand {
   @override
   void execute(CanvasContext controller) {
     controller.updateState(nodes: [...controller.nodes, node], selectedNodes: [node]);
@@ -36,12 +32,10 @@ class AddNodeCommand implements CanvasCommand {
 }
 
 /// Deletes the selected nodes and wires together (restores them on undo).
-class RemoveSelectionCommand implements CanvasCommand {
-  final List<ComponentInstance> removedNodes;
-  final List<WireModel> removedWires;
-
-  RemoveSelectionCommand({required this.removedNodes, required this.removedWires});
-
+class RemoveSelectionCommand({
+  required final List<ComponentInstance> removedNodes,
+  required final List<WireModel> removedWires,
+}) implements CanvasCommand {
   @override
   void execute(CanvasContext controller) {
     final removedNodeKeys = removedNodes.map((n) => n.key).toSet();
@@ -67,13 +61,11 @@ class RemoveSelectionCommand implements CanvasCommand {
 }
 
 /// Replaces one node with an edited version (e.g. rotation, properties).
-class UpdateNodeCommand implements CanvasCommand {
-  final LocalKey nodeKey;
-  final ComponentInstance oldNode;
-  final ComponentInstance newNode;
-
-  UpdateNodeCommand(this.nodeKey, this.oldNode, this.newNode);
-
+class UpdateNodeCommand(
+  final LocalKey nodeKey,
+  final ComponentInstance oldNode,
+  final ComponentInstance newNode,
+) implements CanvasCommand {
   @override
   void execute(CanvasContext controller) {
     _updateNode(controller, newNode);
@@ -102,11 +94,7 @@ class UpdateNodeCommand implements CanvasCommand {
 }
 
 /// Adds a single wire.
-class AddWireCommand implements CanvasCommand {
-  final WireModel wire;
-
-  AddWireCommand(this.wire);
-
+class AddWireCommand(final WireModel wire) implements CanvasCommand {
   @override
   void execute(CanvasContext controller) {
     controller.updateState(wires: [...controller.wires, wire]);
@@ -119,13 +107,8 @@ class AddWireCommand implements CanvasCommand {
 }
 
 /// Replaces one wire with an edited version (e.g. moved bend points).
-class UpdateWireCommand implements CanvasCommand {
-  final String wireId;
-  final WireModel oldWire;
-  final WireModel newWire;
-
-  UpdateWireCommand(this.wireId, this.oldWire, this.newWire);
-
+class UpdateWireCommand(final String wireId, final WireModel oldWire, final WireModel newWire)
+    implements CanvasCommand {
   @override
   void execute(CanvasContext controller) {
     _updateWire(controller, newWire);
@@ -147,12 +130,10 @@ class UpdateWireCommand implements CanvasCommand {
 }
 
 /// Inserts pasted nodes + wires and selects them.
-class PasteCommand implements CanvasCommand {
-  final List<ComponentInstance> pastedNodes;
-  final List<WireModel> pastedWires;
-
-  PasteCommand(this.pastedNodes, {this.pastedWires = const []});
-
+class PasteCommand(
+  final List<ComponentInstance> pastedNodes, {
+  final List<WireModel> pastedWires = const [],
+}) implements CanvasCommand {
   @override
   void execute(CanvasContext controller) {
     controller.updateState(
@@ -177,12 +158,10 @@ class PasteCommand implements CanvasCommand {
 }
 
 /// Replaces many nodes at once (e.g. dragging a multi-node selection).
-class UpdateNodesCommand implements CanvasCommand {
-  final List<ComponentInstance> oldNodes;
-  final List<ComponentInstance> newNodes;
-
-  UpdateNodesCommand(this.oldNodes, this.newNodes);
-
+class UpdateNodesCommand(
+  final List<ComponentInstance> oldNodes,
+  final List<ComponentInstance> newNodes,
+) implements CanvasCommand {
   @override
   void execute(CanvasContext controller) {
     _updateNodes(controller, newNodes);
@@ -214,12 +193,8 @@ class UpdateNodesCommand implements CanvasCommand {
 }
 
 /// Replaces many wires at once.
-class UpdateWiresCommand implements CanvasCommand {
-  final List<WireModel> oldWires;
-  final List<WireModel> newWires;
-
-  UpdateWiresCommand(this.oldWires, this.newWires);
-
+class UpdateWiresCommand(final List<WireModel> oldWires, final List<WireModel> newWires)
+    implements CanvasCommand {
   @override
   void execute(CanvasContext controller) {
     _updateWires(controller, newWires);
@@ -246,12 +221,8 @@ class UpdateWiresCommand implements CanvasCommand {
 
 /// Reorders the wire list (paint/z-order among wires) without changing
 /// membership.
-class ReorderWiresCommand implements CanvasCommand {
-  final List<WireModel> oldWires;
-  final List<WireModel> newWires;
-
-  ReorderWiresCommand(this.oldWires, this.newWires);
-
+class ReorderWiresCommand(final List<WireModel> oldWires, final List<WireModel> newWires)
+    implements CanvasCommand {
   @override
   void execute(CanvasContext controller) {
     controller.updateState(wires: newWires);
@@ -264,12 +235,10 @@ class ReorderWiresCommand implements CanvasCommand {
 }
 
 /// Reorders the node list (paint/z-order) without changing membership.
-class ReorderNodesCommand implements CanvasCommand {
-  final List<ComponentInstance> oldNodes;
-  final List<ComponentInstance> newNodes;
-
-  ReorderNodesCommand(this.oldNodes, this.newNodes);
-
+class ReorderNodesCommand(
+  final List<ComponentInstance> oldNodes,
+  final List<ComponentInstance> newNodes,
+) implements CanvasCommand {
   @override
   void execute(CanvasContext controller) {
     controller.updateState(nodes: newNodes);

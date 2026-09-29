@@ -17,9 +17,7 @@ import 'welcome/welcome_recent_section.dart';
 import 'welcome/welcome_start_section.dart';
 import 'welcome/welcome_templates_section.dart';
 
-class WelcomeView extends ConsumerWidget {
-  const WelcomeView({super.key});
-
+class const WelcomeView({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.appColors;

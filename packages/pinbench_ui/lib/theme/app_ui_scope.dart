@@ -13,12 +13,11 @@ import 'forui_theme.dart';
 ///
 /// Must sit inside whatever owns the navigator, so dialogs and toasts pushed
 /// as routes are still below it.
-class AppUiScope extends StatelessWidget {
-  const AppUiScope({super.key, required this.brightness, required this.child});
-
-  final Brightness brightness;
-  final Widget child;
-
+class const AppUiScope({
+  super.key,
+  required final Brightness brightness,
+  required final Widget child,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => FTheme(
     data: fTheme(brightness),

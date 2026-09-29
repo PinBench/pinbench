@@ -14,11 +14,9 @@ import '../models/port_model.dart';
 /// body with toothed gear circles, corner mounting tabs and a bottom cable
 /// notch. Purely visual/wiring for now — no simulation behavior is wired up
 /// (see `PartNames.servoMotor`).
-class ServoMotorPainter extends BaseComponentPainter with PortProvider {
-  final Map<String, dynamic>? properties;
-
-  ServoMotorPainter({this.properties, super.isOutline});
-
+class ServoMotorPainter({final Map<String, dynamic>? properties, super.isOutline})
+    extends BaseComponentPainter
+    with PortProvider {
   // SG90 hobby servo, drawn face-on: a real case is 22.8 × 12.2 × 28.5 mm, and
   // what faces the viewer here is the narrow 12.2 mm side, not the 22.8 mm one.
   // Drawn 12 × 24 against that real 12.2 × 28.5 face — a little under, so the

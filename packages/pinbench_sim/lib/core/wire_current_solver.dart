@@ -27,7 +27,7 @@ import 'circuit_netlist.dart';
 /// spanning tree carries it all and the redundant wire reads zero. Tree edges
 /// are chosen preferring wires, and wires between two different parts are
 /// bridges in practice, so this only shows up on deliberately doubled wiring.
-class WireCurrentSolver {
+class WireCurrentSolver(CircuitNetlist netlist, List<WireModel> wires, {Key? boardKey}) {
   /// Builds the flow graph for one circuit topology. [netlist] must be the
   /// *un-bridged* netlist the SPICE model was built from — a bridged one merges
   /// a resistor's two legs into one vertex, which would hide the resistor from
@@ -35,7 +35,7 @@ class WireCurrentSolver {
   ///
   /// [boardKey] is the Arduino's node key, used to root the ground net where
   /// current physically leaves the circuit.
-  WireCurrentSolver(CircuitNetlist netlist, List<WireModel> wires, {Key? boardKey}) {
+  this {
     _build(netlist, wires, boardKey);
   }
 

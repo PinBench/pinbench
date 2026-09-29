@@ -26,14 +26,10 @@ import 'package:pinbench_sim/config/avr_config.dart';
 import 'package:pinbench_sim/core/simulation_engine.dart';
 import 'package:pinbench_sim/core/simulation_output.dart';
 
-class _CollectingOutput implements SimulationOutput {
-  _CollectingOutput(this.simulationNodes, this.simulationWires);
-
-  @override
-  final List<ComponentInstance> simulationNodes;
-  @override
-  final List<WireModel> simulationWires;
-
+class _CollectingOutput(
+  @override final List<ComponentInstance> simulationNodes,
+  @override final List<WireModel> simulationWires,
+) implements SimulationOutput {
   @override
   void applyNodeUpdates(Map<LocalKey, Map<String, dynamic>> updates) {}
 }

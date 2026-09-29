@@ -15,6 +15,7 @@ import 'package:pinbench/features/workspace/providers/recent_workspaces_provider
 import 'package:pinbench/features/workspace/services/template_service.dart';
 import 'package:pinbench/layout/views/center/welcome_view.dart';
 import 'package:pinbench_ui/strings.dart';
+
 import '../../support/harness.dart';
 
 Widget _app(List<Override> overrides) =>

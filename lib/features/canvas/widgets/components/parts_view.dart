@@ -12,9 +12,7 @@ import 'package:pinbench_ui/ui/app_spinner.dart';
 import 'palette_component.dart';
 import '../../../../core/parts/part_registry_provider.dart';
 
-class PartsSidebarView extends ConsumerStatefulWidget {
-  const PartsSidebarView({super.key});
-
+class const PartsSidebarView({super.key}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<PartsSidebarView> createState() => _PartsSidebarViewState();
 }

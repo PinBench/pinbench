@@ -10,11 +10,7 @@ import '../layout/controllers/app_layout_controller.dart';
 /// workspace, canvas, editor and ai read `appLayoutControllerProvider`
 /// directly — which meant a feature naming the controller that happens to own
 /// panes today, and an allowlist entry each.
-class LayoutChromeCommands implements ChromeCommands {
-  const LayoutChromeCommands(this._ref);
-
-  final Ref _ref;
-
+class const LayoutChromeCommands(final Ref _ref) implements ChromeCommands {
   /// Read per call rather than captured: the controller is keep-alive, but
   /// reading it at the point of use keeps this adapter free of lifecycle of
   /// its own.

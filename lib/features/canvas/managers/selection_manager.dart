@@ -20,9 +20,7 @@ import '../utils/canvas_geometry.dart';
 /// Handles hover detection, click/box selection, and dragging of the selected
 /// nodes on the canvas (including breadboard hole snapping). Reads/writes canvas
 /// state through the [CanvasContext].
-class SelectionManager {
-  final CanvasContext context;
-  SelectionManager(this.context);
+class SelectionManager(final CanvasContext context) {
   Offset _dragAccumulator = Offset.zero;
 
   bool isSelected(Key key) => context.selectedNodes.any((n) => n.key == key);

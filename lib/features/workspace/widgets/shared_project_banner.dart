@@ -21,9 +21,7 @@ import '../providers/workspace_files_provider.dart';
 ///
 /// Renders nothing at all when the workspace is local or linked, so it can sit
 /// unconditionally in the layout.
-class SharedProjectBanner extends ConsumerStatefulWidget {
-  const SharedProjectBanner({super.key});
-
+class const SharedProjectBanner({super.key}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<SharedProjectBanner> createState() => _SharedProjectBannerState();
 }

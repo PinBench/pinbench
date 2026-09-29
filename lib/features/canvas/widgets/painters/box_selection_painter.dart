@@ -2,11 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import 'package:pinbench_ui/theme/theme.dart';
 
-class BoxSelectionPainter extends CustomPainter {
-  final Rect? rect;
-
-  BoxSelectionPainter({required this.rect});
-
+class BoxSelectionPainter({required final Rect? rect}) extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (rect == null) return;

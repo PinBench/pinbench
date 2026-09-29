@@ -11,11 +11,11 @@ import 'analytics_service.dart';
 ///
 /// Obtain via `milestonesProvider` (overridden in `main`).
 class Milestones {
-  const Milestones(this._prefs, this._analytics);
+  const new(this._prefs, this._analytics);
 
   /// A disabled instance (no persistence) — every call is a no-op. Used as the
   /// provider default and in tests.
-  const Milestones.disabled() : _prefs = null, _analytics = const AnalyticsService.disabled();
+  const new disabled() : _prefs = null, _analytics = const AnalyticsService.disabled();
 
   final SharedPreferences? _prefs;
   final AnalyticsService _analytics;

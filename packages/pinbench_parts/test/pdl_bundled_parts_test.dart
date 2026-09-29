@@ -1,5 +1,6 @@
 import 'package:pinbench_pdl/pinbench_pdl.dart';
 import 'package:pinbench_parts/pdl_flutter.dart';
+
 import 'dart:ui' as ui;
 
 import 'package:pinbench_parts/painting/dsl_component_painter.dart';
@@ -133,10 +134,7 @@ void main() {
 }
 
 /// Small helper so the behaviour test reads as one line per part.
-class PdlEvalContextForPart {
-  final PartDefinition part;
-  PdlEvalContextForPart(this.part);
-
+class PdlEvalContextForPart(final PartDefinition part) {
   PdlEvalContext get context =>
       PdlEvalContext.static(state: part.initialState(), properties: part.defaultProperties());
 }

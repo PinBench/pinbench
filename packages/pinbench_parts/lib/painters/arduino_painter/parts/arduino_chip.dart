@@ -5,12 +5,7 @@ import 'package:flutter/widgets.dart';
 import '../../../painting/paint_node.dart';
 import '../../../painting/part_palette.dart';
 
-class ChipNode extends PaintNode {
-  @override
-  final Size size;
-
-  ChipNode({this.size = const Size(100.0, 20.0)});
-
+class ChipNode({@override final Size size = const Size(100.0, 20.0)}) extends PaintNode {
   static const _width = 100.0;
   static const _height = 20.0;
 

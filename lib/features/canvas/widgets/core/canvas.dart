@@ -20,9 +20,7 @@ import '../painters/wire_flow.dart';
 import '../painters/wire_painter.dart';
 import '../../../simulation/providers/simulation_provider.dart';
 
-class Canvas extends ConsumerStatefulWidget {
-  const Canvas({super.key});
-
+class const Canvas({super.key}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<Canvas> createState() => _CanvasState();
 }

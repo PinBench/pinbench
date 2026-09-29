@@ -1,27 +1,25 @@
 import 'package:flutter/foundation.dart';
 
 /// How much a [SimLogRecord] matters.
-enum SimLogLevel { trace, debug, info, warning, error }
+enum SimLogLevel() {
+  trace,
+  debug,
+  info,
+  warning,
+  error,
+}
 
 /// One diagnostic from the simulation.
 @immutable
-class SimLogRecord {
-  final SimLogLevel level;
+class const SimLogRecord({
+  required final SimLogLevel level,
 
   /// Dotted source, e.g. `app.simulation.spice`.
-  final String category;
-  final String message;
-  final Object? error;
-  final StackTrace? stackTrace;
-
-  const SimLogRecord({
-    required this.level,
-    required this.category,
-    required this.message,
-    this.error,
-    this.stackTrace,
-  });
-
+  required final String category,
+  required final String message,
+  final Object? error,
+  final StackTrace? stackTrace,
+}) {
   @override
   String toString() => '[$category] $message${error == null ? '' : ' — $error'}';
 }
@@ -45,11 +43,7 @@ typedef SimLogSink = void Function(SimLogRecord record);
 /// sink installed in `main()` does not exist there. Anything below a warning
 /// is dropped in that case, which is the right trade — a trace nobody can read
 /// is not worth an isolate message.
-class SimLog {
-  const SimLog(this.category);
-
-  final String category;
-
+class const SimLog(final String category) {
   /// Installed once by the host. Null in a background isolate, and in tests.
   static SimLogSink? sink;
 

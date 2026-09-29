@@ -4,9 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Stands in for the gateway a hosted edition registers.
-final class _Paid implements ProGateway {
-  const _Paid();
-
+final class const _Paid() implements ProGateway {
   @override
   ProTier get tier => ProTier.pro;
 

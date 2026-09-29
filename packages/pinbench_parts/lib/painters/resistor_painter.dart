@@ -12,11 +12,9 @@ import '../models/port_model.dart';
 
 /// Draws a resistor, with colour bands derived from its `Resistance` value
 /// (see `ResistorCalculator`). Provides `left`/`right` ports.
-class ResistorPainter extends BaseComponentPainter with PortProvider, PaintTreeComponent {
-  final Map<String, dynamic>? properties;
-
-  ResistorPainter({this.properties, super.isOutline});
-
+class ResistorPainter({final Map<String, dynamic>? properties, super.isOutline})
+    extends BaseComponentPainter
+    with PortProvider, PaintTreeComponent {
   String get resistanceString => (properties?[ComponentProps.resistance] ?? '220').toString();
   double get resistance => ResistorCalculator.parseResistanceValue(resistanceString) ?? 220.0;
 
@@ -104,11 +102,8 @@ class ResistorPainter extends BaseComponentPainter with PortProvider, PaintTreeC
       oldDelegate.bandCount != bandCount;
 }
 
-class _ResistorBodyNode extends PaintNode {
-  final ResistorPainter painter;
+class _ResistorBodyNode(final ResistorPainter painter) extends PaintNode {
   final _paint = Paint();
-
-  _ResistorBodyNode(this.painter);
 
   @override
   Size get size => const Size(ResistorPainter.width, ResistorPainter.height);

@@ -7,22 +7,14 @@ import '../theme/tokens.dart';
 import '../ui/app_text_field.dart';
 import '../theme/app_icons.dart';
 
-class ScrubbableNumberField extends StatefulWidget {
-  final String label;
-  final double value;
-  final ValueChanged<double> onChanged;
-  final VoidCallback? onReset;
-  final double? defaultValue;
-
-  const ScrubbableNumberField({
-    super.key,
-    required this.label,
-    required this.value,
-    required this.onChanged,
-    this.onReset,
-    this.defaultValue,
-  });
-
+class const ScrubbableNumberField({
+  super.key,
+  required final String label,
+  required final double value,
+  required final ValueChanged<double> onChanged,
+  final VoidCallback? onReset,
+  final double? defaultValue,
+}) extends StatefulWidget {
   @override
   State<ScrubbableNumberField> createState() => _ScrubbableNumberFieldState();
 }

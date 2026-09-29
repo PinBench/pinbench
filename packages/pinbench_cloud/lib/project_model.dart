@@ -7,7 +7,7 @@ import 'project_repository.dart' show ProjectRepository;
 ///   if not (or no longer) present in `collaborators`.
 /// - [editor]: can read/write files, cannot manage collaborators or delete.
 /// - [viewer]: read-only access to files.
-enum ProjectRole {
+enum ProjectRole() {
   owner,
   editor,
   viewer;
@@ -26,7 +26,7 @@ enum ProjectRole {
 /// > unlisted and [public] grant exactly the same read access. The difference
 /// > is discoverability in the app, not protection. Never put anything
 /// > sensitive in a project that is not [private].
-enum ProjectVisibility {
+enum ProjectVisibility() {
   /// Owner and collaborators only. The default, and the only setting that
   /// actually restricts reads.
   private,
@@ -53,20 +53,16 @@ enum ProjectVisibility {
 ///
 /// Holds the project's metadata and access lists; its source content is a set
 /// of [ProjectFile]s, fetched separately.
-class Project {
-  final String id;
-  final String name;
-  final String ownerId;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-
-  /// Who may read this project. See [ProjectVisibility] — in particular, that
-  /// `unlisted` is about discoverability, not security.
-  final ProjectVisibility visibility;
+class const Project({
+  required final String id,
+  required final String name,
+  required final String ownerId,
+  required final DateTime createdAt,
+  required final DateTime updatedAt,
 
   /// uid -> role. Does not need to (but may) include the owner; the owner is
   /// always treated as having [ProjectRole.owner] regardless of this map.
-  final Map<String, ProjectRole> collaborators;
+  final Map<String, ProjectRole> collaborators = const {},
 
   /// Lowercased email -> role, for people invited who have not opened the
   /// project yet.
@@ -82,7 +78,7 @@ class Project {
   /// > ⚠️ Readable by anyone who can read the project, so a link-shared
   /// > project exposes the addresses of everyone invited to it. Keep that in
   /// > mind before inviting people to something public.
-  final Map<String, ProjectRole> pendingInvites;
+  final Map<String, ProjectRole> pendingInvites = const {},
 
   /// uid -> the email that uid claimed their invite with.
   ///
@@ -94,8 +90,12 @@ class Project {
   /// an opaque id.
   ///
   /// Absent for anyone added before this existed; the UI falls back to the uid.
-  final Map<String, String> collaboratorEmails;
+  final Map<String, String> collaboratorEmails = const {},
 
+  /// Who may read this project. See [ProjectVisibility] — in particular, that
+  /// `unlisted` is about discoverability, not security.
+  final ProjectVisibility visibility = ProjectVisibility.private,
+}) {
   /// A human label for [uid]: their email if known, otherwise the raw uid.
   String labelFor(String uid) => collaboratorEmails[uid] ?? uid;
 
@@ -104,18 +104,6 @@ class Project {
   /// theory, but no mainstream provider treats them that way, and a user typing
   /// `Bob@x.com` must match an invite stored as `bob@x.com`.
   ProjectRole? inviteFor(String email) => pendingInvites[email.trim().toLowerCase()];
-
-  const Project({
-    required this.id,
-    required this.name,
-    required this.ownerId,
-    required this.createdAt,
-    required this.updatedAt,
-    this.collaborators = const {},
-    this.pendingInvites = const {},
-    this.collaboratorEmails = const {},
-    this.visibility = ProjectVisibility.private,
-  });
 
   /// All uids with access to this project, owner included, deduplicated.
   Set<String> get memberUids => {ownerId, ...collaborators.keys};
@@ -157,21 +145,13 @@ class Project {
 /// the same time will have one write clobber the other; real-time sync here
 /// means "everyone sees the latest write quickly", not "conflict-free
 /// concurrent editing".
-class ProjectFile {
-  final String id;
-  final String path;
-  final String content;
-  final DateTime updatedAt;
-  final String updatedBy;
-
-  const ProjectFile({
-    required this.id,
-    required this.path,
-    required this.content,
-    required this.updatedAt,
-    required this.updatedBy,
-  });
-}
+class const ProjectFile({
+  required final String id,
+  required final String path,
+  required final String content,
+  required final DateTime updatedAt,
+  required final String updatedBy,
+});
 
 /// Lightweight pointer used to build the "recent projects" list without
 /// fetching each full [Project] document.
@@ -182,10 +162,8 @@ class ProjectFile {
 /// render without an extra read per entry. It may go stale if the project is
 /// later renamed — feature code that needs the live name should read the
 /// [Project] document itself.
-class RecentProject {
-  final String id;
-  final String name;
-  final DateTime lastOpenedAt;
-
-  const RecentProject({required this.id, required this.name, required this.lastOpenedAt});
-}
+class const RecentProject({
+  required final String id,
+  required final String name,
+  required final DateTime lastOpenedAt,
+});

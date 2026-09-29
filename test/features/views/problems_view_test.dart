@@ -6,6 +6,7 @@ import 'package:patrol_finders/patrol_finders.dart';
 
 import 'package:pinbench/features/workspace/providers/problems_provider.dart';
 import 'package:pinbench/layout/views/bottom/problems_view.dart';
+
 import '../../support/harness.dart';
 
 class _FakeProblems extends Problems {

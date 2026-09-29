@@ -17,28 +17,19 @@ Future<T?> showAppDialog<T>(BuildContext context, {required WidgetBuilder builde
 /// forui's dialog is a surface and a set of text styles — the arrangement is
 /// the caller's. Owning it once here keeps every dialog identical instead of
 /// each one composing its own column.
-class AppDialog extends StatelessWidget {
-  const AppDialog({
-    super.key,
-    required this.title,
-    this.message,
-    this.child,
-    this.actions = const [],
-    this.actionsAxis = Axis.horizontal,
-  });
-
-  final String title;
-  final String? message;
+class const AppDialog({
+  super.key,
+  required final String title,
+  final String? message,
 
   /// Content between the message and the actions — a text field, a list.
-  final Widget? child;
-
-  final List<Widget> actions;
+  final Widget? child,
+  final List<Widget> actions = const [],
 
   /// Stack the actions instead of putting them in a row. Use it when there are
   /// more than two, or when the labels are long enough to overflow a row.
-  final Axis actionsAxis;
-
+  final Axis actionsAxis = Axis.horizontal,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => FDialog(
     builder: (context, style) => Padding(

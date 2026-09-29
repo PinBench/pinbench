@@ -39,12 +39,8 @@ import 'package:pinbench_parts/models/port_model.dart';
 /// production behaviour that makes any node reference the engine cached at
 /// start-time go stale — the exact condition behind the "LED misbehaves on
 /// re-run" bug. A fake that mutated in place would mask the regression.
-class _CapturingOutput implements SimulationOutput {
-  _CapturingOutput(this._nodes, this._wires);
-
-  final List<ComponentInstance> _nodes;
-  final List<WireModel> _wires;
-
+class _CapturingOutput(final List<ComponentInstance> _nodes, final List<WireModel> _wires)
+    implements SimulationOutput {
   @override
   List<ComponentInstance> get simulationNodes => _nodes;
 
@@ -127,9 +123,8 @@ Future<int> _litPixelCount({required bool isOn}) async {
 
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder)..translate(pad, pad);
-  LEDPainter(
-    properties: {'isOn': isOn, 'Color': 'Red'},
-  ).paint(canvas, const Size(LEDPainter.width, LEDPainter.height));
+  LEDPainter(properties: {'isOn': isOn, 'Color': 'Red'})
+      .paint(canvas, const Size(LEDPainter.width, LEDPainter.height));
 
   final image = await recorder.endRecording().toImage(w, h);
   final bytes = (await image.toByteData())!.buffer.asUint8List();

@@ -6,7 +6,7 @@ import '../theme/forui_theme.dart';
 import '../theme/tokens.dart';
 
 /// How prominent a key cap should be.
-enum AppKbdVariant {
+enum AppKbdVariant() {
   /// Small, filled with the accent wash. For key hints riding inside another
   /// control's chrome — most often an icon button's tooltip.
   dense,
@@ -26,12 +26,11 @@ const _capFloorWidth = 24 - 2 * AppSpacing.sm;
 /// Before this existed the app drew key caps three different ways — two
 /// paddings, two fills, and one pair whose text sat at 1.85:1 on its own
 /// background. Route every new key hint through here.
-class AppKbd extends StatelessWidget {
-  const AppKbd(this.label, {super.key, this.variant = AppKbdVariant.normal});
-
-  final String label;
-  final AppKbdVariant variant;
-
+class const AppKbd(
+  final String label, {
+  super.key,
+  final AppKbdVariant variant = AppKbdVariant.normal,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.theme.colors;
@@ -73,20 +72,13 @@ class AppKbd extends StatelessWidget {
 ///
 /// [spaceBetween] pushes the caps to the trailing edge, which is what a
 /// fixed-width cheat-sheet column wants; the default hugs the label.
-class AppShortcutHint extends StatelessWidget {
-  const AppShortcutHint({
-    super.key,
-    required this.label,
-    required this.keys,
-    this.variant = AppKbdVariant.normal,
-    this.spaceBetween = false,
-  });
-
-  final String label;
-  final List<String> keys;
-  final AppKbdVariant variant;
-  final bool spaceBetween;
-
+class const AppShortcutHint({
+  super.key,
+  required final String label,
+  required final List<String> keys,
+  final AppKbdVariant variant = AppKbdVariant.normal,
+  final bool spaceBetween = false,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
     mainAxisSize: spaceBetween ? MainAxisSize.max : MainAxisSize.min,

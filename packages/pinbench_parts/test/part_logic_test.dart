@@ -599,9 +599,7 @@ void main() {
 
 /// No analog model — the parts under test here are driven by pins and
 /// properties.
-class _FakeSpice implements PartSpiceApi {
-  const _FakeSpice({this.amps = 0});
-  final double amps;
+class const _FakeSpice({final double amps = 0}) implements PartSpiceApi {
   @override
   bool get isActive => amps != 0;
   @override
@@ -609,24 +607,16 @@ class _FakeSpice implements PartSpiceApi {
 }
 
 /// A board wired to one pin, reporting one pulse width.
-class _ScriptedPins implements PartPinApi {
-  _ScriptedPins({
-    this.signalPin,
-    this.anodePin,
-    this.cathodePin,
-    this.plusPin,
-    this.pulse = 0,
-    this.dutyValue = 0,
-    this.hertz,
-  });
-  final int? signalPin;
-  final int? anodePin;
-  final int? cathodePin;
-  final int? plusPin;
-  final double? hertz;
+class _ScriptedPins({
+  final int? signalPin,
+  final int? anodePin,
+  final int? cathodePin,
+  final int? plusPin,
+  final double pulse = 0,
+  final double dutyValue = 0,
+  final double? hertz,
+}) implements PartPinApi {
   int? frequencyAsked;
-  final double pulse;
-  final double dutyValue;
   final measured = <int>{};
 
   @override
@@ -659,8 +649,7 @@ class _ScriptedPins implements PartPinApi {
 
 /// A board that reports nothing — the one-shot under test is driven by a
 /// property, not by the emulator.
-class _FakePins implements PartPinApi {
-  const _FakePins();
+class const _FakePins() implements PartPinApi {
   @override
   double? frequencyOn(int pin) => null;
   @override
@@ -676,11 +665,7 @@ class _FakePins implements PartPinApi {
 }
 
 /// A board whose ports are wired however the test says.
-class _FakeBoardPorts implements PartPinApi {
-  const _FakeBoardPorts(this.wiring);
-
-  final Map<String, String> wiring;
-
+class const _FakeBoardPorts(final Map<String, String> wiring) implements PartPinApi {
   @override
   String? boardPortFor(String portId) => wiring[portId];
   @override
@@ -696,10 +681,7 @@ class _FakeBoardPorts implements PartPinApi {
 }
 
 /// A bus that hands over a fixed batch of transactions and records who asked.
-class _FakeBus implements PartI2cApi {
-  _FakeBus(this.traffic);
-
-  final Map<int, List<List<int>>> traffic;
+class _FakeBus(final Map<int, List<List<int>>> traffic) implements PartI2cApi {
   final drained = <int>[];
 
   @override

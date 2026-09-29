@@ -114,13 +114,7 @@ Future<void> loadLucide() async {
 }
 
 /// A rasterised widget, as "is this pixel inked" queries.
-class InkImage {
-  InkImage(this.width, this.height, this._rgba);
-
-  final int width;
-  final int height;
-  final Uint8List _rgba;
-
+class InkImage(final int width, final int height, final Uint8List _rgba) {
   /// Alpha, not colour: the spinner paints in the theme's primary onto a
   /// transparent boundary, and that colour has no red in it at all.
   bool lit(int x, int y) => _rgba[(y * width + x) * 4 + 3] > 60;

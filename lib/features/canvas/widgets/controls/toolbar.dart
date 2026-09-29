@@ -10,9 +10,7 @@ import '../../providers/canvas_controller_provider.dart';
 import 'canvas_tool_group_divider.dart';
 import 'wire_color_select.dart';
 
-class CanvasToolbar extends ConsumerWidget {
-  const CanvasToolbar({super.key});
-
+class const CanvasToolbar({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.watch(canvasControllerProvider.notifier);

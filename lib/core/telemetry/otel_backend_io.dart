@@ -41,12 +41,7 @@ Future<TracingService> initOpenTelemetry(OtelConfig config) async {
   }
 }
 
-class _OtelTracingService implements TracingService {
-  _OtelTracingService(this._tracer, this._meter);
-
-  final Tracer _tracer;
-  final Meter _meter;
-
+class _OtelTracingService(final Tracer _tracer, final Meter _meter) implements TracingService {
   // Instruments are created lazily and reused (OTel expects one per name).
   // `createCounter`/`createGauge` are statically typed as the (non-exported)
   // API interfaces but return the concrete SDK instruments, so we cast.

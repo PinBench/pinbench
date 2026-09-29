@@ -12,30 +12,23 @@ import 'package:forui/forui.dart';
 /// forui models a slider as a *span* with a `min` and a `max` offset, since the
 /// same widget does range selection. A single-thumb slider is that span pinned
 /// at zero, which is why the value goes in and comes out as [FSliderValue.max].
-class AppSlider extends StatelessWidget {
-  const AppSlider({
-    super.key,
-    required this.value,
-    required this.onChanged,
-    this.onChangeEnd,
-    this.enabled = true,
-  });
+class const AppSlider({
+  super.key,
 
   /// Where the thumb sits, 0 to 1.
-  final double value;
+  required final double value,
 
   /// Fires continuously while dragging.
-  final ValueChanged<double> onChanged;
+  required final ValueChanged<double> onChanged,
 
   /// Fires once the drag ends.
   ///
   /// Separate from [onChanged] because the caller records undo history and
   /// re-solves the circuit here, and doing that per frame of a drag would
   /// bury the undo stack.
-  final ValueChanged<double>? onChangeEnd;
-
-  final bool enabled;
-
+  final ValueChanged<double>? onChangeEnd,
+  final bool enabled = true,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => FSlider(
     enabled: enabled,

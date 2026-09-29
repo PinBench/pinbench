@@ -22,7 +22,7 @@ import '../theme/tokens.dart';
 /// every select here is a view of something the app already owns, and one that
 /// remembered its own answer would drift from it.
 class AppSelect<T> extends StatelessWidget {
-  const AppSelect({
+  const new({
     super.key,
     required this.options,
     required this.value,
@@ -54,12 +54,12 @@ class AppSelect<T> extends StatelessWidget {
   /// label: the underlying widget renders the chosen entry as text and cannot
   /// reuse the item widget for it. [prefix] fills that gap, letting the caller
   /// put the current selection's own mark inside the closed control.
-  const AppSelect.rich({
+  const new rich({
     super.key,
     required this.options,
     required this.value,
     required this.onChanged,
-    required Widget Function(String label, T value) itemBuilder,
+    required Widget Function(String label, T value) this._itemBuilder,
     this.enabled = true,
     this.placeholder,
     this.prefix,
@@ -68,7 +68,7 @@ class AppSelect<T> extends StatelessWidget {
     this.bordered = true,
     this.menuWidth,
     this.height,
-  }) : _itemBuilder = itemBuilder;
+  });
 
   final Widget Function(String label, T value)? _itemBuilder;
 
@@ -268,11 +268,7 @@ class AppSelect<T> extends StatelessWidget {
 /// A `MouseRegion` rather than an `FTappable`: the child is already the thing
 /// that handles the press, and wrapping a control in a second gesture layer
 /// would take the taps it needs. This only watches.
-class _HoverWash extends StatefulWidget {
-  const _HoverWash({required this.child});
-
-  final Widget child;
-
+class const _HoverWash({required final Widget child}) extends StatefulWidget {
   @override
   State<_HoverWash> createState() => _HoverWashState();
 }

@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:pinbench/core/utils/shared_preferences_provider.dart';
+
 import '../../../support/harness.dart';
 
 /// The banner sits unconditionally in the app layout, so "renders nothing" is its

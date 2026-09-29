@@ -29,7 +29,19 @@ const colorsList = [
   AppPalette.white,
 ];
 
-class ColorSelect extends StatelessWidget {
+class const ColorSelect({
+  super.key,
+  required final String value,
+  required final ValueChanged<String?> onChanged,
+  final Map<String, Color?>? customColorsMap,
+  final bool openUpwards = false,
+  final bool excludeAuto = false,
+  final double? maxHeight = 250.0,
+
+  /// Width of the open list, or null to take the closed control's width — which
+  /// is too narrow wherever this sits in a toolbar. Defaults to [_menuWidth].
+  final double? menuWidth = _menuWidth,
+}) extends StatelessWidget {
   static final Map<String, Color?> colorsMap = {
     'Auto': null,
     'Red': colorsList[0],
@@ -61,28 +73,6 @@ class ColorSelect extends StatelessWidget {
   /// not one: it sits in a toolbar and in the properties panel's rows, beside
   /// controls of this height.
   static const _controlHeight = 28.0;
-
-  final String value;
-  final ValueChanged<String?> onChanged;
-  final bool openUpwards;
-  final bool excludeAuto;
-  final double? maxHeight;
-  final Map<String, Color?>? customColorsMap;
-
-  /// Width of the open list, or null to take the closed control's width — which
-  /// is too narrow wherever this sits in a toolbar. Defaults to [_menuWidth].
-  final double? menuWidth;
-
-  const ColorSelect({
-    super.key,
-    required this.value,
-    required this.onChanged,
-    this.customColorsMap,
-    this.openUpwards = false,
-    this.excludeAuto = false,
-    this.maxHeight = 250.0,
-    this.menuWidth = _menuWidth,
-  });
 
   @override
   Widget build(BuildContext context) {

@@ -5,7 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Named for where they sit rather than what is in them, because what is in
 /// them is the chrome's business: the left slot holds the explorer today and
 /// the activity bar decides that, not the feature asking for it.
-enum AppPane { left, bottom, right }
+enum AppPane() {
+  left,
+  bottom,
+  right,
+}
 
 /// The ids the chrome addresses its tabs by.
 ///

@@ -8,9 +8,7 @@ import '../../providers/layout_provider.dart';
 import 'activity_bar_button.dart';
 import 'activity_target.dart';
 
-class ActivityBar extends ConsumerWidget {
-  const ActivityBar({super.key});
-
+class const ActivityBar({super.key}) extends ConsumerWidget {
   bool _isCanvasShowing(PlatSnapshot? node) {
     if (node == null) return false;
     if (node is LeafSnapshot && node.data == 'canvas_view') return true;

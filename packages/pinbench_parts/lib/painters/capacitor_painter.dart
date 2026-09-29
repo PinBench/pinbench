@@ -15,11 +15,9 @@ import '../models/port_model.dart';
 import '../painting/part_palette.dart';
 
 /// Draws a capacitor labelled with its `Capacitance` value.
-class CapacitorPainter extends BaseComponentPainter with PortProvider, PaintTreeComponent {
-  final Map<String, dynamic>? properties;
-
-  CapacitorPainter({this.properties, super.isOutline});
-
+class CapacitorPainter({final Map<String, dynamic>? properties, super.isOutline})
+    extends BaseComponentPainter
+    with PortProvider, PaintTreeComponent {
   String get capacitanceString => (properties?[ComponentProps.capacitance] ?? '100nF').toString();
 
   static const double gridCellSize = GridSystem.cellSize;
@@ -76,11 +74,8 @@ class CapacitorPainter extends BaseComponentPainter with PortProvider, PaintTree
       oldDelegate.capacitanceString != capacitanceString;
 }
 
-class _CapacitorBodyNode extends PaintNode {
-  final CapacitorPainter painter;
+class _CapacitorBodyNode(final CapacitorPainter painter) extends PaintNode {
   final _paint = Paint();
-
-  _CapacitorBodyNode(this.painter);
 
   @override
   Size get size => const Size(CapacitorPainter.width, CapacitorPainter.height);

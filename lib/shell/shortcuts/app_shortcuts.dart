@@ -21,11 +21,8 @@ import '../../layout/controllers/app_layout_controller.dart';
 import '../menus/shared_menu_actions.dart';
 import '../../core/chrome/active_circuit_file.dart';
 
-class _GlobalAction<T extends Intent> extends Action<T> {
-  final void Function(T intent) onInvoke;
-
-  _GlobalAction({required this.onInvoke});
-
+class _GlobalAction<T extends Intent>({required final void Function(T intent) onInvoke})
+    extends Action<T> {
   @override
   void invoke(T intent) => onInvoke(intent);
 }
@@ -46,11 +43,7 @@ Future<void> _leaveHome(BuildContext context, WidgetRef ref) async {
 /// These fire wherever focus happens to be — see [_AppShortcutsState] for what
 /// that takes. Canvas-scoped shortcuts (undo, zoom, rotate, …) live in
 /// `CanvasShortcuts`.
-class AppShortcuts extends ConsumerStatefulWidget {
-  final Widget child;
-
-  const AppShortcuts({super.key, required this.child});
-
+class const AppShortcuts({super.key, required final Widget child}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<AppShortcuts> createState() => _AppShortcutsState();
 }

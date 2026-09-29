@@ -19,17 +19,17 @@ import 'circuit_netlist.dart';
 ///
 /// ngspice is a process-global singleton, so a fresh [SpiceEngine] per run
 /// re-loads the circuit rather than re-initializing the library.
-class SpiceEngine {
-  SpiceEngine({this.onLog}) {
+class SpiceEngine({
+  /// Sink for user-facing SPICE diagnostics (the netlist and errors that
+  /// matter), surfaced in the SPICE Logs pane. Per-frame noise is kept out.
+  final void Function(String)? onLog,
+}) {
+  this {
     if (!_ngspiceInitialized) {
       _ngspice.init();
       _ngspiceInitialized = true;
     }
   }
-
-  /// Sink for user-facing SPICE diagnostics (the netlist and errors that
-  /// matter), surfaced in the SPICE Logs pane. Per-frame noise is kept out.
-  final void Function(String)? onLog;
 
   static const _log = SimLog('app.simulation.spice');
   static final _sanitize = RegExp('[^a-zA-Z0-9]');
@@ -474,7 +474,7 @@ class SpiceEngine {
 /// current flowing [a] → [b] *through* the element. A null terminal is ground,
 /// which is not a port and so is never injected into the graph.
 class _ElementBranch {
-  const _ElementBranch.ohmic({
+  const new ohmic({
     required this.a,
     required this.b,
     required this.nodeA,
@@ -485,7 +485,7 @@ class _ElementBranch {
        scale = 1,
        isMeasured = false;
 
-  const _ElementBranch.measured({
+  const new measured({
     required this.a,
     required this.b,
     required String this.vector,

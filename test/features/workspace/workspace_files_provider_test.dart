@@ -10,6 +10,7 @@ import 'package:pinbench/features/workspace/providers/workspace_files_provider.d
 import 'package:pinbench/features/workspace/providers/editor_state_provider.dart';
 
 import '../../support/chrome_commands.dart';
+
 import 'package:pinbench/app/canvas_sync_bindings.dart';
 
 /// Characterization tests for [WorkspaceFiles] (see

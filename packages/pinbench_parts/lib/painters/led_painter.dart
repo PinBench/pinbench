@@ -11,11 +11,9 @@ import '../painting/part_palette.dart';
 
 /// Draws an LED, lit by `isOn` and dimmed by `brightness` (PWM duty), in the
 /// `Color` chosen in the property panel. Provides `anode`/`cathode` ports.
-class LEDPainter extends BaseComponentPainter with PortProvider, PaintTreeComponent {
-  final Map<String, dynamic>? properties;
-
-  LEDPainter({this.properties, super.isOutline});
-
+class LEDPainter({final Map<String, dynamic>? properties, super.isOutline})
+    extends BaseComponentPainter
+    with PortProvider, PaintTreeComponent {
   bool get isOn {
     final value = properties?[ComponentProps.isOn];
     if (value is bool) return value;
@@ -131,11 +129,8 @@ class LEDPainter extends BaseComponentPainter with PortProvider, PaintTreeCompon
   bool? hitTest(Offset position) => true; // Accept clicks anywhere within the component bounds
 }
 
-class _LEDBodyNode extends PaintNode {
-  final LEDPainter painter;
+class _LEDBodyNode(final LEDPainter painter) extends PaintNode {
   final _paint = Paint();
-
-  _LEDBodyNode(this.painter);
 
   @override
   Size get size => const Size(LEDPainter.width, LEDPainter.bodyHeight);

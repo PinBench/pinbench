@@ -4,7 +4,12 @@ import '../theme/tokens.dart';
 import '../theme/app_colors.dart';
 
 /// How much room an empty state has to fill.
-enum AppEmptyStateSize {
+enum AppEmptyStateSize(
+  final double iconSize,
+
+  /// Space between the icon and the title.
+  final double gap,
+) {
   /// Inside a sidebar or a narrow panel.
   compact(40, AppSpacing.lg),
 
@@ -12,14 +17,7 @@ enum AppEmptyStateSize {
   normal(56, AppSpacing.xl),
 
   /// A whole editor area or the workspace backdrop.
-  hero(96, AppSpacing.xxl);
-
-  const AppEmptyStateSize(this.iconSize, this.gap);
-
-  final double iconSize;
-
-  /// Space between the icon and the title.
-  final double gap;
+  hero(96, AppSpacing.xxl),
 }
 
 /// The "nothing here yet" placeholder: an icon, a heading, an optional line of
@@ -30,33 +28,24 @@ enum AppEmptyStateSize {
 /// `mutedForeground` or `foreground`. The icon is intentionally drawn in
 /// `mutedForeground` at reduced opacity: it should establish the shape of the
 /// empty area without competing with the text that tells you what to do.
-class AppEmptyState extends StatelessWidget {
-  const AppEmptyState({
-    super.key,
-    required this.icon,
-    this.title,
-    this.message,
-    this.size = AppEmptyStateSize.normal,
-    this.iconColor,
-    this.children = const [],
-  });
-
-  final IconData icon;
+class const AppEmptyState({
+  super.key,
+  required final IconData icon,
 
   /// Omit when the state needs only a single explanatory line — pass that as
   /// [message] so it renders as secondary text rather than as a heading.
-  final String? title;
-  final String? message;
-  final AppEmptyStateSize size;
+  final String? title,
+  final String? message,
+  final AppEmptyStateSize size = AppEmptyStateSize.normal,
 
   /// Overrides the muted glyph — pass `colorScheme.primary` only when the
   /// empty state is an invitation rather than a report of absence.
-  final Color? iconColor;
+  final Color? iconColor,
 
   /// Extra content below the message, e.g. an action button or a key cheat
   /// sheet. Laid out in a column, [AppSpacing.xl] apart.
-  final List<Widget> children;
-
+  final List<Widget> children = const [],
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Center(
     child: Padding(

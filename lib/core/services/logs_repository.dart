@@ -1,6 +1,10 @@
 import 'package:flutter/foundation.dart';
 
-enum LogChannel { debug, serial, spice }
+enum LogChannel() {
+  debug,
+  serial,
+  spice,
+}
 
 class LogsRepository {
   final Map<LogChannel, List<String>> _logs = {

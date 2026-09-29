@@ -17,21 +17,21 @@ import 'telemetry_context.dart';
 /// If the endpoint is empty (no dart-define), OpenTelemetry stays disabled and
 /// the app uses the no-op tracing backend — same "dormant until configured"
 /// behaviour as Firebase's placeholder options.
-class OtelConfig {
-  const OtelConfig({
-    required this.endpoint,
-    required this.headers,
-    required this.serviceName,
-    required this.serviceVersion,
-    required this.platform,
-  });
+class const OtelConfig({
+  /// OTLP HTTP endpoint (e.g. Grafana Cloud `.../otlp`).
+  required final String endpoint,
 
+  /// Exporter headers (typically `Authorization`).
+  required final Map<String, String> headers,
+  required final String serviceName,
+  required final String serviceVersion,
+
+  /// Coarse run-platform label, recorded as a resource attribute.
+  required final String platform,
+}) {
   /// Builds config from `--dart-define` values. [platform] is a coarse label
   /// (e.g. `macos`, `windows`) recorded as a resource attribute.
-  factory OtelConfig.fromEnvironment({
-    required String platform,
-    String serviceVersion = appVersion,
-  }) {
+  factory fromEnvironment({required String platform, String serviceVersion = appVersion}) {
     const endpoint = String.fromEnvironment('OTEL_EXPORTER_OTLP_ENDPOINT');
     const rawHeaders = String.fromEnvironment('OTEL_EXPORTER_OTLP_HEADERS');
     const serviceName = String.fromEnvironment('OTEL_SERVICE_NAME', defaultValue: 'pinbench');
@@ -43,18 +43,6 @@ class OtelConfig {
       platform: platform,
     );
   }
-
-  /// OTLP HTTP endpoint (e.g. Grafana Cloud `.../otlp`).
-  final String endpoint;
-
-  /// Exporter headers (typically `Authorization`).
-  final Map<String, String> headers;
-
-  final String serviceName;
-  final String serviceVersion;
-
-  /// Coarse run-platform label, recorded as a resource attribute.
-  final String platform;
 
   /// Whether an endpoint was supplied; if false, telemetry stays disabled.
   bool get isConfigured => endpoint.isNotEmpty;

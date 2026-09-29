@@ -7,6 +7,7 @@ import 'package:pinbench/features/canvas/providers/canvas_controller_provider.da
 import 'package:pinbench/features/canvas/widgets/components/component_widget.dart';
 import 'package:pinbench/features/canvas/widgets/components/palette_component.dart';
 import 'package:pinbench_parts/models/part_model.dart';
+
 import '../../support/harness.dart';
 
 /// Regression test: the drag ghost's scale must be read when the drag STARTS,

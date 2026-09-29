@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
 
 /// How much weight a button carries.
-enum AppButtonVariant {
+enum AppButtonVariant() {
   /// The one action a surface most wants you to take. At most one per view.
   primary,
 
@@ -20,7 +20,12 @@ enum AppButtonVariant {
   destructive,
 }
 
-enum AppButtonSize { xs, sm, md, lg }
+enum AppButtonSize() {
+  xs,
+  sm,
+  md,
+  lg,
+}
 
 /// A labelled button.
 ///
@@ -31,36 +36,25 @@ enum AppButtonSize { xs, sm, md, lg }
 /// The API is the app's, not the library's: [onPressed] rather than forui's
 /// `onPress`, and [expands] rather than a `mainAxisSize` whose default flipped
 /// between the two libraries and silently changed how buttons sized themselves.
-class AppButton extends StatelessWidget {
-  const AppButton({
-    super.key,
-    required this.child,
-    this.onPressed,
-    this.variant = AppButtonVariant.primary,
-    this.size = AppButtonSize.md,
-    this.prefix,
-    this.expands = false,
-    this.selected = false,
-  });
-
-  final Widget child;
+class const AppButton({
+  super.key,
+  required final Widget child,
 
   /// Null disables the button.
-  final VoidCallback? onPressed;
-
-  final AppButtonVariant variant;
-  final AppButtonSize size;
+  final VoidCallback? onPressed,
+  final AppButtonVariant variant = AppButtonVariant.primary,
+  final AppButtonSize size = AppButtonSize.md,
 
   /// Icon shown before the label.
-  final Widget? prefix;
+  final Widget? prefix,
 
   /// Fill the available width instead of hugging the label.
-  final bool expands;
+  final bool expands = false,
 
   /// Marks this as the current choice among several — a selected preset, an
   /// active mode. Styling is the theme's business, not the call site's.
-  final bool selected;
-
+  final bool selected = false,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => FButton(
     onPress: onPressed,
@@ -89,12 +83,8 @@ class AppButton extends StatelessWidget {
 /// For rows and links that need hover and tap handling but supply their own
 /// box — an [AppButton] would bring an inset, a fill and intrinsic sizing that
 /// those surfaces immediately override.
-class AppTappable extends StatelessWidget {
-  const AppTappable({super.key, required this.child, this.onPressed});
-
-  final Widget child;
-  final VoidCallback? onPressed;
-
+class const AppTappable({super.key, required final Widget child, final VoidCallback? onPressed})
+    extends StatelessWidget {
   @override
   Widget build(BuildContext context) => FTappable(onPress: onPressed, child: child);
 }

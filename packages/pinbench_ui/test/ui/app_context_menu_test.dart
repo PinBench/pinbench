@@ -135,9 +135,7 @@ void main() {
 
 /// Counts how many times it has been mounted, so a test can tell a rebuild
 /// from a remount.
-class _MountCounter extends StatefulWidget {
-  const _MountCounter();
-
+class const _MountCounter() extends StatefulWidget {
   static var mounts = 0;
 
   @override

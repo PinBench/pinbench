@@ -2,12 +2,8 @@ import 'package:flutter/widgets.dart';
 
 import '../../../painting/paint_node.dart';
 
-class BoardBackgroundNode extends PaintNode {
-  @override
-  final Size size;
-
-  BoardBackgroundNode({this.size = const Size(250.0, 200.0)});
-
+class BoardBackgroundNode({@override final Size size = const Size(250.0, 200.0)})
+    extends PaintNode {
   @override
   void paint(Canvas canvas, Offset offset) {
     final paint = Paint();

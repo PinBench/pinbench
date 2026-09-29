@@ -11,11 +11,7 @@ import 'package:flutter/widgets.dart';
 ///
 /// [barrierColor] and [maintainState] keep the defaults a `PageRoute` wants;
 /// [opaque] is what makes this a page rather than an overlay.
-class AppPageRoute<T> extends PageRoute<T> {
-  AppPageRoute({required this.builder, super.settings});
-
-  final WidgetBuilder builder;
-
+class AppPageRoute<T>({required final WidgetBuilder builder, super.settings}) extends PageRoute<T> {
   @override
   Color? get barrierColor => null;
 

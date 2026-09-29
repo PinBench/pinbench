@@ -47,10 +47,7 @@ Future<void> showShareProjectDialog(
   required String projectId,
 }) => showAppDialog<void>(context, builder: (context) => _ShareProjectDialog(projectId: projectId));
 
-class _ShareProjectDialog extends ConsumerStatefulWidget {
-  const _ShareProjectDialog({required this.projectId});
-  final String projectId;
-
+class const _ShareProjectDialog({required final String projectId}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<_ShareProjectDialog> createState() => _ShareProjectDialogState();
 }

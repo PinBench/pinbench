@@ -97,9 +97,9 @@ Circuit {
   // Run must not be greeted by a red cross.
   test('anything the static check passes, the solver also passes', () {
     for (final ohms in ['100', '120', '140', '150', '155', '156', '160', '180', '220', '470']) {
-      final source = File(
-        'assets/templates/current_limiting/circuit.cdl',
-      ).readAsStringSync().replaceFirst('resistance: 100;', 'resistance: $ohms;');
+      final source = File('assets/templates/current_limiting/circuit.cdl')
+          .readAsStringSync()
+          .replaceFirst('resistance: 100;', 'resistance: $ohms;');
       final parsed = CircuitParser.applyToCanvas(CircuitParser.parse(source), standardParts);
       final led = parsed.nodes.firstWhere((n) => n.part.name == PartNames.led);
 

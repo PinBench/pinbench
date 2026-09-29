@@ -16,9 +16,10 @@ void main() {
     // unsaved": the element form a template ships in must regenerate
     // byte-for-byte after a parse -> canvas -> generate round-trip, or the
     // editor's saved snapshot won't match and the tab flips dirty on open.
-    final templateFiles = Directory(
-      'assets/templates',
-    ).listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('circuit.cdl'));
+    final templateFiles = Directory('assets/templates')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((f) => f.path.endsWith('circuit.cdl'));
 
     for (final file in templateFiles) {
       test('round-trips unchanged: ${file.path}', () {

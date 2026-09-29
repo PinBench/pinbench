@@ -35,9 +35,7 @@ import '../../../core/chrome/chrome_commands.dart';
 
 const _log = AppLogger('app.layout.sidebar');
 
-class ExplorerSidebarView extends ConsumerStatefulWidget {
-  const ExplorerSidebarView({super.key});
-
+class const ExplorerSidebarView({super.key}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<ExplorerSidebarView> createState() => _ExplorerSidebarViewState();
 }

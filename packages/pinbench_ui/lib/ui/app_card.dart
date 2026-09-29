@@ -16,31 +16,23 @@ import '../theme/tokens.dart';
 ///
 /// Sibling to `AppSurface`, which is the flatter, in-flow version — this one is
 /// for things that float.
-class AppCard extends StatelessWidget {
-  const AppCard({
-    super.key,
-    required this.child,
-    this.title,
-    this.message,
-    this.padding,
-    this.clipContent = false,
-  });
-
-  final Widget child;
+class const AppCard({
+  super.key,
+  required final Widget child,
 
   /// Optional heading above [child].
-  final String? title;
+  final String? title,
 
   /// Optional line of explanation under [title].
-  final String? message;
+  final String? message,
 
   /// Defaults to the card inset from the token scale.
-  final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? padding,
 
   /// Clip [child] to the card's rounded corners. For content that paints to
   /// the edges, like the minimap.
-  final bool clipContent;
-
+  final bool clipContent = false,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => FCard(
     clipBehavior: clipContent ? Clip.antiAlias : Clip.none,

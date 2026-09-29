@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/chrome_commands.dart';
 import '../../support/fake_project_repository.dart';
+
 import 'package:pinbench/app/canvas_sync_bindings.dart';
 
 /// Opening a share link gives a **detached local copy**: editable on disk, but

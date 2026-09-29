@@ -19,11 +19,8 @@ import '../../features/workspace/providers/editor_state_provider.dart';
 import 'chrome_tab.dart';
 import '../../core/chrome/chrome_commands.dart';
 
-class EditorTab extends ConsumerStatefulWidget {
-  final PlatTabDetails tab;
-
-  const EditorTab({super.key, required this.tab});
-
+class const EditorTab({super.key, required final PlatTabDetails tab})
+    extends ConsumerStatefulWidget {
   @override
   ConsumerState<EditorTab> createState() => _EditorTabItemState();
 }

@@ -7,7 +7,11 @@ import '../utils/shared_preferences_provider.dart';
 ///
 /// [unknown] until they are asked, and nothing is collected while it is: the
 /// app asks once (on the welcome screen), and Settings can change the answer.
-enum TelemetryConsent { unknown, granted, denied }
+enum TelemetryConsent() {
+  unknown,
+  granted,
+  denied,
+}
 
 const _prefsKey = 'telemetry.consent';
 
@@ -34,9 +38,7 @@ abstract interface class TelemetryControl {
 }
 
 /// [TelemetryControl] for a build with no telemetry.
-class NoTelemetry implements TelemetryControl {
-  const NoTelemetry();
-
+class const NoTelemetry() implements TelemetryControl {
   @override
   bool get available => false;
 
@@ -69,11 +71,8 @@ class TelemetryConsentController extends Notifier<TelemetryConsent> {
 
 /// Several telemetry backends behind one consent answer: available if any is,
 /// and every one switched together.
-class CombinedTelemetryControl implements TelemetryControl {
-  const CombinedTelemetryControl(this._controls);
-
-  final List<TelemetryControl> _controls;
-
+class const CombinedTelemetryControl(final List<TelemetryControl> _controls)
+    implements TelemetryControl {
   @override
   bool get available => _controls.any((control) => control.available);
 

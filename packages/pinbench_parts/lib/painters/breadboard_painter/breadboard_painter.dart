@@ -14,12 +14,11 @@ import 'parts/breadboard_center_notch_node.dart';
 import 'parts/breadboard_power_rail_node.dart';
 import 'parts/breadboard_terminal_strip_node.dart';
 
-class BreadboardPainter extends BaseComponentPainter implements PortProvider {
-  final BreadboardConfig config;
-  final BreadboardHoverState? hoverState;
-
-  BreadboardPainter({required this.config, this.hoverState, super.isOutline = false});
-
+class BreadboardPainter({
+  required final BreadboardConfig config,
+  final BreadboardHoverState? hoverState,
+  super.isOutline = false,
+}) extends BaseComponentPainter implements PortProvider {
   @override
   List<ComponentPort> getPorts() => []; // Dynamic discovery used instead
 

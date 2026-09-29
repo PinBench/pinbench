@@ -10,11 +10,7 @@ import 'package:pinbench_ui/theme/app_colors.dart';
 import '../../providers/canvas_controller_provider.dart';
 import 'component_widget.dart';
 
-class PaletteComponent extends ConsumerWidget {
-  final PartModel part;
-
-  const PaletteComponent({super.key, required this.part});
-
+class const PaletteComponent({super.key, required final PartModel part}) extends ConsumerWidget {
   /// The tile art, padded so the part's *body* lands in the middle of the tile
   /// rather than its bounding box.
   ///

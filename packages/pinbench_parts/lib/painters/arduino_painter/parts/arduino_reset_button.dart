@@ -4,12 +4,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../../painting/paint_node.dart';
 
-class ResetButtonNode extends PaintNode {
-  @override
-  final Size size;
-
-  ResetButtonNode({this.size = const Size(25.2, 22.5)});
-
+class ResetButtonNode({@override final Size size = const Size(25.2, 22.5)}) extends PaintNode {
   static const _baseButtonSize = 30.0;
   static const _baseTabWidth = 1.8;
   static const _baseTabHeight = 6.6;

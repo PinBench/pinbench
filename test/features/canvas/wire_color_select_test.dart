@@ -6,7 +6,9 @@ import 'package:pinbench/features/canvas/controller/canvas_controller.dart';
 import 'package:pinbench_parts/models/wire_model.dart';
 import 'package:pinbench/features/canvas/widgets/controls/wire_color_select.dart';
 import 'package:pinbench_parts/models/port_model.dart';
+
 import '../../support/harness.dart';
+
 import 'package:pinbench_ui/theme/theme.dart';
 
 /// Regression test: the wire color dropdown must rebuild when the canvas

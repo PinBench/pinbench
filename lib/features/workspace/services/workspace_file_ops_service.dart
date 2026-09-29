@@ -9,11 +9,7 @@ import 'compiler_service.dart';
 /// from `WorkspaceFiles`, which previously inlined this directly in the
 /// Riverpod provider — this is plain Dart (given a [WorkspaceFs]), so it's
 /// unit-testable without a `ProviderContainer`.
-class WorkspaceFileOpsService {
-  WorkspaceFileOpsService(this._fs);
-
-  final WorkspaceFs _fs;
-
+class WorkspaceFileOpsService(final WorkspaceFs _fs) {
   /// Starter content for a new blank `.ino` sketch, also used when a cloud
   /// project with no files yet is opened for the first time.
   static const blankInoTemplate =

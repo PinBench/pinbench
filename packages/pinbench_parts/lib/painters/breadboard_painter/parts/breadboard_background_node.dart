@@ -4,11 +4,8 @@ import '../../../painting/paint_node.dart';
 import '../breadboard_painter.dart';
 import 'breadboard_utils.dart';
 
-class BreadboardBackgroundNode extends PaintNode {
-  final BreadboardPainter painter;
+class BreadboardBackgroundNode(final BreadboardPainter painter) extends PaintNode {
   final _paint = Paint();
-
-  BreadboardBackgroundNode(this.painter);
 
   @override
   Size get size => painter.config.boardSize;

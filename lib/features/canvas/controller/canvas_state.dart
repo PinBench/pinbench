@@ -5,58 +5,34 @@ import 'package:pinbench_parts/models/wire_model.dart';
 import 'package:pinbench_parts/models/port_model.dart';
 
 @immutable
-class CanvasState {
-  final List<ComponentInstance> nodes;
-  final List<WireModel> wires;
-
-  final List<ComponentInstance> selectedNodes;
-  // Wire selection lives on SelectionManager.selectedWireIds, not here — see
-  // CanvasContext.selectedWireIds.
-
-  final Rect? boxSelectionRect;
-  final List<ComponentInstance>? clipboardNodes;
-  final List<WireModel>? clipboardWires;
-
-  final ComponentInstance? hoveredNode;
-  final PortLocation? hoveredPort;
-  final String? hoveredWireId;
-
-  final bool snapToGrid;
-  final bool showGrid;
-
-  final List<double> verticalGuidelines;
-  final List<double> horizontalGuidelines;
-
-  final bool mouseDown;
-  final Offset? dragStartOffset;
+class const CanvasState({
+  final List<ComponentInstance> nodes = const [],
+  final List<WireModel> wires = const [],
+  final List<ComponentInstance> selectedNodes = const [],
+  final Rect? boxSelectionRect,
+  final List<ComponentInstance>? clipboardNodes,
+  final List<WireModel>? clipboardWires,
+  final ComponentInstance? hoveredNode,
+  final PortLocation? hoveredPort,
+  final String? hoveredWireId,
+  final bool snapToGrid = true,
+  final bool showGrid = true,
+  final List<double> verticalGuidelines = const [],
+  final List<double> horizontalGuidelines = const [],
+  final bool mouseDown = false,
 
   /// True while a simulation owns the canvas, which refuses edits.
-  final bool isReadOnly;
+  final bool isReadOnly = false,
+  final Offset? dragStartOffset,
+}) {
+  // Wire selection lives on SelectionManager.selectedWireIds, not here — see
+  // CanvasContext.selectedWireIds.
 
   /// Whether dragging the background pans the canvas.
   ///
   /// False while the pointer is down on something, or while a box selection is
   /// being dragged out — in both cases the drag already means something else.
   bool get canvasMoveEnabled => !mouseDown && boxSelectionRect == null;
-
-  const CanvasState({
-    this.nodes = const [],
-    this.wires = const [],
-    this.selectedNodes = const [],
-    this.boxSelectionRect,
-    this.clipboardNodes,
-    this.clipboardWires,
-    this.hoveredNode,
-    this.hoveredPort,
-    this.hoveredWireId,
-    this.snapToGrid = true,
-    this.showGrid = true,
-    this.verticalGuidelines = const [],
-    this.horizontalGuidelines = const [],
-    this.mouseDown = false,
-    this.isReadOnly = false,
-    this.dragStartOffset,
-  });
 
   CanvasState copyWith({
     List<ComponentInstance>? nodes,
@@ -106,7 +82,7 @@ class CanvasState {
     'showGrid': showGrid,
   };
 
-  factory CanvasState.fromJson(Map<String, dynamic> json) => CanvasState(
+  factory fromJson(Map<String, dynamic> json) => CanvasState(
     nodes: (json['nodes'] as List)
         .map((n) => ComponentInstance.fromJson(n as Map<String, dynamic>))
         .toList(),

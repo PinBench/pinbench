@@ -24,11 +24,8 @@ import 'package:pinbench_parts/models/port_model.dart';
 /// double-loop bug — then does a quick stop → restart and asserts the LED keeps
 /// blinking while only ONE loop is ever active.
 
-class _CapturingOutput implements SimulationOutput {
-  _CapturingOutput(this._nodes, this._wires);
-  final List<ComponentInstance> _nodes;
-  final List<WireModel> _wires;
-
+class _CapturingOutput(final List<ComponentInstance> _nodes, final List<WireModel> _wires)
+    implements SimulationOutput {
   @override
   List<ComponentInstance> get simulationNodes => _nodes;
   @override

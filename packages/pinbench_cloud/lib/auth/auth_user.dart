@@ -8,22 +8,19 @@ import 'package:flutter/foundation.dart' show immutable;
 /// tie the UI to one provider's model and make swapping backends a change to
 /// every widget that shows a name.
 @immutable
-class AuthUser {
-  const AuthUser({required this.uid, this.email, this.displayName, this.photoUrl});
-
+class const AuthUser({
   /// Stable per-provider identifier. This is what project ownership,
   /// collaborator maps and access checks are keyed on, so it must come from
   /// whichever backend is actually authenticating — a uid from one provider is
   /// meaningless to another.
-  final String uid;
-
-  final String? email;
-  final String? displayName;
+  required final String uid,
+  final String? email,
+  final String? displayName,
 
   /// Avatar URL, or null when the provider doesn't supply one, in which case
   /// the UI falls back to a placeholder icon.
-  final String? photoUrl;
-
+  final String? photoUrl,
+}) {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

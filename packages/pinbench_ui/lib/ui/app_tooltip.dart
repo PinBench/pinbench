@@ -10,7 +10,7 @@ import 'app_kbd.dart';
 /// Call sites used to pass a pair of alignments, which spelled out the same
 /// idea twice and was easy to get backwards. A side is what the caller means,
 /// and it keeps the widget library out of their imports.
-enum AppTooltipSide {
+enum AppTooltipSide() {
   /// Above the target — the default, and right for anything in a toolbar.
   top,
 
@@ -27,23 +27,15 @@ enum AppTooltipSide {
 ///
 /// [shortcutLabel] renders its key caps beside the message, so a tooltip and
 /// the keystroke that does the same thing stay one thing to write.
-class AppTooltip extends StatelessWidget {
-  const AppTooltip({
-    super.key,
-    required this.message,
-    required this.child,
-    this.shortcutLabel,
-    this.side = AppTooltipSide.top,
-  });
-
-  final String message;
-  final Widget child;
+class const AppTooltip({
+  super.key,
+  required final String message,
+  required final Widget child,
 
   /// A keystroke to show beside [message], as key caps.
-  final String? shortcutLabel;
-
-  final AppTooltipSide side;
-
+  final String? shortcutLabel,
+  final AppTooltipSide side = AppTooltipSide.top,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => FTooltip(
     childAnchor: switch (side) {

@@ -12,15 +12,11 @@ import 'package:pinbench/layout/views/center/privacy_panel.dart';
 import 'package:pinbench/layout/views/center/settings_tab_view.dart';
 import 'package:pinbench/layout/views/center/welcome/welcome_consent_card.dart';
 import 'package:pinbench_ui/strings.dart';
+
 import '../../support/harness.dart';
 
 /// Records what the consent UI asked of telemetry.
-class _FakeControl implements TelemetryControl {
-  _FakeControl({this.available = true});
-
-  @override
-  final bool available;
-
+class _FakeControl({@override final bool available = true}) implements TelemetryControl {
   @override
   String? get privacyPolicyUrl => 'https://example.com/privacy';
 

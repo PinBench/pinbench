@@ -5,11 +5,9 @@ import 'package:pinbench_ui/theme/theme.dart';
 
 import '../../controller/canvas_controller.dart';
 
-class GridPainter extends CustomPainter {
-  GridPainter(this.context, this.controller) : super(repaint: controller.viewerController);
-
-  final BuildContext context;
-  final CanvasController controller;
+class GridPainter(final BuildContext context, final CanvasController controller)
+    extends CustomPainter {
+  this : super(repaint: controller.viewerController);
 
   @override
   void paint(Canvas canvas, Size size) {

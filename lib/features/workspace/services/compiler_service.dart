@@ -9,9 +9,7 @@ import 'template_provenance_service.dart';
 /// Thrown when compiling an Arduino sketch fails (locally via `arduino-cli`
 /// or remotely via the compile service); [message] carries the compiler
 /// output for display in the Problems pane / serial monitor.
-class CompilerException implements Exception {
-  final String message;
-  CompilerException(this.message);
+class CompilerException(final String message) implements Exception {
   @override
   String toString() => message;
 }

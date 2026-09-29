@@ -11,10 +11,7 @@ import '../managers/canvas_commands.dart';
 /// connect to the *pasted* nodes rather than the originals. Extracted from
 /// `CanvasController`, which still owns the read-only guard and calls into
 /// this for the actual mechanics.
-class ClipboardOps {
-  final CanvasController controller;
-  ClipboardOps(this.controller);
-
+class ClipboardOps(final CanvasController controller) {
   void copy() {
     if (controller.selectedNodes.isEmpty) return;
     controller.clipboardNodes = controller.selectedNodes.map((n) => n.copyWith()).toList();

@@ -9,21 +9,19 @@ import '../theme/app_colors.dart';
 /// Flutter 3.47. Kept to the same three arguments the call sites were already
 /// using, so the sites read the same; forui's `FAvatar` was the other
 /// candidate and wants a style object to do what [backgroundColor] does here.
-class AppAvatar extends StatelessWidget {
-  const AppAvatar({super.key, this.radius = 20, this.backgroundColor, this.image, this.child});
-
-  final double radius;
+class const AppAvatar({
+  super.key,
+  final double radius = 20,
 
   /// Defaults to the muted surface — the same neutral a themed `CircleAvatar`
   /// resolved to, and a real fill rather than a hole in the layout while a
   /// network [image] is still loading.
-  final Color? backgroundColor;
-
-  final ImageProvider? image;
+  final Color? backgroundColor,
+  final ImageProvider? image,
 
   /// Shown when there is no [image]. Centred, and clipped to the circle.
-  final Widget? child;
-
+  final Widget? child,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     width: radius * 2,

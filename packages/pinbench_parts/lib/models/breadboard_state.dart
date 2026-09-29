@@ -6,23 +6,25 @@ import 'package:flutter/foundation.dart';
 /// **power rails** run the full length and are one node each, while a
 /// **terminal strip** is a numbered row of five holes joined across, with the
 /// centre notch splitting each row into an independent left and right strip.
-enum BreadboardChannel { plus, minus, terminalStrip }
+enum BreadboardChannel() {
+  plus,
+  minus,
+  terminalStrip,
+}
 
 /// Describes which breadboard hole/strip the cursor is over, so a component
 /// being dragged can snap to it. Value type (`==`/`hashCode`) so it can drive
 /// rebuilds without spurious churn.
 @immutable
-class BreadboardHoverState {
-  final BreadboardChannel channel;
+class const BreadboardHoverState({
+  required final BreadboardChannel channel,
 
   /// The hole row under the cursor. For a terminal strip that is the numbered
   /// row; for a power rail it is the drilled row the pointer snapped to. Null
   /// means "the whole strip".
-  final int? rowIndex;
-  final bool isRightSide;
-
-  const BreadboardHoverState({required this.channel, this.rowIndex, this.isRightSide = false});
-
+  final int? rowIndex,
+  final bool isRightSide = false,
+}) {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

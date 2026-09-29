@@ -13,11 +13,8 @@ import 'package:pinbench_terminal/terminal_controller.dart';
 
 import '../../../features/workspace/providers/debug_console_provider.dart';
 
-class BottomPaneToolbar extends ConsumerWidget {
-  final TabGroupSnapshot tabs;
-
-  const BottomPaneToolbar({super.key, required this.tabs});
-
+class const BottomPaneToolbar({super.key, required final TabGroupSnapshot tabs})
+    extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Find the currently selected tab

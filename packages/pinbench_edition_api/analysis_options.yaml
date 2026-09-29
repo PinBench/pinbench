@@ -64,3 +64,17 @@ linter:
     # `included_file_warning` entry above; they are its config, not ours.
     async_return_with_no_await: false
     prefer_if_elements_to_conditional_expressions: false
+
+    # Dart 3.13 syntax. `all_lints` doesn't turn these on yet, and they're what
+    # makes the SDK floor worth raising: fields declared in the class header
+    # (primary constructors) instead of a field list plus a constructor that
+    # repeats it, and `[?x]` instead of `if (x != null) x`.
+    #
+    # `use_primary_constructors` is off on purpose. It did the one-time
+    # migration (`dart fix`), but it also demands an empty `()` on classes that
+    # only hold statics and are never constructed. The rules below keep the
+    # migrated style from regressing.
+    use_primary_constructors: false
+    use_declaring_parameters: true
+    unnecessary_primary_constructor_body: true
+    use_null_aware_elements: true

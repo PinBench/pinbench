@@ -8,6 +8,7 @@ import 'package:pinbench/core/shortcuts/app_intents.dart';
 import 'package:pinbench/shell/shortcuts/app_shortcuts.dart';
 
 import '../support/harness.dart';
+
 import 'package:pinbench_ui/ui/app_text_field.dart';
 
 /// The app-wide shortcuts, covered from two directions.

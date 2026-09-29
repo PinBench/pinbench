@@ -17,11 +17,8 @@ import 'window_menu.dart';
 /// Wraps the entire application at the engine root level with a single
 /// native macOS PlatformMenuBar. This prevents multiple windows from fighting
 /// over the global menu bar and stopping focus-rebuild bugs.
-class GlobalMenuWrapper extends ConsumerStatefulWidget {
-  final Widget child;
-
-  const GlobalMenuWrapper({super.key, required this.child});
-
+class const GlobalMenuWrapper({super.key, required final Widget child})
+    extends ConsumerStatefulWidget {
   @override
   ConsumerState<GlobalMenuWrapper> createState() => _GlobalMenuWrapperState();
 }

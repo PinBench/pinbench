@@ -3,12 +3,11 @@ import 'package:flutter/widgets.dart';
 import '../../painting/paint_node.dart';
 import '../../painting/part_palette.dart';
 
-class ComponentLegsNode extends PaintNode {
-  final Size componentSize;
-  final List<(Offset start, Offset end)> legs;
+class ComponentLegsNode({
+  required final Size componentSize,
+  required final List<(Offset start, Offset end)> legs,
+}) extends PaintNode {
   final _paint = Paint();
-
-  ComponentLegsNode({required this.componentSize, required this.legs});
 
   @override
   Size get size => componentSize;

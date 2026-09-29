@@ -7,20 +7,14 @@ import '../painting/part_palette.dart';
 /// A wire connecting two ports on the canvas, with optional [bendPoints] for
 /// manual routing and a display [color]. Identified by a process-unique [id]
 /// (see [generateId]).
-class WireModel {
-  final String id;
-  final PortLocation start;
-  final PortLocation end;
-  final List<Offset> bendPoints;
-  final Color color;
-
-  WireModel({
-    String? id,
-    required this.start,
-    required this.end,
-    this.bendPoints = const [],
-    this.color = PartPalette.green,
-  }) : id = id ?? IdGenerator.generate('wire');
+class WireModel({
+  String? id,
+  required final PortLocation start,
+  required final PortLocation end,
+  final List<Offset> bendPoints = const [],
+  final Color color = PartPalette.green,
+}) {
+  final String id = id ?? IdGenerator.generate('wire');
 
   /// Generates a process-unique wire id. Delegates to [IdGenerator].
   static String generateId() => IdGenerator.generate('wire');
@@ -47,7 +41,7 @@ class WireModel {
     'color': color.toARGB32(),
   };
 
-  factory WireModel.fromJson(Map<String, dynamic> json) => WireModel(
+  factory fromJson(Map<String, dynamic> json) => WireModel(
     id: json['id'] as String,
     start: PortLocation.fromJson(json['start'] as Map<String, dynamic>),
     end: PortLocation.fromJson(json['end'] as Map<String, dynamic>),

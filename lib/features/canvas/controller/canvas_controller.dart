@@ -32,7 +32,8 @@ part 'canvas_controller.g.dart';
 /// commands (for undo/redo) or [updateState]; the simulation reads the same
 /// node/wire lists and writes visual updates back via `batchSimulationUpdate`.
 @Riverpod(keepAlive: true)
-class CanvasController extends _$CanvasController
+class CanvasController()
+    extends _$CanvasController
     with CanvasControllerMixin
     implements CanvasContext {
   late final HistoryManager historyManager;
@@ -61,7 +62,7 @@ class CanvasController extends _$CanvasController
   /// directly through nearly every public method.
   void _track(String action) => ref.read(analyticsProvider).canvasAction(action);
 
-  CanvasController() {
+  this {
     historyManager = HistoryManager();
     selectionManager = SelectionManager(this);
     wiringManager = WiringManager(this);

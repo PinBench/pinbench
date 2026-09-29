@@ -5,7 +5,11 @@ import 'package:re_editor/re_editor.dart';
 import 'widgets/custom_code_editor.dart';
 
 /// Which surface an Edit action should act on.
-enum EditSurface { textField, codeEditor, canvas }
+enum EditSurface() {
+  textField,
+  codeEditor,
+  canvas,
+}
 
 /// Tracks which editable surface the user last focused and routes Edit-menu
 /// actions (undo/redo, cut/copy/paste, select-all) to it.

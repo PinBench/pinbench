@@ -16,16 +16,16 @@ import '../utils/logger.dart';
 /// name ≤ 40 chars, string values ≤ 100 chars). Parameter values must be
 /// `String` or `num` (booleans are encoded as 0/1).
 class AnalyticsService {
-  const AnalyticsService(FirebaseAnalytics analytics) : _fixed = analytics, _slot = null;
+  const new(FirebaseAnalytics analytics) : _fixed = analytics, _slot = null;
 
   /// A disabled instance: every call is a no-op. Used as the provider default
   /// and whenever Firebase init is skipped or fails.
-  const AnalyticsService.disabled() : _fixed = null, _slot = null;
+  const new disabled() : _fixed = null, _slot = null;
 
   /// Analytics that stays off — every call a no-op, the SDK not even created —
   /// until something puts an instance in [slot]. The consent control does that
   /// when the user agrees, and empties it again if they withdraw.
-  const AnalyticsService.switchable(AnalyticsSlot slot) : _fixed = null, _slot = slot;
+  const new switchable(AnalyticsSlot slot) : _fixed = null, _slot = slot;
 
   final FirebaseAnalytics? _fixed;
   final AnalyticsSlot? _slot;

@@ -10,7 +10,7 @@
 /// would just recreate the two-copies-of-the-same-logic problem this
 /// refactor exists to remove elsewhere — see [PostSelectionMode] and
 /// `_CanvasPointerEventState._handleAfterSelectionCheck`.
-enum PointerInteractionMode {
+enum PointerInteractionMode() {
   /// The canvas is read-only (a simulation is running): only push-button
   /// parts respond to a press.
   readOnlyTap,
@@ -37,7 +37,7 @@ enum PointerInteractionMode {
 /// stage is inherently sequential (each branch's condition depends on
 /// selection state the previous branch may have just changed), so it isn't
 /// switched over the way [PointerInteractionMode] is.
-enum PostSelectionMode {
+enum PostSelectionMode() {
   /// Click on an already-selected, hovered wire: starts dragging one of its
   /// bend points/segments.
   startBendPointDrag,

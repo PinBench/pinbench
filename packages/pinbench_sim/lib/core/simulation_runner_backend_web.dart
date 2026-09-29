@@ -20,34 +20,17 @@ import 'simulation_runner_backend.dart';
 /// the UI isolate against the live canvas. Audio/mic plugins may be
 /// unsupported in the browser, so their setup is best-effort and never fails
 /// the run. Extracted from `SimulationRunner`.
-class SimulationRunnerBackendImpl implements SimulationRunnerBackend {
-  SimulationRunnerBackendImpl({
-    required this.circuit,
-    required this.tone,
-    required this.microphone,
-    required void Function(String)? onSerialPrint,
-    required void Function(String)? onSpiceLog,
-    required void Function(String)? onDebugLog,
-    required void Function(FrameStats stats)? onFrameStats,
-    required void Function(Map<String, double> currents)? onWireCurrents,
-    required void Function() onSelfStop,
-  }) : _onSerialPrint = onSerialPrint,
-       _onSpiceLog = onSpiceLog,
-       _onDebugLog = onDebugLog,
-       _onFrameStats = onFrameStats,
-       _onWireCurrents = onWireCurrents,
-       _onSelfStop = onSelfStop;
-
-  final SimulationOutput circuit;
-  final ToneOutput tone;
-  final MicrophoneDevice microphone;
-  final void Function(String)? _onSerialPrint;
-  final void Function(String)? _onSpiceLog;
-  final void Function(String)? _onDebugLog;
-  final void Function(FrameStats stats)? _onFrameStats;
-  final void Function(Map<String, double> currents)? _onWireCurrents;
-  final void Function() _onSelfStop;
-
+class SimulationRunnerBackendImpl({
+  required final SimulationOutput circuit,
+  required final ToneOutput tone,
+  required final MicrophoneDevice microphone,
+  required final void Function(String)? _onSerialPrint,
+  required final void Function(String)? _onSpiceLog,
+  required final void Function(String)? _onDebugLog,
+  required final void Function(FrameStats stats)? _onFrameStats,
+  required final void Function(Map<String, double> currents)? _onWireCurrents,
+  required final void Function() _onSelfStop,
+}) implements SimulationRunnerBackend {
   SimulationEngine? _engine;
   final _mic = MutableMicInput();
   var _selfStopped = false;

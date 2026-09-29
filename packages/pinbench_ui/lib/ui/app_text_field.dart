@@ -13,7 +13,7 @@ import 'package:forui/forui.dart';
 /// out to need a different look, add a named variant here — the point is that
 /// it is named once, not spelled out at the call site.
 class AppTextField extends StatelessWidget {
-  const AppTextField({
+  const new({
     super.key,
     this.controller,
     this.initialValue,
@@ -39,7 +39,7 @@ class AppTextField extends StatelessWidget {
   /// Sized in [minLines] rather than a pixel height — the same intent in the
   /// unit that survives a font change. Neither composer wants a drag handle,
   /// so there is no resize affordance.
-  const AppTextField.multiline({
+  const new multiline({
     super.key,
     this.controller,
     this.initialValue,

@@ -4,12 +4,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../../painting/paint_node.dart';
 
-class UsbPortNode extends PaintNode {
-  @override
-  final Size size;
-
-  UsbPortNode({this.size = const Size(40.0, 33.6)});
-
+class UsbPortNode({@override final Size size = const Size(40.0, 33.6)}) extends PaintNode {
   static const _baseOverhang = 10.0;
   static const _baseInnerWidth = 40.0;
   static const _basePortWidth = 50.0;

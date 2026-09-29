@@ -7,23 +7,18 @@ abstract class PaintNode {
   void paint(Canvas canvas, Offset offset);
 }
 
-class CanvasPositioned {
-  final double? left;
-  final double? top;
-  final double? right;
-  final double? bottom;
-  final PaintNode child;
+class const CanvasPositioned({
+  final double? left,
+  final double? top,
+  final double? right,
+  final double? bottom,
+  required final PaintNode child,
+});
 
-  const CanvasPositioned({this.left, this.top, this.right, this.bottom, required this.child});
-}
-
-class CanvasStack extends PaintNode {
-  @override
-  final Size size;
-  final List<CanvasPositioned> children;
-
-  CanvasStack({this.size = Size.zero, required this.children});
-
+class CanvasStack({
+  @override final Size size = Size.zero,
+  required final List<CanvasPositioned> children,
+}) extends PaintNode {
   @override
   void paint(Canvas canvas, Offset offset) {
     for (final pos in children) {
@@ -47,12 +42,8 @@ class CanvasStack extends PaintNode {
   }
 }
 
-class CanvasRow extends PaintNode {
-  final double spacing;
-  final List<PaintNode> children;
-
-  CanvasRow({this.spacing = 0.0, required this.children});
-
+class CanvasRow({final double spacing = 0.0, required final List<PaintNode> children})
+    extends PaintNode {
   @override
   Size get size {
     if (children.isEmpty) return Size.zero;
@@ -77,12 +68,8 @@ class CanvasRow extends PaintNode {
   }
 }
 
-class CanvasColumn extends PaintNode {
-  final double spacing;
-  final List<PaintNode> children;
-
-  CanvasColumn({this.spacing = 0.0, required this.children});
-
+class CanvasColumn({final double spacing = 0.0, required final List<PaintNode> children})
+    extends PaintNode {
   @override
   Size get size {
     if (children.isEmpty) return Size.zero;

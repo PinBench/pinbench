@@ -45,9 +45,7 @@ abstract interface class ToneOutput {
 
 /// A mic that reports silence — the default when no microphone is wired in, in
 /// tests, and as the isolate's starting state before any reading streams in.
-class SilentMicInput implements MicInput {
-  const SilentMicInput();
-
+class const SilentMicInput() implements MicInput {
   @override
   double get analogVoltage => 0.0;
 

@@ -17,9 +17,7 @@ import '../../../controllers/app_layout_controller.dart';
 /// The Welcome screen's "Recent Workspaces" card. Hidden entirely on the web
 /// by the caller, since recent workspaces are local folders the web preview
 /// has no access to.
-class WelcomeRecentSection extends ConsumerWidget {
-  const WelcomeRecentSection({super.key});
-
+class const WelcomeRecentSection({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final recentWorkspaces = ref.watch(recentWorkspacesProvider);

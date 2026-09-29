@@ -18,9 +18,7 @@ import 'update_dialog.dart';
 /// would interrupt someone who opened the app to look at a circuit, and a
 /// toast would be gone before they looked up — a button that quietly appears
 /// and stays until it is dealt with is the shape that fits both.
-class UpdateBadgeButton extends ConsumerWidget {
-  const UpdateBadgeButton({super.key});
-
+class const UpdateBadgeButton({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final status = ref.watch(updateControllerProvider);

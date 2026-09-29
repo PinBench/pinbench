@@ -7,10 +7,7 @@ import 'custom_code_editor.dart';
 import 'empty_editor_view.dart';
 import '../../workspace/providers/editor_state_provider.dart';
 
-class EditorTabView extends ConsumerWidget {
-  final String filePath;
-  const EditorTabView({super.key, required this.filePath});
-
+class const EditorTabView({super.key, required final String filePath}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final editorState = ref.watch(editorStateControllerProvider);

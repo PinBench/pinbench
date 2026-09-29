@@ -7,9 +7,7 @@ import 'package:pinbench_ui/theme/tokens.dart';
 
 import '../../providers/canvas_controller_provider.dart';
 
-class WireColorSelect extends ConsumerWidget {
-  const WireColorSelect({super.key});
-
+class const WireColorSelect({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch the STATE, not just the notifier: selecting a wire only bumps the

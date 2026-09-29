@@ -40,11 +40,7 @@ final editionHostBindings = [
   hostActionsProvider.overrideWith(_AppHostActions.new),
 ];
 
-class _AppHostActions implements HostActions {
-  _AppHostActions(this._ref);
-
-  final Ref _ref;
-
+class _AppHostActions(final Ref _ref) implements HostActions {
   /// A blank workspace being created, so overlapping calls share it — the path
   /// stays null until `openWorkspace` finishes, and without this each caller
   /// would create its own and the second would close the first.

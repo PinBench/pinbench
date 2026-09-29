@@ -9,13 +9,17 @@
 library;
 
 /// The span roles we expose, mapped to OTel `SpanKind` in the native backend.
-enum TraceKind { internal, client, server }
+enum TraceKind() {
+  internal,
+  client,
+  server,
+}
 
 /// Records traces and metrics. Obtain via `tracingProvider`.
 abstract interface class TracingService {
   /// A no-op instance: every method does nothing. Used as the provider default,
   /// on the web, and whenever OpenTelemetry isn't configured.
-  const factory TracingService.disabled() = _DisabledTracingService;
+  const factory disabled() = _DisabledTracingService;
 
   /// Whether telemetry is actually being recorded/exported.
   bool get enabled;
@@ -52,9 +56,7 @@ abstract interface class TracingService {
 }
 
 /// No-op implementation — see [TracingService.disabled].
-class _DisabledTracingService implements TracingService {
-  const _DisabledTracingService();
-
+class const _DisabledTracingService() implements TracingService {
   @override
   bool get enabled => false;
 

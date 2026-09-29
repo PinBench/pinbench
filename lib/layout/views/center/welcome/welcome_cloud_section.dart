@@ -13,9 +13,7 @@ import '../../../../core/cloud/project_providers.dart';
 
 /// The Welcome screen's "Cloud Projects" card, shown only when auth is
 /// enabled (see the caller's `authServiceProvider.enabled` check).
-class WelcomeCloudSection extends ConsumerWidget {
-  const WelcomeCloudSection({super.key});
-
+class const WelcomeCloudSection({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authStateProvider).value;

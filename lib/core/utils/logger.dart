@@ -35,11 +35,7 @@ StackTrace? _foldStackTrace(StackTrace? stackTrace) {
 }
 
 /// A wrapper class to adapt the existing `Logger.get('category')` pattern to Talker.
-class AppLogger {
-  final String category;
-
-  const AppLogger(this.category);
-
+class const AppLogger(final String category) {
   void trace(String message) {
     talker.verbose('[$category] $message');
   }

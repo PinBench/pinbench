@@ -11,11 +11,9 @@ import '../painting/part_palette.dart';
 
 /// Draws a momentary push button, pressed-down when `isPressed`. Provides its
 /// four legs (`leg1`–`leg4`).
-class PushButtonPainter extends BaseComponentPainter with PortProvider, PaintTreeComponent {
-  final Map<String, dynamic>? properties;
-
-  PushButtonPainter({this.properties, super.isOutline});
-
+class PushButtonPainter({final Map<String, dynamic>? properties, super.isOutline})
+    extends BaseComponentPainter
+    with PortProvider, PaintTreeComponent {
   bool get isPressed {
     final value = properties?[ComponentProps.isPressed];
     if (value is bool) return value;
@@ -107,11 +105,8 @@ class _PushButtonLegsNode extends PaintNode {
   }
 }
 
-class _PushButtonBodyNode extends PaintNode {
-  final PushButtonPainter parent;
+class _PushButtonBodyNode(final PushButtonPainter parent) extends PaintNode {
   final _paint = Paint();
-
-  _PushButtonBodyNode(this.parent);
 
   @override
   Size get size => const Size(PushButtonPainter.width, PushButtonPainter.height);

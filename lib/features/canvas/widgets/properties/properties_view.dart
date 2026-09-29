@@ -17,9 +17,7 @@ import 'package:pinbench_ui/theme/app_icons.dart';
 import '../../controller/canvas_controller.dart';
 import 'properties_field_builder.dart';
 
-class PropertiesSidebarView extends ConsumerWidget {
-  const PropertiesSidebarView({super.key});
-
+class const PropertiesSidebarView({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.watch(canvasControllerProvider.notifier);

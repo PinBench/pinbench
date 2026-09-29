@@ -30,9 +30,7 @@ import '../../controllers/app_layout_controller.dart';
 /// replicate the familiar top-level menus in-app with [AppMenuBar]. The item
 /// set mirrors the native menus but drops entries that only make sense for a
 /// native window (minimize/zoom, hide, new OS window, etc.).
-class WebMenuBar extends ConsumerStatefulWidget {
-  const WebMenuBar({super.key});
-
+class const WebMenuBar({super.key}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<WebMenuBar> createState() => _WebMenuBarState();
 }

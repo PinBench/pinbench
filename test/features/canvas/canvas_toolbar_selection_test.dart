@@ -10,6 +10,7 @@ import 'package:pinbench_ui/strings.dart';
 import 'package:pinbench_ui/ui/app_icon_button.dart';
 import 'package:pinbench/features/canvas/controller/canvas_controller.dart';
 import 'package:pinbench/features/canvas/widgets/controls/toolbar.dart';
+
 import '../../support/harness.dart';
 
 /// The toolbar's enabled flags come from a *narrowed* watch of the canvas

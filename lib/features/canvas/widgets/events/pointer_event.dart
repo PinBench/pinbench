@@ -10,12 +10,11 @@ import '../../controller/canvas_controller.dart';
 import 'pointer_interaction_mode.dart';
 import 'pointer_mode_resolver.dart';
 
-class CanvasPointerEvent extends StatefulWidget {
-  const CanvasPointerEvent({super.key, required this.child, required this.controller});
-
-  final Widget child;
-  final CanvasController controller;
-
+class const CanvasPointerEvent({
+  super.key,
+  required final Widget child,
+  required final CanvasController controller,
+}) extends StatefulWidget {
   @override
   State<CanvasPointerEvent> createState() => _CanvasPointerEventState();
 }

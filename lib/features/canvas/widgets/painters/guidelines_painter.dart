@@ -2,17 +2,11 @@ import 'package:flutter/widgets.dart';
 
 import 'package:pinbench_ui/theme/theme.dart';
 
-class GuidelinesPainter extends CustomPainter {
-  final List<double> verticalGuidelines;
-  final List<double> horizontalGuidelines;
-  final Color color;
-
-  GuidelinesPainter({
-    required this.verticalGuidelines,
-    required this.horizontalGuidelines,
-    this.color = AppPalette.blueAccent,
-  });
-
+class GuidelinesPainter({
+  required final List<double> verticalGuidelines,
+  required final List<double> horizontalGuidelines,
+  final Color color = AppPalette.blueAccent,
+}) extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (verticalGuidelines.isEmpty && horizontalGuidelines.isEmpty) return;

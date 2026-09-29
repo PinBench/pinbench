@@ -12,11 +12,7 @@ import '../../features/workspace/providers/problems_provider.dart';
 /// should read out of a wall of gcc stderr, and bucketing that failure for
 /// analytics, are both about *presenting* a failure — the simulation only
 /// knows the build did not produce bytes.
-class WorkspaceSimulationDiagnostics implements SimulationDiagnostics {
-  const WorkspaceSimulationDiagnostics(this._ref);
-
-  final Ref _ref;
-
+class const WorkspaceSimulationDiagnostics(final Ref _ref) implements SimulationDiagnostics {
   @override
   void serial(String text) => _ref.read(serialLogsProvider.notifier).addLog(text);
 

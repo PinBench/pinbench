@@ -7,9 +7,7 @@ import 'app_colors.dart';
 /// Sibling to [AppTypography], which carries the bare size scale. These are
 /// the recurring *combinations* — a size and a colour that always travel
 /// together — named once so they cannot drift apart at the call site.
-class AppTextStyles {
-  AppTextStyles._();
-
+class AppTextStyles._() {
   /// Inline error text (form/API error messages).
   static TextStyle error(BuildContext context) => TextStyle(color: context.appColors.destructive);
 

@@ -12,11 +12,9 @@ import '../features/workspace/services/syncable_canvas.dart';
 /// the other three: the workspace says what it needs from a canvas, the canvas
 /// knows nothing about it, and the one file allowed to know both sides puts
 /// them together.
-class ControllerSyncableCanvas extends ChangeNotifier implements SyncableCanvas {
-  ControllerSyncableCanvas(this._controller);
-
-  final CanvasController _controller;
-
+class ControllerSyncableCanvas(final CanvasController _controller)
+    extends ChangeNotifier
+    implements SyncableCanvas {
   @override
   bool get isReadOnly => _controller.isReadOnly;
 

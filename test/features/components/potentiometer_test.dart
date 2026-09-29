@@ -13,9 +13,8 @@ void main() {
 
     test('parses a string value and clamps to 0..1', () {
       expect(
-        PotentiometerPainter(
-          properties: const {ComponentProps.potentiometerValue: '0.25'},
-        ).position,
+        PotentiometerPainter(properties: const {ComponentProps.potentiometerValue: '0.25'})
+            .position,
         0.25,
       );
       expect(

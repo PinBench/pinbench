@@ -18,21 +18,14 @@ import 'telemetry_support.dart';
 /// The Firebase-backed telemetry the app talks to: analytics events + crash
 /// reporting, and the [control] the consent UI switches collection with. All
 /// fall back to no-op instances where there is no telemetry.
-class FirebaseTelemetry {
-  const FirebaseTelemetry({
-    required this.analytics,
-    required this.crashReporter,
-    required this.control,
-    required this.initialized,
-  });
-
-  final AnalyticsService analytics;
-  final CrashReporter crashReporter;
-  final TelemetryControl control;
+class const FirebaseTelemetry({
+  required final AnalyticsService analytics,
+  required final CrashReporter crashReporter,
+  required final TelemetryControl control,
 
   /// Whether `Firebase.initializeApp` ran, which Remote Config depends on.
-  final bool initialized;
-
+  required final bool initialized,
+}) {
   static const disabled = FirebaseTelemetry(
     analytics: AnalyticsService.disabled(),
     crashReporter: CrashReporter.disabled(),
@@ -91,13 +84,10 @@ Future<FirebaseTelemetry> initFirebaseTelemetry({
 ///
 /// Crash reports and performance traces are never sent from a debug build,
 /// whatever the answer — they would be noise from the developer's machine.
-class _FirebaseTelemetryControl implements TelemetryControl {
-  _FirebaseTelemetryControl(this.privacyPolicyUrl, this._onAnalyticsOn);
-
-  @override
-  final String privacyPolicyUrl;
-
-  final void Function(AnalyticsService analytics) _onAnalyticsOn;
+class _FirebaseTelemetryControl(
+  @override final String privacyPolicyUrl,
+  final void Function(AnalyticsService analytics) _onAnalyticsOn,
+) implements TelemetryControl {
   final _analyticsSlot = AnalyticsSlot();
   late final analytics = AnalyticsService.switchable(_analyticsSlot);
 
@@ -169,12 +159,8 @@ class _FirebaseTelemetryControl implements TelemetryControl {
 }
 
 /// A [CrashReporter] that records nothing while the user has not agreed.
-class _GatedCrashReporter implements CrashReporter {
-  _GatedCrashReporter(this._inner, this._control);
-
-  final CrashReporter _inner;
-  final _FirebaseTelemetryControl _control;
-
+class _GatedCrashReporter(final CrashReporter _inner, final _FirebaseTelemetryControl _control)
+    implements CrashReporter {
   @override
   void setKey(String key, Object value) {
     if (_control.collecting) _inner.setKey(key, value);

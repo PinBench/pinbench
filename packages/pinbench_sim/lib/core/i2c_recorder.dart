@@ -15,7 +15,7 @@
 /// owns it: the native bridge feeds this from `avr8_dart`'s TWI callbacks, the
 /// web bridge from `avr8js`'s, and the frame loop drains the same shape either
 /// way.
-class I2cRecorder {
+class I2cRecorder() {
   /// Addresses some part has claimed by draining them.
   ///
   /// This gates the *acknowledgement*, not the recording, and the difference

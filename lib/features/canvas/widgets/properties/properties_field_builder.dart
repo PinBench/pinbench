@@ -168,20 +168,13 @@ abstract final class PropertiesFieldBuilder {
 /// So it commits on blur as well as on submit, and — because the same value is
 /// editable from the code pane — adopts an external change to the property
 /// while the field is not being edited.
-class _PropertyTextField extends StatefulWidget {
-  const _PropertyTextField({
-    super.key,
-    required this.node,
-    required this.label,
-    required this.value,
-    required this.controller,
-  });
-
-  final ComponentInstance node;
-  final String label;
-  final String value;
-  final CanvasController controller;
-
+class const _PropertyTextField({
+  super.key,
+  required final ComponentInstance node,
+  required final String label,
+  required final String value,
+  required final CanvasController controller,
+}) extends StatefulWidget {
   @override
   State<_PropertyTextField> createState() => _PropertyTextFieldState();
 }

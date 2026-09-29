@@ -5,6 +5,7 @@ import 'package:re_editor/re_editor.dart';
 
 import 'package:pinbench/features/editor/edit_action_router.dart';
 import 'package:pinbench/features/editor/widgets/custom_code_editor.dart';
+
 import '../../support/harness.dart';
 
 /// The Edit menu acts on whichever surface the user was last editing — and

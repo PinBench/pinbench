@@ -15,12 +15,10 @@ part 'serial_plotter_provider.g.dart';
 ///
 /// [series] is `series[channel] = values over time`; [labels] holds the channel
 /// name (empty string for a positional channel).
-class SerialPlotData {
-  const SerialPlotData(this.series, {this.labels = const []});
-
-  final List<List<double>> series;
-  final List<String> labels;
-
+class const SerialPlotData(
+  final List<List<double>> series, {
+  final List<String> labels = const [],
+}) {
   bool get isEmpty => series.every((s) => s.length < 2);
 
   /// The most recent value of channel [i], or null if it has none yet.

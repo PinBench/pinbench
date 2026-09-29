@@ -1,1 +1,6 @@
-enum SimulationState { stopped, compiling, running, paused }
+enum SimulationState() {
+  stopped,
+  compiling,
+  running,
+  paused,
+}

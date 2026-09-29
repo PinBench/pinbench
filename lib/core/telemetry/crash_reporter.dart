@@ -10,7 +10,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 abstract interface class CrashReporter {
   /// A no-op instance used as the provider default and where Crashlytics is
   /// unavailable.
-  const factory CrashReporter.disabled() = _DisabledCrashReporter;
+  const factory disabled() = _DisabledCrashReporter;
 
   /// Attaches a custom key/value to subsequent crash reports (e.g. the current
   /// simulation state or active file type), so a crash says *what the user was
@@ -25,9 +25,7 @@ abstract interface class CrashReporter {
   void recordError(Object error, StackTrace? stack, {bool fatal});
 }
 
-class _DisabledCrashReporter implements CrashReporter {
-  const _DisabledCrashReporter();
-
+class const _DisabledCrashReporter() implements CrashReporter {
   @override
   void setKey(String key, Object value) {}
 
@@ -40,11 +38,7 @@ class _DisabledCrashReporter implements CrashReporter {
 
 /// [CrashReporter] backed by [FirebaseCrashlytics]. All calls are fire-and-forget
 /// and swallow errors so telemetry never breaks the app.
-class FirebaseCrashReporter implements CrashReporter {
-  FirebaseCrashReporter(this._crashlytics);
-
-  final FirebaseCrashlytics _crashlytics;
-
+class FirebaseCrashReporter(final FirebaseCrashlytics _crashlytics) implements CrashReporter {
   @override
   void setKey(String key, Object value) =>
       unawaited(_crashlytics.setCustomKey(key, value).catchError((Object _) {}));

@@ -11,9 +11,7 @@ import 'canvas_tool_group_divider.dart';
 import '../../../../core/chrome/active_circuit_file.dart';
 import '../../../../core/chrome/chrome_commands.dart';
 
-class ZoomControls extends ConsumerWidget {
-  const ZoomControls({super.key});
-
+class const ZoomControls({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.watch(canvasControllerProvider.notifier);

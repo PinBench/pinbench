@@ -14,11 +14,9 @@ import '../painting/part_palette.dart';
 
 /// Draws a KY-037 microphone sound sensor, with its digital-out LED reflecting
 /// `isDigitalHigh`. Exposes analog (`A0`) and digital (`D0`) output ports.
-class Ky037MicSensorPainter extends BaseComponentPainter with PortProvider, PaintTreeComponent {
-  final Map<String, dynamic>? properties;
-
-  Ky037MicSensorPainter({this.properties, super.isOutline});
-
+class Ky037MicSensorPainter({final Map<String, dynamic>? properties, super.isOutline})
+    extends BaseComponentPainter
+    with PortProvider, PaintTreeComponent {
   bool get isDigitalHigh {
     final value = properties?[ComponentProps.isDigitalHigh];
     if (value is bool) return value;
@@ -102,11 +100,8 @@ class Ky037MicSensorPainter extends BaseComponentPainter with PortProvider, Pain
       !identical(this, oldDelegate) && (oldDelegate.isDigitalHigh != isDigitalHigh);
 }
 
-class _Ky037BodyNode extends PaintNode {
-  final Ky037MicSensorPainter painter;
+class _Ky037BodyNode(final Ky037MicSensorPainter painter) extends PaintNode {
   final _paint = Paint();
-
-  _Ky037BodyNode(this.painter);
 
   @override
   Size get size => const Size(Ky037MicSensorPainter.width, Ky037MicSensorPainter.height);

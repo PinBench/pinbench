@@ -25,14 +25,10 @@ import 'package:pinbench_parts/part_registry.dart';
 import 'package:pinbench_sim/core/simulation_engine.dart';
 import 'package:pinbench_sim/core/simulation_output.dart';
 
-class _RecordingOutput implements SimulationOutput {
-  _RecordingOutput(this.simulationNodes, this.simulationWires);
-
-  @override
-  final List<ComponentInstance> simulationNodes;
-  @override
-  final List<WireModel> simulationWires;
-
+class _RecordingOutput(
+  @override final List<ComponentInstance> simulationNodes,
+  @override final List<WireModel> simulationWires,
+) implements SimulationOutput {
   final frames = <String>[];
 
   /// Deliberately write-only, like the real isolate's output.
@@ -107,9 +103,9 @@ void main() {
   test('a display wired to the wrong pins stays dark', () {
     final wrong = File('${Directory.systemTemp.path}/oled_miswired.cdl')
       ..writeAsStringSync(
-        File(
-          'assets/templates/oled/circuit.cdl',
-        ).readAsStringSync().replaceFirst('to: uno.A4;', 'to: uno.9;'),
+        File('assets/templates/oled/circuit.cdl')
+            .readAsStringSync()
+            .replaceFirst('to: uno.A4;', 'to: uno.9;'),
       );
 
     final output = run(wrong.path);

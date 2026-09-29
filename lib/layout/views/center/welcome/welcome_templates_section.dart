@@ -23,9 +23,7 @@ import '../../../../features/workspace/services/template_service.dart';
 /// laying out every component painter before the welcome screen could settle —
 /// measured at ~200ms of work for nine templates, most of them below the fold
 /// and several never looked at.
-class WelcomeTemplatesSection extends ConsumerWidget {
-  const WelcomeTemplatesSection({super.key});
-
+class const WelcomeTemplatesSection({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final templatesAsync = ref.watch(availableTemplatesProvider);
@@ -111,12 +109,10 @@ class WelcomeTemplatesSection extends ConsumerWidget {
 /// Sticky once shown: a thumbnail that unbuilt itself on scrolling away would
 /// throw away the parse and redo it on the way back, and would flicker at the
 /// boundary.
-class _WhenNearViewport extends StatefulWidget {
-  const _WhenNearViewport({required this.placeholder, required this.builder});
-
-  final Widget placeholder;
-  final WidgetBuilder builder;
-
+class const _WhenNearViewport({
+  required final Widget placeholder,
+  required final WidgetBuilder builder,
+}) extends StatefulWidget {
   @override
   State<_WhenNearViewport> createState() => _WhenNearViewportState();
 }

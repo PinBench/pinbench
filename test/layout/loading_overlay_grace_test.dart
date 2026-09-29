@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pinbench_ui/strings.dart';
 import 'package:pinbench/features/workspace/providers/workspace_loading_provider.dart';
 import 'package:pinbench/layout/layout.dart';
+
 import '../support/harness.dart';
 
 /// Opening a template measures ~137ms in a profile build. A spinner that comes

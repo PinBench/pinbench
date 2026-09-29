@@ -9,9 +9,7 @@ import 'package:pinbench_ui/theme/app_icons.dart';
 import '../../../core/edition/edition_provider.dart';
 import '../../controllers/app_layout_controller.dart';
 
-class TogglePanesButtons extends ConsumerWidget {
-  const TogglePanesButtons({super.key});
-
+class const TogglePanesButtons({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appLayoutController = ref.watch(appLayoutControllerProvider);

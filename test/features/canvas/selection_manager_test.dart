@@ -62,28 +62,25 @@ void main() {
       expect(controller.hoveredNode, isNull);
     });
 
-    test(
-      'unrotates hover position for a rotated node consistently with ComponentInstance.absoluteToLocal',
-      () {
-        final node = ComponentInstance(
-          position: const Offset(100, 100),
-          part: _model(PartNames.resistor),
-          rotationAngle: math.pi / 2,
-        );
-        controller.add(node);
+    test('unrotates hover position for a rotated node consistently with ComponentInstance.absoluteToLocal', () {
+      final node = ComponentInstance(
+        position: const Offset(100, 100),
+        part: _model(PartNames.resistor),
+        rotationAngle: math.pi / 2,
+      );
+      controller.add(node);
 
-        // A point offset from the node's rotated-bounding-box center, well
-        // inside the rotated rect regardless of orientation.
-        final probePoint = node.rect.center + const Offset(5, 3);
-        controller.mouseLocalPosition = probePoint;
-        controller.selectionManager.checkHover();
+      // A point offset from the node's rotated-bounding-box center, well
+      // inside the rotated rect regardless of orientation.
+      final probePoint = node.rect.center + const Offset(5, 3);
+      controller.mouseLocalPosition = probePoint;
+      controller.selectionManager.checkHover();
 
-        final expectedLocal = node.absoluteToLocal(probePoint);
-        expect(controller.hoveredNode?.key, node.key);
-        expect(node.hoveredLocalPosition?.dx, closeTo(expectedLocal.dx, 0.5));
-        expect(node.hoveredLocalPosition?.dy, closeTo(expectedLocal.dy, 0.5));
-      },
-    );
+      final expectedLocal = node.absoluteToLocal(probePoint);
+      expect(controller.hoveredNode?.key, node.key);
+      expect(node.hoveredLocalPosition?.dx, closeTo(expectedLocal.dx, 0.5));
+      expect(node.hoveredLocalPosition?.dy, closeTo(expectedLocal.dy, 0.5));
+    });
   });
 
   group('moveSelection', () {

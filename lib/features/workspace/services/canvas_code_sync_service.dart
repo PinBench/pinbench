@@ -14,18 +14,26 @@ import 'syncable_canvas.dart';
 /// regenerates the text. A re-entrancy guard prevents the two directions from
 /// looping. Parse failures are reported via [onParseError] and circuit
 /// validation issues via [onCircuitError] (both surface in the Problems pane).
-class CanvasCodeSyncService {
-  final SyncableCanvas canvas;
-  final EditorStateController editorStateController;
-  final List<PartModel> components;
+class CanvasCodeSyncService({
+  required final SyncableCanvas canvas,
+  required final EditorStateController editorStateController,
+  required final List<PartModel> components,
 
   /// Reports a circuit-validation error (or `''`/empty to clear). Fired when the
   /// canvas changes and the netlist is validated.
-  final void Function(String)? onCircuitError;
+  final void Function(String)? onCircuitError,
 
   /// Reports a CDL parse error, or `null` when the latest parse succeeded.
-  final void Function(String?)? onParseError;
+  final void Function(String?)? onParseError,
 
+  /// Reports a circuit-validation error type for analytics.
+  final void Function(String? errorType)? onCircuitValidation,
+
+  /// Called when the canvas switches to a different `.cdl`, or to none.
+  /// Published so the rest of the app can ask what is on screen without asking
+  /// the sync machinery — see `activeCircuitFileProvider`.
+  final void Function(String? filePath)? onActiveCircuitChanged,
+}) {
   final Map<String, VoidCallback> _cdlListeners = {};
   String? activeCdlPath;
 
@@ -41,28 +49,12 @@ class CanvasCodeSyncService {
   /// for a circuit the user never edited. Cleared after the first re-baseline.
   String? _baselinePendingPath;
 
-  /// Called when the canvas switches to a different `.cdl`, or to none.
-  /// Published so the rest of the app can ask what is on screen without asking
-  /// the sync machinery — see `activeCircuitFileProvider`.
-  final void Function(String? filePath)? onActiveCircuitChanged;
-
-  CanvasCodeSyncService({
-    required this.canvas,
-    required this.editorStateController,
-    required this.components,
-    this.onCircuitError,
-    this.onParseError,
-    this.onCircuitValidation,
-    this.onActiveCircuitChanged,
-  }) {
+  this {
     // The canvas tells us when its circuit changed; regenerating the text is
     // this service's answer. Subscribed here rather than watched from the
     // provider so a canvas edit does not rebuild the service.
     canvas.changes.addListener(syncCanvasToCode);
   }
-
-  /// Reports a circuit-validation error type for analytics.
-  final void Function(String? errorType)? onCircuitValidation;
 
   void attachCdlListener(String path, CodeLineEditingController controller) {
     activeCdlPath = path;

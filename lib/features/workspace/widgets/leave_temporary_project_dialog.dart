@@ -12,7 +12,11 @@ import '../../../core/platform/platform_capabilities.dart';
 import '../providers/workspace_files_provider.dart';
 
 /// What the user chose to do with a temporary project they are leaving.
-enum _LeaveChoice { saveToComputer, saveToCloud, discard }
+enum _LeaveChoice() {
+  saveToComputer,
+  saveToCloud,
+  discard,
+}
 
 /// The dialog's stacked buttons.
 ///

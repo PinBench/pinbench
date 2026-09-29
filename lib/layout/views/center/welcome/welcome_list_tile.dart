@@ -7,25 +7,17 @@ import 'package:pinbench_ui/theme/app_colors.dart';
 
 /// A generic list-tile button used throughout the Welcome screen for
 /// start actions, templates, and recent workspaces.
-class WelcomeListTile extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final VoidCallback onTap;
+class const WelcomeListTile({
+  super.key,
+  required final IconData icon,
+  required final String title,
+  required final String subtitle,
+  required final VoidCallback onTap,
 
   /// Overrides the default icon-in-a-box leading slot (e.g. a rendered
   /// circuit-preview thumbnail for templates). Same 50x50 footprint.
-  final Widget? leading;
-
-  const WelcomeListTile({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-    this.leading,
-  });
-
+  final Widget? leading,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;

@@ -30,9 +30,7 @@ import 'toggle_panes_buttons.dart';
 import 'web_menu_bar.dart';
 import 'workspace_title.dart';
 
-class TitleBar extends ConsumerWidget {
-  const TitleBar({super.key});
-
+class const TitleBar({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // The native title bar is hidden (TitleBarStyle.hidden), so the OS draws its
@@ -198,14 +196,14 @@ class TitleBar extends ConsumerWidget {
 /// children out, so it can only be as big as its constraints allow — and the
 /// title bar sits in a `Column`, which offers it infinite height.
 class _CentredTitleBar extends MultiChildRenderObjectWidget {
-  _CentredTitleBar({required Widget leading, required Widget middle, required Widget trailing})
+  new({required Widget leading, required Widget middle, required Widget trailing})
     : super(children: [leading, middle, trailing]);
 
   @override
   RenderObject createRenderObject(BuildContext context) => _RenderCentredTitleBar();
 }
 
-class _TitleBarParentData extends ContainerBoxParentData<RenderBox> {}
+class _TitleBarParentData extends ContainerBoxParentData<RenderBox>;
 
 class _RenderCentredTitleBar extends RenderBox
     with
@@ -276,9 +274,7 @@ class _RenderCentredTitleBar extends RenderBox
 /// "Open Folder") never leave `/`, so `HomeRoute().go()` alone would be a
 /// same-location no-op and `_HomeView`'s route-entry `closeFolder()` would
 /// never fire.
-class _HomeButton extends ConsumerWidget {
-  const _HomeButton();
-
+class const _HomeButton() extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hasWorkspace = ref.watch(workspaceFilesProvider.select((s) => s.workspacePath != null));

@@ -10,6 +10,7 @@ import 'package:pinbench/features/canvas/controller/canvas_controller.dart';
 import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench/features/canvas/widgets/properties/properties_view.dart';
 import 'package:pinbench_parts/models/part_model.dart';
+
 import '../../support/harness.dart';
 
 PartModel _model(String name) => standardParts.firstWhere((c) => c.name == name);

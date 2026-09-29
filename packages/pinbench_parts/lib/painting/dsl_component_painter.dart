@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../models/port_model.dart';
+
 import 'package:pinbench_pdl/pinbench_pdl.dart';
 
 import '../pdl_flutter.dart';
@@ -21,14 +22,15 @@ import 'part_palette.dart';
 /// Colours and text come from PDL expressions evaluated against the placed
 /// component's live properties and simulation state, so a definition can react
 /// without any imperative code.
-class DSLComponentPainter extends BaseComponentPainter with PortProvider {
-  final PartDefinition definition;
+class DSLComponentPainter({
+  required final PartDefinition definition,
 
   /// The placed component's property map — user-edited values *and* whatever
   /// the simulation has written into it this frame.
-  final Map<String, dynamic>? properties;
-
-  DSLComponentPainter({required this.definition, this.properties, super.isOutline = false})
+  final Map<String, dynamic>? properties,
+  super.isOutline = false,
+}) extends BaseComponentPainter with PortProvider {
+  this
     // Repaint when a piece of artwork finishes decoding: the first frame of a
     // part is usually drawn before its SVG has arrived.
     : super(repaint: PdlSvgCache.revision);

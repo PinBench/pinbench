@@ -310,12 +310,8 @@ class AVRBridge {
 /// bus timing. Nothing here needs to — a simulated peripheral answers as fast
 /// as the wire allows — so each event completes immediately, and the whole
 /// class is the translation from bus events to recorded transactions.
-class _RecordingTwiHandler implements TWIEventHandler {
-  _RecordingTwiHandler(this.twi, this.recorder);
-
-  final AVRTWI twi;
-  final I2cRecorder recorder;
-
+class _RecordingTwiHandler(final AVRTWI twi, final I2cRecorder recorder)
+    implements TWIEventHandler {
   @override
   void start(bool repeated) => twi.completeStart();
 

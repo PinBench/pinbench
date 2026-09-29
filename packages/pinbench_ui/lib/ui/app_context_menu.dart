@@ -25,39 +25,25 @@ const appMenuItemGroupStyle = FItemGroupStyleDelta.delta(spacing: 0);
 /// Data rather than a widget: the underlying menu only accepts its own item
 /// type, so the app describes what it wants and [AppContextMenu] builds it.
 /// That is also what lets a menu be split into groups at its separators.
-sealed class AppMenuEntry {
-  const AppMenuEntry();
-}
+sealed class const AppMenuEntry();
 
 /// A rule between two runs of items.
-class AppMenuSeparator extends AppMenuEntry {
-  const AppMenuSeparator();
-}
+class const AppMenuSeparator() extends AppMenuEntry;
 
 /// A menu line you can click.
-class AppContextMenuItem extends AppMenuEntry {
-  const AppContextMenuItem({
-    required this.text,
-    required this.onPressed,
-    this.icon,
-    this.iconColor,
-    this.textColor,
-    this.shortcut,
-    this.enabled = true,
-  });
-
-  final String text;
-  final VoidCallback onPressed;
-  final IconData? icon;
-  final Color? iconColor;
-  final Color? textColor;
+class const AppContextMenuItem({
+  required final String text,
+  required final VoidCallback onPressed,
+  final IconData? icon,
+  final Color? iconColor,
+  final Color? textColor,
 
   /// The keystroke that does the same thing, shown on the right.
-  final String? shortcut;
+  final String? shortcut,
 
   /// A greyed-out line that cannot be clicked — "Save" with nothing unsaved.
-  final bool enabled;
-}
+  final bool enabled = true,
+}) extends AppMenuEntry;
 
 /// Where a context menu is open, if it is.
 ///
@@ -104,21 +90,13 @@ class AppContextMenuController extends ChangeNotifier {
 ///
 /// Here the child is always the first entry of the same [Stack], whether the
 /// menu is open, closed, or empty. Keep it that way.
-class AppContextMenu extends StatefulWidget {
-  const AppContextMenu({
-    super.key,
-    required this.controller,
-    required this.entries,
-    required this.child,
-    this.dismissAfterLeaving = AppMotion.menuDismissDelay,
-  });
-
-  final AppContextMenuController controller;
+class const AppContextMenu({
+  super.key,
+  required final AppContextMenuController controller,
 
   /// The menu's contents, rebuilt by the caller as its state changes.
-  final List<AppMenuEntry> entries;
-
-  final Widget child;
+  required final List<AppMenuEntry> entries,
+  required final Widget child,
 
   /// How long the menu waits after the pointer leaves both it and its trigger
   /// before closing itself.
@@ -126,8 +104,8 @@ class AppContextMenu extends StatefulWidget {
   /// Right-clicking and then wandering off should not leave a menu stranded on
   /// screen, but closing the instant the pointer crosses the gap between the
   /// two would make the menu impossible to reach.
-  final Duration dismissAfterLeaving;
-
+  final Duration dismissAfterLeaving = AppMotion.menuDismissDelay,
+}) extends StatefulWidget {
   @override
   State<AppContextMenu> createState() => _AppContextMenuState();
 }

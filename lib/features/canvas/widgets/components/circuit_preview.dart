@@ -16,12 +16,11 @@ import 'component_widget.dart';
 /// / `InfiniteCanvasNodesDelegate`) but without any of the selection/hover/
 /// drag state those carry, then crops to the circuit's own bounding box and
 /// scales it to fit whatever space the caller gives it via [FittedBox].
-class CircuitPreview extends StatelessWidget {
-  final List<ComponentInstance> nodes;
-  final List<WireModel> wires;
-
-  const CircuitPreview({super.key, required this.nodes, required this.wires});
-
+class const CircuitPreview({
+  super.key,
+  required final List<ComponentInstance> nodes,
+  required final List<WireModel> wires,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (nodes.isEmpty) return const SizedBox.shrink();
@@ -69,11 +68,7 @@ class CircuitPreview extends StatelessWidget {
 
 /// Mirrors `CanvasNodeWidget`'s position/rotation/flip geometry, minus the
 /// selection/hover outline it also draws — a preview never has either.
-class _PreviewNode extends StatelessWidget {
-  final ComponentInstance node;
-
-  const _PreviewNode({required this.node});
-
+class const _PreviewNode({required final ComponentInstance node}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Positioned(
     left: node.position.dx,

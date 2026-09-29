@@ -87,6 +87,4 @@ void main() {
   });
 }
 
-class _OfflineStub implements Exception {
-  const _OfflineStub();
-}
+class const _OfflineStub() implements Exception;

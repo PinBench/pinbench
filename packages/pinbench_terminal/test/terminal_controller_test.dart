@@ -11,10 +11,7 @@ import 'package:pinbench_terminal/pty/pty_service.dart';
 import 'package:pinbench_terminal/pty/pty_service_io.dart';
 
 /// Minimal [Pty] stand-in (see pty_service_test for the rationale).
-class _FakePty implements Pty {
-  _FakePty(this._output);
-
-  final Stream<Uint8List> _output;
+class _FakePty(final Stream<Uint8List> _output) implements Pty {
   var killed = false;
 
   @override

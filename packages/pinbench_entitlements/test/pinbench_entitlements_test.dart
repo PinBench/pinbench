@@ -2,9 +2,7 @@ import 'package:pinbench_entitlements/pinbench_entitlements.dart';
 import 'package:test/test.dart';
 
 /// A gateway that allows everything, standing in for a commercial one.
-final class _AllowAll implements ProGateway {
-  const _AllowAll();
-
+final class const _AllowAll() implements ProGateway {
   @override
   ProTier get tier => ProTier.team;
 

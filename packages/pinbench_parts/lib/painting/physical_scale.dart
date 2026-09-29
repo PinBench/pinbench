@@ -22,9 +22,7 @@ import 'grid_system.dart';
 /// lead spacing isn't a multiple of 0.1", it is drawn at the nearest pitch —
 /// which is what the physical part is bent to when it goes into a breadboard
 /// anyway.
-class PhysicalScale {
-  const PhysicalScale._();
-
+class const PhysicalScale._() {
   /// Breadboard / DIP hole pitch: 0.1".
   static const holePitchMm = PdlUnits.holePitchMm;
 

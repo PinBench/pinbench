@@ -27,21 +27,15 @@ import '../models/simulation_snapshot.dart';
 ///
 /// All canvas reads/writes are mediated through the SimulationOutput
 /// interface, making this class independently unit-testable.
-class SimulationEngine {
-  static const _log = SimLog('app.simulation.engine');
-
-  final SimulationOutput _output;
-  final void Function(String)? onSerialPrint;
-  final void Function(String)? onSpiceLog;
-  final void Function(String)? onDebugLog;
-
-  /// Latest microphone reading, injected so the engine never touches the audio
-  /// plugins directly (it may run in a background isolate). Defaults to silence.
-  final MicInput _micInput;
+class SimulationEngine({
+  required final SimulationOutput _output,
+  final void Function(String)? onSerialPrint,
+  final void Function(String)? onSpiceLog,
+  final void Function(String)? onDebugLog,
 
   /// Emitted when the detected buzzer tone changes (Hz, or null when it stops).
   /// The owner turns this into actual audio on the UI isolate.
-  final void Function(double? hz)? onBuzzerFrequency;
+  final void Function(double? hz)? onBuzzerFrequency,
 
   /// Per-wire current in amps keyed by wire id, signed so a positive value runs
   /// from the wire's `start` port to its `end`. Fired only when the values have
@@ -49,16 +43,23 @@ class SimulationEngine {
   ///
   /// Supplying this callback is what turns the current calculation on at all —
   /// it is the only consumer, so a headless run never pays for it.
-  final void Function(Map<String, double> currents)? onWireCurrents;
+  final void Function(Map<String, double> currents)? onWireCurrents,
 
   /// Rolling frame-stats callback, fired periodically (~1 Hz) so the owning
   /// isolate can export performance data to telemetry. Receives the current
   /// profiler rolling averages.
-  final void Function(FrameStats stats)? onFrameStats;
+  final void Function(FrameStats stats)? onFrameStats,
 
   /// Optional profiler. Assign profiler.enabled = true to start
   /// collecting per-frame timing. Zero overhead when disabled.
-  final FrameProfiler? profiler;
+  final FrameProfiler? profiler,
+  MicInput? micInput,
+}) {
+  static const _log = SimLog('app.simulation.engine');
+
+  /// Latest microphone reading, injected so the engine never touches the audio
+  /// plugins directly (it may run in a background isolate). Defaults to silence.
+  final MicInput _micInput = micInput ?? const SilentMicInput();
 
   var _isSimulating = false;
   bool get isSimulating => _isSimulating;
@@ -209,19 +210,6 @@ class SimulationEngine {
       }
     }
   }
-
-  SimulationEngine({
-    required SimulationOutput output,
-    this.onSerialPrint,
-    this.onSpiceLog,
-    this.onDebugLog,
-    this.onBuzzerFrequency,
-    this.onWireCurrents,
-    this.onFrameStats,
-    this.profiler,
-    MicInput? micInput,
-  }) : _output = output,
-       _micInput = micInput ?? const SilentMicInput();
 
   void stop() {
     final wasSimulating = _isSimulating;

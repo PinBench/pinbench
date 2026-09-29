@@ -68,8 +68,8 @@ abstract final class WireFlow {
 /// its own speed, so what the painter needs is elapsed *time*, not a normalised
 /// 0–1 value. A controller that repeats would snap every wire's phase at each
 /// wrap, since no wire's speed divides the period evenly.
-class WireFlowClock extends ValueNotifier<double> {
-  WireFlowClock(TickerProvider vsync) : super(0) {
+class WireFlowClock(TickerProvider vsync) extends ValueNotifier<double> {
+  this : super(0) {
     _ticker = vsync.createTicker((elapsed) {
       value = _resumedAt + elapsed.inMicroseconds / Duration.microsecondsPerSecond;
     });

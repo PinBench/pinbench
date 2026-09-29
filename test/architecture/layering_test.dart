@@ -169,9 +169,10 @@ void main() {
       'pinbench_edition_api',
       'pinbench_entitlements',
     ]) {
-      final files = Directory(
-        'packages/$package/lib',
-      ).listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.dart'));
+      final files = Directory('packages/$package/lib')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart'));
 
       for (final file in files) {
         if (file.readAsStringSync().contains(packagePrefix)) {
@@ -210,17 +211,18 @@ void main() {
     final offenders = <String>[];
 
     for (final package in const ['pinbench_pdl', 'pinbench_cdl']) {
-      final files = Directory(
-        'packages/$package/lib',
-      ).listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.dart'));
+      final files = Directory('packages/$package/lib')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart'));
 
       for (final file in files) {
         final source = file.readAsStringSync();
         for (final banned in ['package:flutter/', 'dart:ui', 'package:pinbench']) {
           final ownPackage = 'package:$package/';
-          final hits = RegExp(
-            "import '${RegExp.escape(banned)}[^']*'",
-          ).allMatches(source).where((m) => !m.group(0)!.contains(ownPackage));
+          final hits = RegExp("import '${RegExp.escape(banned)}[^']*'")
+              .allMatches(source)
+              .where((m) => !m.group(0)!.contains(ownPackage));
           for (final hit in hits) {
             offenders.add('${file.path.replaceAll(r'\', '/')}: ${hit.group(0)}');
           }

@@ -17,10 +17,7 @@ import '../../../core/chrome/chrome_commands.dart';
 /// semantics (the bulk loop re-focuses the canvas tab per `.cdl` file as it
 /// opens; a single ad-hoc open doesn't need that), so callers keep that
 /// logic themselves rather than have it collapsed into one shared behavior.
-class WorkspaceTabLifecycleService {
-  WorkspaceTabLifecycleService(this._ref);
-  final Ref _ref;
-
+class WorkspaceTabLifecycleService(final Ref _ref) {
   /// Closes every currently-open editor/canvas tab and disposes its
   /// controller, so opening a workspace always starts from a clean slate.
   /// Without this, opening a second workspace (or re-opening after `build()`

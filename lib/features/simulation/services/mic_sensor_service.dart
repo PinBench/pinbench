@@ -6,7 +6,7 @@ import 'package:record/record.dart';
 import 'package:pinbench_sim/core/sim_io.dart';
 import 'package:pinbench_sim/core/sim_log.dart';
 
-class MicSensorService implements MicrophoneDevice {
+class MicSensorService._() implements MicrophoneDevice {
   static const _log = SimLog('app.simulation.mic');
   AudioRecorder? _audioRecorder;
   StreamSubscription<Amplitude>? _amplitudeSub;
@@ -20,8 +20,6 @@ class MicSensorService implements MicrophoneDevice {
   var thresholdDb = -10.0;
 
   var _isInitialized = false;
-
-  MicSensorService._();
   static final instance = MicSensorService._();
 
   @override

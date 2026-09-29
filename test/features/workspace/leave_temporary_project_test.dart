@@ -35,11 +35,7 @@ class _SignedInAuth implements AuthService {
   Future<void> signOut() async {}
 }
 
-class _FakeWorkspace extends WorkspaceFiles {
-  _FakeWorkspace(this._state);
-
-  final WorkspaceState _state;
-
+class _FakeWorkspace(final WorkspaceState _state) extends WorkspaceFiles {
   @override
   WorkspaceState build() => _state;
 }

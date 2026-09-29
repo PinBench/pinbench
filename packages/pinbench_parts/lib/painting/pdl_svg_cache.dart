@@ -15,9 +15,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 /// It is a process-wide cache on purpose: a circuit with twenty of the same
 /// sensor should decode that artwork once, and the entries are immutable
 /// pictures that stay valid for the life of the app.
-class PdlSvgCache {
-  PdlSvgCache._();
-
+class PdlSvgCache._() {
   /// Bumped whenever a picture finishes loading. Painters pass this as their
   /// `repaint` listenable, which is how art appears without a rebuild.
   static final revision = ValueNotifier<int>(0);
@@ -81,9 +79,4 @@ class PdlSvgCache {
 /// A decoded SVG: the picture plus the size it was authored at, which is what
 /// a part is scaled from.
 @immutable
-class PdlSvgArtwork {
-  final ui.Picture picture;
-  final ui.Size size;
-
-  const PdlSvgArtwork({required this.picture, required this.size});
-}
+class const PdlSvgArtwork({required final ui.Picture picture, required final ui.Size size});

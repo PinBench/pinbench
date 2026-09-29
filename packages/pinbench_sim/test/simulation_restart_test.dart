@@ -35,12 +35,11 @@ ComponentInstance _node(String name, String keyId) => ComponentInstance(
   part: PartModel(name: name, size: const Size(40, 40)),
 );
 
-class _Circuit {
-  _Circuit(this.netlist, this.nodes, this.ledKey);
-  final CircuitNetlist netlist;
-  final List<ComponentInstance> nodes;
-  final String ledKey;
-}
+class _Circuit(
+  final CircuitNetlist netlist,
+  final List<ComponentInstance> nodes,
+  final String ledKey,
+);
 
 /// Builds a minimal "Arduino pin 13 -> 220Ω resistor -> LED -> GND" circuit.
 ///

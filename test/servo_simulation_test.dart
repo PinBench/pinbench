@@ -18,14 +18,10 @@ import 'package:pinbench_sim/core/simulation_engine.dart';
 import 'package:pinbench_sim/core/simulation_output.dart';
 import 'package:pinbench_parts/models/part_model.dart';
 
-class _RecordingOutput implements SimulationOutput {
-  _RecordingOutput(this.simulationNodes, this.simulationWires);
-
-  @override
-  final List<ComponentInstance> simulationNodes;
-  @override
-  final List<WireModel> simulationWires;
-
+class _RecordingOutput(
+  @override final List<ComponentInstance> simulationNodes,
+  @override final List<WireModel> simulationWires,
+) implements SimulationOutput {
   final angles = <double>[];
 
   @override

@@ -11,6 +11,7 @@ import 'package:pinbench/shell/window.dart';
 import 'package:pinbench_ui/theme/app_icons.dart';
 
 import '../support/harness.dart';
+
 import 'package:pinbench_ui/ui/app_icon_button.dart';
 
 /// The title bar is the one row that spans the whole window, so it is the first
@@ -26,11 +27,7 @@ class _TemporaryWorkspace extends WorkspaceFiles {
   WorkspaceState build() => const WorkspaceState(workspacePath: '/tmp/blink', isTemporary: true);
 }
 
-class _FullScreen extends WindowIsFullScreen {
-  _FullScreen({required this.fullScreen});
-
-  final bool fullScreen;
-
+class _FullScreen({required final bool fullScreen}) extends WindowIsFullScreen {
   @override
   bool build() => fullScreen;
 }

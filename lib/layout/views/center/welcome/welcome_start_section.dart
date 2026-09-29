@@ -14,9 +14,7 @@ import '../../../../features/workspace/services/template_service.dart';
 import '../../../controllers/app_layout_controller.dart';
 
 /// The Welcome screen's "Start" card: new blank project / open folder.
-class WelcomeStartSection extends ConsumerWidget {
-  const WelcomeStartSection({super.key});
-
+class const WelcomeStartSection({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) => Column(
     mainAxisSize: MainAxisSize.min,

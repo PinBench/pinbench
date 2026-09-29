@@ -36,10 +36,7 @@ void simIsolateMain(SendPort toMain) {
 /// [SimulationOutput] that forwards visual updates to the UI isolate as
 /// [FrameUpdates], and serves circuit topology from a locally-held list that is
 /// rehydrated on [StartSim]/[RebuildCircuit] and mutated on [ButtonStates].
-class _IsolateOutput implements SimulationOutput {
-  _IsolateOutput(this._sendEvent);
-  final void Function(SimEvent) _sendEvent;
-
+class _IsolateOutput(final void Function(SimEvent) _sendEvent) implements SimulationOutput {
   List<ComponentInstance> nodes = [];
   List<WireModel> wires = [];
 
@@ -60,8 +57,8 @@ class _IsolateOutput implements SimulationOutput {
   }
 }
 
-class _SimWorker {
-  _SimWorker(this._toMain) {
+class _SimWorker(final SendPort _toMain) {
+  this {
     _output = _IsolateOutput(_send);
     _engine = SimulationEngine(
       output: _output,
@@ -83,7 +80,6 @@ class _SimWorker {
     );
   }
 
-  final SendPort _toMain;
   final _mic = MutableMicInput();
   late final _IsolateOutput _output;
   late final SimulationEngine _engine;

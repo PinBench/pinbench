@@ -7,6 +7,7 @@ import 'package:patrol_finders/patrol_finders.dart';
 
 import 'package:pinbench/features/workspace/providers/serial_plotter_provider.dart';
 import 'package:pinbench/layout/views/bottom/serial_plotter_view.dart';
+
 import '../../support/harness.dart';
 
 /// Overrides go through a [ProviderContainer] + [UncontrolledProviderScope]

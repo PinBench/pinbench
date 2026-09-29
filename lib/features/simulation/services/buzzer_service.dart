@@ -8,14 +8,12 @@ import 'buzzer_backend.dart';
 /// Holds the platform-agnostic tone logic (pitch correction and change
 /// thresholding) and delegates raw audio to a [BuzzerBackend] — `flutter_soloud`
 /// on native, the Web Audio API on the web.
-class BuzzerService implements ToneOutput {
+class BuzzerService._() implements ToneOutput {
   static const _log = SimLog('app.simulation.buzzer');
 
   final _backend = BuzzerBackend();
   double? _currentFrequency;
   var _isPlaying = false;
-
-  BuzzerService._();
 
   static final instance = BuzzerService._();
 

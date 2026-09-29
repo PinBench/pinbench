@@ -13,33 +13,21 @@ String nodeKeyToId(Key key) => key is ValueKey<String> ? key.value : key.toStrin
 
 /// A connection point on a component (e.g. an LED's `anode`, an Arduino pin),
 /// defined in the component's own local coordinate space.
-class ComponentPort {
-  final String id;
-  final String name;
+class const ComponentPort({
+  required final String id,
+  required final String name,
 
   /// Position of the port relative to the component's origin (top-left), before
   /// the node's rotation/flip/scale are applied.
-  final Offset localOffset;
-  final PortType type;
-
-  const ComponentPort({
-    required this.id,
-    required this.name,
-    required this.localOffset,
-    this.type = PortType.biDirectional,
-  });
-}
+  required final Offset localOffset,
+  final PortType type = PortType.biDirectional,
+});
 
 /// Identifies a specific port on a specific placed node: the pair
 /// `(node key, port id)`. This is the atom the netlist and wires are built from,
 /// so it implements value equality to be usable as a map/set key.
 @immutable
-class PortLocation {
-  final Key nodeKey;
-  final String portId;
-
-  const PortLocation({required this.nodeKey, required this.portId});
-
+class const PortLocation({required final Key nodeKey, required final String portId}) {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -56,7 +44,7 @@ class PortLocation {
 
   Map<String, dynamic> toJson() => {'nodeId': nodeKeyToId(nodeKey), 'portId': portId};
 
-  factory PortLocation.fromJson(Map<String, dynamic> json) => PortLocation(
+  factory fromJson(Map<String, dynamic> json) => PortLocation(
     nodeKey: ValueKey<String>(json['nodeId'] as String),
     portId: json['portId'] as String,
   );

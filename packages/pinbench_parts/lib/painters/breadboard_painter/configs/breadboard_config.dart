@@ -194,14 +194,14 @@ class BreadboardConfig {
   /// Landscape: long axis first.
   Size get boardSize => Size(boardLength, boardBreadth);
 
-  BreadboardConfig._({required this.rowsCount});
+  new _({required this.rowsCount});
 
   /// 30 rows — 26 of them numbered, plus the [unnumberedEndRows] at each end.
-  factory BreadboardConfig.half() => BreadboardConfig._(rowsCount: 30);
+  factory half() => BreadboardConfig._(rowsCount: 30);
 
   /// 64 rows, so the printed numbering runs a full 1…60 with the
   /// [unnumberedEndRows] to spare at each end.
-  factory BreadboardConfig.full() => BreadboardConfig._(rowsCount: 64);
+  factory full() => BreadboardConfig._(rowsCount: 64);
 
   @override
   bool operator ==(Object other) =>

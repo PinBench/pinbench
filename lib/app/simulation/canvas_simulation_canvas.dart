@@ -14,11 +14,9 @@ import '../../features/simulation/ports/simulation_canvas.dart';
 /// directly, which meant the emulator — including the code that runs inside a
 /// background isolate — depended on the app's canvas state. Closing that left
 /// the *feature* still holding one, which is what this file finishes.
-class CanvasSimulationCanvas extends ChangeNotifier implements SimulationCanvas {
-  CanvasSimulationCanvas(this._controller);
-
-  final CanvasController _controller;
-
+class CanvasSimulationCanvas(final CanvasController _controller)
+    extends ChangeNotifier
+    implements SimulationCanvas {
   @override
   List<ComponentInstance> get simulationNodes => _controller.nodes;
 

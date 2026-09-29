@@ -12,11 +12,7 @@ import 'package:flutter/widgets.dart';
 /// panes, the consoles, the side panel — is a desktop pane driven by a
 /// mouse. So it passes [emptyTextSelectionControls] and the selection looks
 /// the way it already did.
-class AppSelectionArea extends StatelessWidget {
-  const AppSelectionArea({super.key, required this.child});
-
-  final Widget child;
-
+class const AppSelectionArea({super.key, required final Widget child}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       SelectableRegion(selectionControls: emptyTextSelectionControls, child: child);
@@ -26,13 +22,12 @@ class AppSelectionArea extends StatelessWidget {
 ///
 /// The [AppSelectionArea] equivalent of the old `SelectableText`: same
 /// arguments as a plain [Text], and you can drag across it.
-class AppSelectableText extends StatelessWidget {
-  const AppSelectableText(this.data, {super.key, this.style, this.textAlign});
-
-  final String data;
-  final TextStyle? style;
-  final TextAlign? textAlign;
-
+class const AppSelectableText(
+  final String data, {
+  super.key,
+  final TextStyle? style,
+  final TextAlign? textAlign,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AppSelectionArea(
     child: Text(data, style: style, textAlign: textAlign),

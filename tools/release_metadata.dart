@@ -94,26 +94,18 @@ Future<void> generateReleaseMetadata(List<String> args) async {
 }
 
 /// One downloadable file, with everything the feeds need to say about it.
-class AssetInfo {
-  const AssetInfo({
-    required this.fileName,
-    required this.url,
-    required this.sha256,
-    required this.size,
-    this.edSignature,
-  });
-
-  final String fileName;
-  final String url;
-  final String sha256;
-  final int size;
+class const AssetInfo({
+  required final String fileName,
+  required final String url,
+  required final String sha256,
+  required final int size,
 
   /// Sparkle's EdDSA signature over the file, from `sign_update`. Null when
   /// no signing key was available — Sparkle then falls back to verifying the
   /// update's Developer ID against the running app's, which is weaker but is
   /// still a real check, and is better than refusing to publish.
-  final String? edSignature;
-}
+  final String? edSignature,
+});
 
 /// A single-item Sparkle appcast.
 ///
@@ -184,19 +176,17 @@ String _xml(String value) => value
     .replaceAll('"', '&quot;');
 
 /// The command line, parsed.
-class ReleaseOptions {
-  const ReleaseOptions({
-    required this.version,
-    required this.buildNumber,
-    required this.baseUrl,
-    required this.notesUrl,
-    required this.publishedAt,
-    required this.outDir,
-    required this.assets,
-    required this.edSignatures,
-  });
-
-  factory ReleaseOptions.parse(List<String> args) {
+class const ReleaseOptions({
+  required final String version,
+  required final int buildNumber,
+  required final String baseUrl,
+  required final String notesUrl,
+  required final DateTime publishedAt,
+  required final String outDir,
+  required final Map<String, String> assets,
+  required final Map<String, String> edSignatures,
+}) {
+  factory parse(List<String> args) {
     final single = <String, String>{};
     final assets = <String, String>{};
     final signatures = <String, String>{};
@@ -232,13 +222,4 @@ class ReleaseOptions {
       edSignatures: signatures,
     );
   }
-
-  final String version;
-  final int buildNumber;
-  final String baseUrl;
-  final String notesUrl;
-  final DateTime publishedAt;
-  final String outDir;
-  final Map<String, String> assets;
-  final Map<String, String> edSignatures;
 }

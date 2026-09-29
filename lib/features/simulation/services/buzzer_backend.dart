@@ -7,7 +7,7 @@ import 'buzzer_backend_web.dart' if (dart.library.io) 'buzzer_backend_io.dart';
 /// shared frequency/pitch logic lives in `BuzzerService`; this just drives a
 /// single continuous tone whose pitch and audibility can be changed.
 abstract interface class BuzzerBackend {
-  factory BuzzerBackend() = BuzzerBackendImpl;
+  factory() = BuzzerBackendImpl;
 
   /// Prepares the audio engine. Must be safe to call more than once.
   Future<void> init();

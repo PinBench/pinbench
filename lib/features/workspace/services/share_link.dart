@@ -68,18 +68,16 @@ String embedSnippetFor(String projectId, {String? origin, int height = 420, bool
 /// testable without booting a router, which is what let `live=1` ship parsed
 /// but unused: the URL said one thing and the code below it did another, with
 /// no single place where that mismatch was visible.
-class ShareLinkOptions {
-  const ShareLinkOptions({this.embed = false, this.live = false});
-
+class const ShareLinkOptions({
   /// `?embed=1` — render the chrome-less view meant for an `<iframe>`.
-  final bool embed;
+  final bool embed = false,
 
   /// `?live=1` — subscribe to the author's edits instead of taking a snapshot.
-  final bool live;
-
+  final bool live = false,
+}) {
   /// Reads the flags out of [query], the way `GoRouterState.uri.queryParameters`
   /// supplies them. Anything other than an exact `1` is off: a flag that widens
   /// what a link does should have to be spelled correctly.
-  factory ShareLinkOptions.fromQuery(Map<String, String> query) =>
+  factory fromQuery(Map<String, String> query) =>
       ShareLinkOptions(embed: query['embed'] == '1', live: query['live'] == '1');
 }

@@ -11,26 +11,19 @@ import 'package:pinbench_parts/models/part_model.dart';
 
 /// The open workspace, or an empty one when none is open.
 @immutable
-class HostWorkspace {
-  const HostWorkspace({
-    this.path,
-    this.mainCircuitPath,
-    this.mainSketchPath,
-    this.filePaths = const [],
-  });
-
+class const HostWorkspace({
   /// The workspace folder, or null when no project is open.
-  final String? path;
+  final String? path,
 
   /// The `.cdl` the project nominates as its circuit, if it does.
-  final String? mainCircuitPath;
+  final String? mainCircuitPath,
 
   /// The `.ino` the project nominates as its sketch, if it does.
-  final String? mainSketchPath;
+  final String? mainSketchPath,
 
   /// Every file in the workspace, in the explorer's (alphabetical) order.
-  final List<String> filePaths;
-
+  final List<String> filePaths = const [],
+}) {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -47,14 +40,12 @@ class HostWorkspace {
 /// A problem the app is reporting — from the circuit validator or the
 /// compiler.
 @immutable
-class HostProblem {
-  const HostProblem({required this.severity, required this.message, this.detail});
-
+class const HostProblem({
   /// `error`, `warning` or `info`.
-  final String severity;
-  final String message;
-  final String? detail;
-}
+  required final String severity,
+  required final String message,
+  final String? detail,
+});
 
 /// What a side panel may ask the app to do.
 abstract interface class HostActions {

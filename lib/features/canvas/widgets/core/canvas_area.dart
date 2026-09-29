@@ -9,9 +9,7 @@ import '../../managers/snap_guide_helper.dart';
 import 'canvas.dart';
 import '../../../../core/parts/part_registry_provider.dart';
 
-class CanvasArea extends ConsumerStatefulWidget {
-  const CanvasArea({super.key});
-
+class const CanvasArea({super.key}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<CanvasArea> createState() => _CanvasAreaState();
 }

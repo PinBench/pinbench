@@ -13,16 +13,16 @@ import '../theme/app_colors.dart';
 /// It spins a loader glyph rather than sweeping an arc, which is why there is
 /// no `strokeWidth` here: the stroke belongs to the glyph, and a width the
 /// widget could not honour is worse than one it never offered.
-class AppSpinner extends StatelessWidget {
-  const AppSpinner({super.key, this.size = 36, this.color});
+class const AppSpinner({
+  super.key,
 
   /// The diameter of the spinner.
-  final double size;
+  final double size = 36,
 
   /// Defaults to the theme's primary. forui's own default is the muted
   /// foreground, which is too quiet for something the user is waiting on.
-  final Color? color;
-
+  final Color? color,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => RepaintBoundary(
     child: SizedBox.square(

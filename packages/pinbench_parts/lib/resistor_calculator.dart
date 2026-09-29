@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 import 'package:pinbench_pdl/pinbench_pdl.dart' show parseResistance;
+
 import 'painting/part_palette.dart';
 
 class ResistorCalculator {

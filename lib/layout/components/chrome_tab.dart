@@ -15,12 +15,8 @@ import '../providers/layout_provider.dart';
 /// onto and flares outward at the bottom, so it reads as continuous with the
 /// view below it. The flare is why the strip needs the hover-aware separators
 /// in `Layout` — a straight rule butted against a curve reads as a fault.
-class ChromeTab extends ConsumerWidget {
-  final PlatTabDetails tab;
-  final Widget? child;
-
-  const ChromeTab({super.key, required this.tab, this.child});
-
+class const ChromeTab({super.key, required final PlatTabDetails tab, final Widget? child})
+    extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isActive = tab.states.contains(WidgetState.selected);
@@ -65,13 +61,11 @@ class ChromeTab extends ConsumerWidget {
   }
 }
 
-class _Tab extends ConsumerWidget {
-  const _Tab({required this.tab, required this.isActive, this.child});
-
-  final PlatTabDetails tab;
-  final bool isActive;
-  final Widget? child;
-
+class const _Tab({
+  required final PlatTabDetails tab,
+  required final bool isActive,
+  final Widget? child,
+}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final color = isActive ? context.appColors.primary : context.appColors.foreground;
@@ -101,11 +95,7 @@ class _Tab extends ConsumerWidget {
   }
 }
 
-class _CountBadge extends StatelessWidget {
-  const _CountBadge({required this.count});
-
-  final int count;
-
+class const _CountBadge({required final int count}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 1),
@@ -114,34 +104,21 @@ class _CountBadge extends StatelessWidget {
   );
 }
 
-class ChromeTabPainter extends CustomPainter {
-  final bool isActive;
-  final bool isHovered;
-  final bool isDragged;
-  final bool isFirst;
-  final bool isLast;
-  final bool isNextActive;
-
-  final Color activeBackgroundColor;
-  final Color hoverBackgroundColor;
+class ChromeTabPainter({
+  required final bool isActive,
+  required final bool isHovered,
+  required final bool isDragged,
+  required final bool isFirst,
+  required final bool isLast,
+  required final bool isNextActive,
+  required final Color activeBackgroundColor,
+  required final Color hoverBackgroundColor,
 
   /// The line drawn around the active tab. It is the *same* line the pane
   /// below draws around itself — together they outline one shape, which is
   /// what makes a tab look attached to its own content.
-  final Color borderColor;
-
-  ChromeTabPainter({
-    required this.isActive,
-    required this.isHovered,
-    required this.isDragged,
-    required this.isFirst,
-    required this.isLast,
-    required this.isNextActive,
-    required this.activeBackgroundColor,
-    required this.hoverBackgroundColor,
-    required this.borderColor,
-  });
-
+  required final Color borderColor,
+}) extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     const radius = AppChrome.tabRadius;

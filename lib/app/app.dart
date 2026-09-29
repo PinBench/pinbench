@@ -17,9 +17,7 @@ import 'router.dart';
 /// desktop each `multiview_desktop` window gets its own independent `App`
 /// (and so its own [GoRouter]), giving both platforms one navigation model
 /// instead of native bypassing routes with direct function calls.
-class App extends ConsumerStatefulWidget {
-  const App({super.key});
-
+class const App({super.key}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<App> createState() => _AppState();
 }

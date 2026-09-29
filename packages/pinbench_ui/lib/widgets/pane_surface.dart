@@ -15,22 +15,16 @@ import '../theme/tokens.dart';
 /// The gutter is not drawn here: it comes from the layout's own padding and the
 /// margins on its splitters, so the panes are inset from each other rather than
 /// each carrying a margin of its own.
-class PaneSurface extends StatelessWidget {
-  const PaneSurface({
-    super.key,
-    required this.child,
-    this.connectedTop = false,
-    this.squareTopLeft = false,
-  });
-
-  final Widget child;
+class const PaneSurface({
+  super.key,
+  required final Widget child,
 
   /// True when a tab strip sits directly above this pane.
   ///
   /// The pane then leaves its top edge open — the strip's own bottom rule
   /// closes it — but still rounds the two top corners, so the rule and the
   /// pane's sides meet as one turned corner rather than a right angle.
-  final bool connectedTop;
+  final bool connectedTop = false,
 
   /// Squares the top-left corner (only meaningful with [connectedTop]).
   ///
@@ -38,8 +32,8 @@ class PaneSurface extends StatelessWidget {
   /// this pane's left edge, and its border comes straight down to meet the
   /// pane's: a rounded corner there would curve away from the tab and leave a
   /// notch between two lines that are supposed to be one.
-  final bool squareTopLeft;
-
+  final bool squareTopLeft = false,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
@@ -77,13 +71,11 @@ class PaneSurface extends StatelessWidget {
 /// Painted rather than expressed as a `BoxDecoration` border: a `Border` may
 /// only be combined with a `borderRadius` when all four of its sides are
 /// present, and a pane under a tab strip needs exactly three of them.
-class _PaneOutline extends CustomPainter {
-  const _PaneOutline({required this.color, required this.openTop, this.squareTopLeft = false});
-
-  final Color color;
-  final bool openTop;
-  final bool squareTopLeft;
-
+class const _PaneOutline({
+  required final Color color,
+  required final bool openTop,
+  final bool squareTopLeft = false,
+}) extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Inset by half the stroke: a hairline drawn *on* the edge is half outside

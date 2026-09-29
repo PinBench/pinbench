@@ -17,7 +17,7 @@ import 'dart:typed_data';
 /// [Ssd1306Controller.unpack] are that round trip: one base64 string holding the registers and the GDDRAM.
 /// One key rather than twenty also means change detection is a string compare —
 /// an idle display costs one comparison per frame and never redraws.
-class Ssd1306Controller {
+class Ssd1306Controller() {
   /// Columns and rows of the panel this models. The 128 × 64 part is the one
   /// in every tutorial; a 128 × 32 module writes the same GDDRAM and simply
   /// leaves the lower half untouched, so it renders correctly here too.
@@ -38,8 +38,6 @@ class Ssd1306Controller {
 
   /// The longest argument list any command takes (0x26, horizontal scroll).
   static const _maxPendingArgs = 6;
-
-  Ssd1306Controller();
 
   /// The display's graphics RAM: `ram[page * width + column]`.
   final ram = Uint8List(_ramBytes);
@@ -314,7 +312,7 @@ class Ssd1306Controller {
 
   /// Restores a controller from [packed], or a freshly [reset] one when the
   /// string is absent, truncated or from an older format.
-  factory Ssd1306Controller.unpack(Object? packed) {
+  factory unpack(Object? packed) {
     final controller = Ssd1306Controller();
     if (packed is! String || packed.isEmpty) return controller;
 

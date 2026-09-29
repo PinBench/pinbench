@@ -15,11 +15,9 @@ import '../painting/part_palette.dart';
 /// bottom. Terminals `term1`/`term2` are the resistive-track ends; `wiper` is
 /// the centre tap. Wiring term1→5 V, term2→GND and wiper→an analog pin makes
 /// `analogRead` return `position × 5 V`.
-class PotentiometerPainter extends BaseComponentPainter with PortProvider {
-  final Map<String, dynamic>? properties;
-
-  PotentiometerPainter({this.properties, super.isOutline});
-
+class PotentiometerPainter({final Map<String, dynamic>? properties, super.isOutline})
+    extends BaseComponentPainter
+    with PortProvider {
   /// Wiper position clamped to 0.0–1.0 (defaults to mid-travel).
   double get position {
     final v = properties?[ComponentProps.potentiometerValue];

@@ -10,15 +10,14 @@ import 'breadboard_utils.dart';
 ///
 /// The node's own origin is the rail's `+` hole line, so everything here is
 /// measured across the board from there; rows run along x.
-class BreadboardPowerRailNode extends PaintNode {
-  final BreadboardPainter painter;
+class BreadboardPowerRailNode(
+  final BreadboardPainter painter, {
 
   /// The bottom rail. Called "right" because that is what its port ids say —
   /// see `BreadboardConfig`.
-  final bool isRight;
+  required final bool isRight,
+}) extends PaintNode {
   final _paint = Paint();
-
-  BreadboardPowerRailNode(this.painter, {required this.isRight});
 
   @override
   Size get size =>

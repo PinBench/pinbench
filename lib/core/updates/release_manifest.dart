@@ -19,14 +19,17 @@ import 'release_version.dart';
 ///   }
 /// }
 /// ```
-class ReleaseManifest {
-  const ReleaseManifest({
-    required this.version,
-    required this.notesUrl,
-    this.publishedAt,
-    this.assets = const {},
-  });
+class const ReleaseManifest({
+  required final ReleaseVersion version,
 
+  /// The release notes page. Null is survivable — the update banner just
+  /// links to the download page instead.
+  required final String? notesUrl,
+  final DateTime? publishedAt,
+
+  /// Per-platform downloads, keyed `macos` / `windows` / `linux`.
+  final Map<String, ReleaseAsset> assets = const {},
+}) {
   /// Reads a decoded `latest.json`, or returns null if it is not one.
   ///
   /// Every field is checked rather than cast: this is parsing a document
@@ -53,35 +56,21 @@ class ReleaseManifest {
       assets: assets,
     );
   }
-
-  final ReleaseVersion version;
-
-  /// The release notes page. Null is survivable — the update banner just
-  /// links to the download page instead.
-  final String? notesUrl;
-
-  final DateTime? publishedAt;
-
-  /// Per-platform downloads, keyed `macos` / `windows` / `linux`.
-  final Map<String, ReleaseAsset> assets;
 }
 
 /// One downloadable file in a [ReleaseManifest].
-class ReleaseAsset {
-  const ReleaseAsset({required this.url, this.sha256, this.size});
+class const ReleaseAsset({
+  required final String url,
 
+  /// Hex SHA-256, so a download can be verified by hand against what the
+  /// download page prints. Not verified in-app: the app never downloads it.
+  final String? sha256,
+  final int? size,
+}) {
   static ReleaseAsset? fromJson(Object? json) {
     if (json is! Map) return null;
     final url = json['url'];
     if (url is! String || url.isEmpty) return null;
     return ReleaseAsset(url: url, sha256: json['sha256'] as String?, size: json['size'] as int?);
   }
-
-  final String url;
-
-  /// Hex SHA-256, so a download can be verified by hand against what the
-  /// download page prints. Not verified in-app: the app never downloads it.
-  final String? sha256;
-
-  final int? size;
 }

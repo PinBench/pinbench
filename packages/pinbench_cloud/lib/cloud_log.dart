@@ -1,27 +1,23 @@
 import 'package:flutter/foundation.dart';
 
 /// How much a [CloudLogRecord] matters.
-enum CloudLogLevel { info, warning, error }
+enum CloudLogLevel() {
+  info,
+  warning,
+  error,
+}
 
 /// One diagnostic from the cloud backend.
 @immutable
-class CloudLogRecord {
-  const CloudLogRecord({
-    required this.level,
-    required this.category,
-    required this.message,
-    this.error,
-    this.stackTrace,
-  });
-
-  final CloudLogLevel level;
+class const CloudLogRecord({
+  required final CloudLogLevel level,
 
   /// Dotted source, e.g. `app.cloud`.
-  final String category;
-  final String message;
-  final Object? error;
-  final StackTrace? stackTrace;
-
+  required final String category,
+  required final String message,
+  final Object? error,
+  final StackTrace? stackTrace,
+}) {
   @override
   String toString() => '[$category] $message${error == null ? '' : ' — $error'}';
 }
@@ -45,11 +41,7 @@ typedef CloudLogSink = void Function(CloudLogRecord record);
 /// This is the second copy of a shape `pinbench_sim`'s `SimLog` already has. Two is
 /// tolerable and three is not: if a third package needs it, the answer is a
 /// shared `pinbench_log` rather than another of these.
-class CloudLog {
-  const CloudLog(this.category);
-
-  final String category;
-
+class const CloudLog(final String category) {
   /// Installed once by the host. Null in tests.
   static CloudLogSink? sink;
 

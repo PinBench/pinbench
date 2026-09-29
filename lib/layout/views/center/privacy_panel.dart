@@ -16,9 +16,7 @@ import '../../../core/telemetry/telemetry_consent.dart';
 /// The settings for what this build shares: one switch for usage statistics
 /// and crash reports, and the policy that covers them. Shown only in a build
 /// with telemetry (see [TelemetryControl.available]).
-class PrivacyPanel extends ConsumerWidget {
-  const PrivacyPanel({super.key});
-
+class const PrivacyPanel({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final granted = ref.watch(telemetryConsentProvider) == TelemetryConsent.granted;

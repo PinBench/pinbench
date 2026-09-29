@@ -23,20 +23,17 @@ import 'port_model.dart';
 ///
 /// Provides the geometry the renderer and hit-testing rely on ([currentSize],
 /// [pivotOffset], [getPortOffset]) accounting for rotation, flip and scaling.
-class ComponentInstance {
-  ComponentInstance({
-    required this.position,
-    required this.part,
-    this.rotationAngle = 0.0,
-    this.flipHorizontal = false,
-    this.flipVertical = false,
-    this.customWidth,
-    this.customHeight,
-    Map<String, dynamic>? properties,
-    LocalKey? key,
-  }) : key = key ?? ValueKey(IdGenerator.generate('node')),
-       properties = properties ?? _getDefaultProperties(part);
-
+class ComponentInstance({
+  required var Offset position,
+  required final PartModel part,
+  var double rotationAngle = 0.0,
+  var bool flipHorizontal = false,
+  var bool flipVertical = false,
+  var double? customWidth,
+  var double? customHeight,
+  Map<String, dynamic>? properties,
+  LocalKey? key,
+}) {
   static Map<String, dynamic> _getDefaultProperties(PartModel part) {
     // What the part itself declares wins, and it is also the only form that
     // can be right: the name matching below reads "OLED Display" as an LED and
@@ -58,16 +55,9 @@ class ComponentInstance {
     return {};
   }
 
-  Offset position;
-  Map<String, dynamic> properties;
+  Map<String, dynamic> properties = properties ?? _getDefaultProperties(part);
   Offset? hoveredLocalPosition;
   BreadboardHoverState? breadboardHover;
-  double rotationAngle;
-  bool flipHorizontal;
-  bool flipVertical;
-  double? customWidth;
-  double? customHeight;
-
   Size get baseSize => Size(customWidth ?? part.size.width, customHeight ?? part.size.height);
 
   // Cached geometry — computed on first access, fresh per instance (copyWith).
@@ -247,9 +237,7 @@ class ComponentInstance {
     return Offset(fx / scaleX, fy / scaleY);
   }
 
-  final LocalKey key;
-  final PartModel part;
-
+  final LocalKey key = key ?? ValueKey(IdGenerator.generate('node'));
   Rect get rect => position & currentSize;
 
   /// Whether [canvasPosition] is on this part as *drawn*, rather than merely
@@ -310,7 +298,7 @@ class ComponentInstance {
     'properties': properties,
   };
 
-  factory ComponentInstance.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     final pos = json['position'] as Map<String, dynamic>;
     return ComponentInstance(
       key: ValueKey<String>(json['id'] as String),

@@ -9,9 +9,18 @@ import 'package:flutter/foundation.dart' show immutable;
 /// the Windows file version, and disagreeing with them would be worse than
 /// not having an opinion.
 @immutable
-class ReleaseVersion implements Comparable<ReleaseVersion> {
-  const ReleaseVersion(this.major, this.minor, this.patch, {this.preRelease});
+class const ReleaseVersion(
+  final int major,
+  final int minor,
+  final int patch, {
 
+  /// The bit after `-`, or null for a normal release. Compared as a whole
+  /// string rather than by semver's dot-separated identifier rules — the tags
+  /// this project cuts are `-beta.1`-shaped, where the two agree, and the
+  /// full rule is a lot of code to make `-alpha.10` sort after `-alpha.9` in
+  /// a comparison that only ever gates a "there is a newer build" banner.
+  final String? preRelease,
+}) implements Comparable<ReleaseVersion> {
   /// Parses `1.2.3`, `v1.2.3`, `1.2.3-beta.1`, or `1.2.3+7`.
   ///
   /// Returns null rather than throwing: the two inputs are a downloaded
@@ -53,17 +62,6 @@ class ReleaseVersion implements Comparable<ReleaseVersion> {
       preRelease: preRelease,
     );
   }
-
-  final int major;
-  final int minor;
-  final int patch;
-
-  /// The bit after `-`, or null for a normal release. Compared as a whole
-  /// string rather than by semver's dot-separated identifier rules — the tags
-  /// this project cuts are `-beta.1`-shaped, where the two agree, and the
-  /// full rule is a lot of code to make `-alpha.10` sort after `-alpha.9` in
-  /// a comparison that only ever gates a "there is a newer build" banner.
-  final String? preRelease;
 
   @override
   int compareTo(ReleaseVersion other) {

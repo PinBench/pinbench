@@ -9,7 +9,12 @@ const List<ActivityBarTab> topTabs = [.explorer, .parts, .properties];
 /// center-pane document, opened by `SettingsTabButton` rather than by a slot.
 const List<ActivityBarTab> bottomTabs = [.account];
 
-enum ActivityBarTab {
+enum ActivityBarTab({
+  required final String slotId,
+  required final String leafId,
+  required final String title,
+  required final IconData icon,
+}) {
   explorer(slotId: 'left_slot', leafId: 'explorer', title: 'Explorer', icon: AppIcons.folder),
   parts(slotId: 'left_slot', leafId: 'parts', title: 'Parts', icon: AppIcons.parts),
   properties(
@@ -19,18 +24,6 @@ enum ActivityBarTab {
     icon: AppIcons.properties,
   ),
   account(slotId: 'left_slot', leafId: 'account', title: 'Account', icon: AppIcons.account);
-
-  final String slotId;
-  final String leafId;
-  final String title;
-  final IconData icon;
-
-  const ActivityBarTab({
-    required this.slotId,
-    required this.leafId,
-    required this.title,
-    required this.icon,
-  });
 
   Plat get pane => .leaf(id: leafId, title: title, locked: true);
 }

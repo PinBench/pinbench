@@ -3,12 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
 
 /// One collapsible section of an [AppAccordion].
-class AppAccordionSection {
-  const AppAccordionSection({required this.title, required this.child});
-
-  final String title;
-  final Widget child;
-}
+class const AppAccordionSection({required final String title, required final Widget child});
 
 /// A stack of collapsible sections, all openable at once.
 ///
@@ -16,15 +11,14 @@ class AppAccordionSection {
 /// are plain data rather than widgets, because the one caller builds them from
 /// a map of categories and had no use for the per-item styling the previous
 /// library asked it to spell out.
-class AppAccordion extends StatelessWidget {
-  const AppAccordion({super.key, required this.sections, this.initiallyExpanded = true});
-
-  final List<AppAccordionSection> sections;
+class const AppAccordion({
+  super.key,
+  required final List<AppAccordionSection> sections,
 
   /// Whether sections start open. The parts palette wants everything visible
   /// on arrival; a section you have to hunt for is a section nobody finds.
-  final bool initiallyExpanded;
-
+  final bool initiallyExpanded = true,
+}) extends StatelessWidget {
   /// Each item draws a rule under itself. The palette's sections are already
   /// separated by their headers and their grids, and the call site had
   /// explicitly suppressed this before, so it stays suppressed.

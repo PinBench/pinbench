@@ -7,25 +7,23 @@ import 'breadboard_config.dart';
 /// A *terminal strip* is one numbered row within a bank — five holes joined
 /// across the bank, one node. The notch is why `a`–`e` and `f`–`j` of the same
 /// row number are two independent strips rather than a run of ten.
-class TerminalStripConfig {
+class TerminalStripConfig._({
   /// Where this bank prints its row numbers, relative to its own first hole
   /// line: above the `a`–`e` bank, below the `f`–`j` one.
-  final double rowLabelRelY;
+  required final double rowLabelRelY,
 
   /// Column ids, lower case because they go into port ids (`sig_left_a_3`).
   /// [columnDisplayLabels] is what gets printed on the board.
-  final List<String> columnLabels;
-
-  TerminalStripConfig._({required this.rowLabelRelY, required this.columnLabels});
-
+  required final List<String> columnLabels,
+}) {
   /// The top bank, `a`–`e`. Historically "left" — that's what its port ids say.
-  factory TerminalStripConfig.left(BreadboardConfig config) => TerminalStripConfig._(
+  factory left(BreadboardConfig config) => TerminalStripConfig._(
     rowLabelRelY: -config.gridCellStep,
     columnLabels: const ['a', 'b', 'c', 'd', 'e'],
   );
 
   /// The bottom bank, `f`–`j`. Historically "right".
-  factory TerminalStripConfig.right(BreadboardConfig config) => TerminalStripConfig._(
+  factory right(BreadboardConfig config) => TerminalStripConfig._(
     rowLabelRelY: config.colsCount * config.gridCellStep,
     columnLabels: const ['f', 'g', 'h', 'i', 'j'],
   );

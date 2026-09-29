@@ -17,10 +17,7 @@ import '../utils/canvas_geometry.dart';
 /// Drives interactive wiring: starting a wire from a port, live-routing it to
 /// the cursor, completing or cancelling it, and dragging existing wires' bend
 /// points. Operates on canvas state via the [CanvasContext].
-class WiringManager {
-  final CanvasContext context;
-  WiringManager(this.context);
-
+class WiringManager(final CanvasContext context) {
   PortLocation? startPort;
   Offset? currentDragPosition;
   Color? currentWireColor; // null means Auto

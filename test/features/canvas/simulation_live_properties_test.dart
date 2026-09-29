@@ -7,6 +7,7 @@ import 'package:pinbench_parts/models/part_model.dart';
 import 'package:pinbench/features/canvas/controller/canvas_controller.dart';
 import 'package:pinbench/features/canvas/widgets/components/component_widget.dart';
 import 'package:pinbench/features/canvas/widgets/core/canvas_node_widget.dart';
+
 import '../../support/harness.dart';
 
 /// A running simulation writes visual state — an LED's `isOn`, a servo's angle,

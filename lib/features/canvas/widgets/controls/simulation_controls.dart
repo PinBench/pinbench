@@ -9,9 +9,7 @@ import 'package:pinbench_ui/theme/theme.dart';
 
 import '../../../simulation/providers/simulation_provider.dart';
 
-class SimulationControls extends ConsumerWidget {
-  const SimulationControls({super.key});
-
+class const SimulationControls({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final simulationState = ref.watch(simulationProvider);

@@ -6,7 +6,7 @@ import '../painting/base_component_painter.dart';
 import '../painting/dsl_component_painter.dart';
 
 /// Grouping used to organize parts in the palette.
-enum PartCategory {
+enum PartCategory() {
   microcontrollers,
   basic,
   sensors,
@@ -30,16 +30,20 @@ enum PartCategory {
 /// Parts come from two sources: built-in [standardParts] (which supply a
 /// [painterBuilder]) and data-driven PDL definitions (which carry a
 /// [definitionId] and are rendered by a `DSLComponentPainter`).
-class PartModel {
-  final String name;
+class PartModel({
+  required final String name,
 
   /// The part's unrotated footprint, in canvas units.
-  final Size size;
+  required final Size size,
 
   /// Builds the painter for this part. Null for PDL-defined parts, which are
   /// resolved via [definitionId] instead.
   final BaseComponentPainter Function({bool isOutline, Map<String, dynamic>? properties})?
-  painterBuilder;
+  painterBuilder,
+
+  /// Id into the [PartRegistry] for PDL/data-driven parts; null for built-in
+  /// ones.
+  final String? definitionId,
 
   /// Names a simulation behaviour registered in the app, or null for a part
   /// that has none.
@@ -49,11 +53,11 @@ class PartModel {
   /// hand-written painters — a glow, a sweeping horn — and still want their
   /// behaviour dispatched rather than hard-coded into the simulation engine.
   /// A `.pdl` part sets this from its `LOGIC` line; a built-in sets it here.
-  final String? logic;
+  final String? logic,
 
   /// How this part appears in the analog solve, for built-in parts. A `.pdl`
   /// part carries the same thing on its `PartDefinition` instead.
-  final SpiceModelDef? spice;
+  final SpiceModelDef? spice,
 
   /// Whether this part *is* the microcontroller rather than something wired to
   /// it.
@@ -62,12 +66,8 @@ class PartModel {
   /// the sketch and supplies every pin voltage, so it is not an element in the
   /// netlist like the parts around it. A flag rather than a name comparison,
   /// so a second board would not mean editing the engine.
-  final bool isBoard;
-
-  /// Id into the [PartRegistry] for PDL/data-driven parts; null for built-in
-  /// ones.
-  final String? definitionId;
-  final PartCategory category;
+  final bool isBoard = false,
+  final PartCategory category = PartCategory.other,
 
   /// Properties a freshly placed instance starts with.
   ///
@@ -78,22 +78,10 @@ class PartModel {
   /// — a display that answers on a particular I²C address — has to arrive
   /// carrying it. Empty for every part that reads its own defaults from the
   /// painter, which is all of the older ones.
-  final Map<String, dynamic> defaults;
-
+  final Map<String, dynamic> defaults = const {},
+}) {
   BaseComponentPainter? getPainter({bool isOutline = false, Map<String, dynamic>? properties}) =>
       painterBuilder?.call(isOutline: isOutline, properties: properties);
-
-  PartModel({
-    required this.name,
-    required this.size,
-    this.painterBuilder,
-    this.definitionId,
-    this.logic,
-    this.spice,
-    this.isBoard = false,
-    this.category = PartCategory.other,
-    this.defaults = const {},
-  });
 
   PartModel clone() => PartModel(
     name: name,
@@ -116,7 +104,7 @@ class PartModel {
     'category': category.name,
   };
 
-  factory PartModel.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     final name = json['name'] as String;
     final definitionId = json['definitionId'] as String?;
 

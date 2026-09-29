@@ -10,7 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// the title bar, the shortcut handler, the telemetry listener — which is the
 /// opposite of what `ui_library_boundary_test` is for, and what Flutter 3.47
 /// finished separating when it moved Material out of the SDK.
-enum AppThemeMode {
+enum AppThemeMode() {
   system,
   light,
   dark;

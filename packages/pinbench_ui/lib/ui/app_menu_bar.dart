@@ -8,15 +8,13 @@ import '../theme/tokens.dart';
 import 'app_context_menu.dart';
 
 /// One top-level menu — "File", "Edit" — and what drops out of it.
-class AppMenu {
-  const AppMenu({required this.label, required this.entries});
-
-  final String label;
+class const AppMenu({
+  required final String label,
 
   /// Shares its entry type with [AppContextMenu]: a menu line is a menu line
   /// whether it drops from a bar or appears under the pointer.
-  final List<AppMenuEntry> entries;
-}
+  required final List<AppMenuEntry> entries,
+});
 
 /// An operating-system-style menu bar, drawn in the app.
 ///
@@ -38,11 +36,7 @@ class AppMenu {
 /// popover does not: only one menu open at a time, and sliding across the bar
 /// with one open switches to the one under the pointer rather than needing a
 /// second click.
-class AppMenuBar extends StatefulWidget {
-  const AppMenuBar({super.key, required this.menus});
-
-  final List<AppMenu> menus;
-
+class const AppMenuBar({super.key, required final List<AppMenu> menus}) extends StatefulWidget {
   /// Narrow menus look broken beside wide ones, so every menu starts at least
   /// this wide and grows to its longest row.
   static const double minMenuWidth = 200;
@@ -104,21 +98,13 @@ class _AppMenuBarState extends State<AppMenuBar> {
 }
 
 /// One name in the bar, and the panel that drops from it.
-class _MenuButton extends StatelessWidget {
-  const _MenuButton({
-    required this.menu,
-    required this.isOpen,
-    required this.onPressed,
-    required this.onHover,
-    required this.onDismissed,
-  });
-
-  final AppMenu menu;
-  final bool isOpen;
-  final VoidCallback onPressed;
-  final VoidCallback onHover;
-  final VoidCallback onDismissed;
-
+class const _MenuButton({
+  required final AppMenu menu,
+  required final bool isOpen,
+  required final VoidCallback onPressed,
+  required final VoidCallback onHover,
+  required final VoidCallback onDismissed,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;

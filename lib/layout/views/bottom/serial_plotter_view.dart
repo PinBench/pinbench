@@ -14,9 +14,7 @@ import '../../../features/workspace/providers/serial_plotter_provider.dart';
 /// channel (the Arduino IDE Serial Plotter convention). Print e.g.
 /// `Serial.println(value)`, `Serial.println("$a $b")`, or labelled channels
 /// `Serial.println("temp:23.5,humidity:60")` to chart them.
-class SerialPlotterView extends ConsumerWidget {
-  const SerialPlotterView({super.key});
-
+class const SerialPlotterView({super.key}) extends ConsumerWidget {
   static const _seriesColors = [
     Color(0xFF4FC3F7),
     Color(0xFFFF8A65),
@@ -122,12 +120,8 @@ class SerialPlotterView extends ConsumerWidget {
 
 /// A compact legend: one chip per plotted channel showing its colour, label and
 /// latest value.
-class _Legend extends StatelessWidget {
-  const _Legend({required this.data, required this.channels});
-
-  final SerialPlotData data;
-  final List<int> channels;
-
+class const _Legend({required final SerialPlotData data, required final List<int> channels})
+    extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Wrap(
     spacing: 14,

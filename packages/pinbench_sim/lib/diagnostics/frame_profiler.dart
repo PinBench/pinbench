@@ -1,30 +1,22 @@
 import 'dart:collection';
 
 /// Per-frame timing breakdown in microseconds.
-class FrameSample {
+class const FrameSample({
   /// Time spent in _updateDigitalInputs + _updateMicSensors.
-  final int inputsUs;
+  required final int inputsUs,
 
   /// Time spent in AVRBridge.tick (CPU emulation).
-  final int avrUs;
+  required final int avrUs,
 
   /// Time spent in SpiceEngine.solve.
-  final int spiceUs;
+  required final int spiceUs,
 
   /// Time spent in _updateAnalogLeds + _flushFrameUpdates.
-  final int ledsUs;
+  required final int ledsUs,
 
   /// Total frame time from start to canvas flush.
-  final int totalUs;
-
-  const FrameSample({
-    required this.inputsUs,
-    required this.avrUs,
-    required this.spiceUs,
-    required this.ledsUs,
-    required this.totalUs,
-  });
-
+  required final int totalUs,
+}) {
   /// True when this frame exceeded the 16 ms budget.
   bool get dropped => totalUs > 16000;
 
@@ -40,7 +32,7 @@ class FrameStats {
   final int droppedFrames;
   final int sampleCount;
 
-  const FrameStats({
+  const new({
     required this.avgFps,
     required this.avgTotalMs,
     required this.avgAvrMs,
@@ -49,7 +41,7 @@ class FrameStats {
     required this.sampleCount,
   });
 
-  const FrameStats.empty()
+  const new empty()
     : avgFps = 0,
       avgTotalMs = 0,
       avgAvrMs = 0,

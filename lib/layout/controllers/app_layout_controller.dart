@@ -14,21 +14,20 @@ import '../providers/layout_provider.dart';
 part 'app_layout_controller.g.dart';
 
 /// Centralizes all high-level layout operations that interact with the [PlatController].
-class AppLayoutController {
-  static const _log = AppLogger('app.layout');
-  final PlatController _platController;
-  final AnalyticsService _analytics;
-
-  AppLayoutController(this._platController, this._analytics, {required this.hasSidePanel});
-
-  /// Access to the underlying controller if natively needed by PlatView.
-  PlatController get platController => _platController;
+class AppLayoutController(
+  final PlatController _platController,
+  final AnalyticsService _analytics, {
 
   /// Whether this build has a right-hand pane — only when its edition supplies
   /// a side panel. From `editionPanelProvider`, the same answer the toolbar and
   /// menus use. Revealing or collapsing a pane that is not in the tree is
   /// already a no-op in the layout, so only [togglePane] needs this.
-  final bool hasSidePanel;
+  required final bool hasSidePanel,
+}) {
+  static const _log = AppLogger('app.layout');
+
+  /// Access to the underlying controller if natively needed by PlatView.
+  PlatController get platController => _platController;
 
   /// Closes the welcome tab and reveals the chrome that belongs with an open
   /// project: the explorer, and the side panel if there is one.

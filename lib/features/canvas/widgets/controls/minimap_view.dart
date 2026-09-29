@@ -9,16 +9,15 @@ import 'package:pinbench_ui/theme/app_colors.dart';
 
 import '../../providers/canvas_controller_provider.dart';
 
-class _MinimapData {
-  final double minX;
-  final double minY;
-  final double maxX;
-  final double maxY;
-  final double scale;
-  final double dx;
-  final double dy;
-  _MinimapData(this.minX, this.minY, this.maxX, this.maxY, this.scale, this.dx, this.dy);
-}
+class _MinimapData(
+  final double minX,
+  final double minY,
+  final double maxX,
+  final double maxY,
+  final double scale,
+  final double dx,
+  final double dy,
+);
 
 _MinimapData? _calculateMinimapData(List<ComponentInstance> nodes, Rect visibleRect, Size size) {
   if (nodes.isEmpty) return null;
@@ -62,9 +61,7 @@ _MinimapData? _calculateMinimapData(List<ComponentInstance> nodes, Rect visibleR
   return _MinimapData(minX, minY, maxX, maxY, scale, dx, dy);
 }
 
-class MinimapView extends ConsumerWidget {
-  const MinimapView({super.key});
-
+class const MinimapView({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(canvasControllerProvider);
@@ -124,19 +121,12 @@ class MinimapView extends ConsumerWidget {
   }
 }
 
-class _MinimapPainter extends CustomPainter {
-  final List<ComponentInstance> nodes;
-  final Rect visibleRect;
-  final Color foregroundColor;
-  final Color accentColor;
-
-  _MinimapPainter({
-    required this.nodes,
-    required this.visibleRect,
-    required this.foregroundColor,
-    required this.accentColor,
-  });
-
+class _MinimapPainter({
+  required final List<ComponentInstance> nodes,
+  required final Rect visibleRect,
+  required final Color foregroundColor,
+  required final Color accentColor,
+}) extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final data = _calculateMinimapData(nodes, visibleRect, size);

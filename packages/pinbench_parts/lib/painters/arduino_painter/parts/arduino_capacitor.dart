@@ -4,12 +4,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../../painting/paint_node.dart';
 
-class CapacitorNode extends PaintNode {
-  @override
-  final Size size;
-
-  CapacitorNode({this.size = const Size(20.0, 20.0)});
-
+class CapacitorNode({@override final Size size = const Size(20.0, 20.0)}) extends PaintNode {
   static const _baseRadius = 10.0;
 
   @override

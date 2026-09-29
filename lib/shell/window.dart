@@ -35,11 +35,7 @@ class WindowIsFullScreen extends _$WindowIsFullScreen {
   void report({required bool fullScreen}) => state = fullScreen;
 }
 
-class Window extends ConsumerStatefulWidget {
-  final int windowId;
-
-  const Window({super.key, required this.windowId});
-
+class const Window({super.key, required final int windowId}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<Window> createState() => _WindowState();
 }
@@ -107,11 +103,7 @@ class _WindowState extends ConsumerState<Window> {
 /// window listener registers by context, and the title bar — the one place
 /// that cares — is also rendered on its own in tests, where no such scope
 /// exists.
-class _FullScreenWatcher extends ConsumerStatefulWidget {
-  const _FullScreenWatcher({required this.child});
-
-  final Widget child;
-
+class const _FullScreenWatcher({required final Widget child}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<_FullScreenWatcher> createState() => _FullScreenWatcherState();
 }

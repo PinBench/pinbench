@@ -9,35 +9,34 @@ import 'package:pinbench_ui/theme/theme.dart';
 import '../../utils/canvas_geometry.dart';
 import 'wire_flow.dart';
 
-class WirePainter extends CustomPainter {
-  final List<WireModel> wires;
-  final List<ComponentInstance> nodes;
-  final PortLocation? pendingStart;
-  final Offset? pendingEndMouse;
-  final PortLocation? hoveredPort;
-  final String? hoveredWireId;
-  final List<String> selectedWireIds;
-  final Color pendingColor;
-  final Color selectionColor;
-  final List<Offset> pendingBendPoints;
+class WirePainter({
+  required final List<WireModel> wires,
+  required final List<ComponentInstance> nodes,
+  final PortLocation? pendingStart,
+  final Offset? pendingEndMouse,
+  final PortLocation? hoveredPort,
+  final String? hoveredWireId,
+  final List<String> selectedWireIds = const [],
+  final Color selectionColor = AppPalette.blue,
+  final Color pendingColor = AppPalette.yellow,
+  final List<Offset> pendingBendPoints = const [],
 
   /// Whether the wire in flight is an existing wire having one end moved,
   /// rather than a brand-new wire being drawn. It's still the wire the user
   /// selected — it just can't live in the wire list while one of its ends is
   /// off a port — so it is drawn the way a selected wire is drawn: full
   /// strength, selection outline, handles on every point.
-  final bool isMovingExistingWire;
-
-  final bool isSimulating;
+  final bool isMovingExistingWire = false,
+  final bool isSimulating = false,
 
   /// Solved current (amps) per wire id, signed so a positive value runs from the
   /// wire's `start` port to its `end`. Held as a listenable rather than a plain
   /// map so a new solve repaints this painter without rebuilding the canvas.
-  final ValueListenable<Map<String, double>>? currents;
+  final ValueListenable<Map<String, double>>? currents,
 
   /// Monotonic seconds driving the dot travel. See [WireFlowClock].
-  final ValueListenable<double>? flowClock;
-
+  final ValueListenable<double>? flowClock,
+}) extends CustomPainter {
   // Pre-allocated paint objects — never allocated inside paint().
   static const _maskFilter = MaskFilter.blur(BlurStyle.normal, 5);
 
@@ -71,22 +70,7 @@ class WirePainter extends CustomPainter {
     ..style = PaintingStyle.stroke
     ..strokeWidth = 2;
 
-  WirePainter({
-    required this.wires,
-    required this.nodes,
-    this.pendingStart,
-    this.pendingEndMouse,
-    this.hoveredPort,
-    this.hoveredWireId,
-    this.selectedWireIds = const [],
-    this.selectionColor = AppPalette.blue,
-    this.pendingColor = AppPalette.yellow,
-    this.pendingBendPoints = const [],
-    this.isMovingExistingWire = false,
-    this.isSimulating = false,
-    this.currents,
-    this.flowClock,
-  }) : super(repaint: Listenable.merge([currents, flowClock]));
+  this : super(repaint: Listenable.merge([currents, flowClock]));
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -111,9 +95,8 @@ class WirePainter extends CustomPainter {
         final intensity = WireFlow.intensity(amps);
         if (intensity > 0) {
           _flowGlowPaint
-            ..color = WireFlow.dotColor(
-              intensity,
-            ).withValues(alpha: WireFlow.glowOpacity(intensity))
+            ..color = WireFlow.dotColor(intensity)
+                .withValues(alpha: WireFlow.glowOpacity(intensity))
             ..strokeWidth = WireFlow.glowWidth(intensity)
             ..maskFilter = _maskFilter;
           _drawPolyline(canvas, allPoints, _flowGlowPaint, false);
@@ -245,9 +228,8 @@ class WirePainter extends CustomPainter {
     // along the same distances.
     var distance = amps < 0 ? spacing - travelled : travelled;
 
-    _flowDotPaint.color = WireFlow.dotColor(
-      intensity,
-    ).withValues(alpha: WireFlow.dotOpacity(intensity));
+    _flowDotPaint.color = WireFlow.dotColor(intensity)
+        .withValues(alpha: WireFlow.dotOpacity(intensity));
     final radius = WireFlow.dotRadius(intensity);
 
     var segment = 0;

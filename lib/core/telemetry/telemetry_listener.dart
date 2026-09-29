@@ -22,11 +22,8 @@ import 'telemetry_providers.dart';
 /// Navigation is logged as a **normalized screen name** (`editor` / `canvas` /
 /// `welcome`) plus file extension — never the raw tab id, which is an absolute
 /// file path and would leak the user's home directory / username.
-class TelemetryListener extends ConsumerStatefulWidget {
-  const TelemetryListener({required this.child, super.key});
-
-  final Widget child;
-
+class const TelemetryListener({required final Widget child, super.key})
+    extends ConsumerStatefulWidget {
   @override
   ConsumerState<TelemetryListener> createState() => _TelemetryListenerState();
 }

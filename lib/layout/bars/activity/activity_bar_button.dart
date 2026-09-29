@@ -8,11 +8,8 @@ import 'package:pinbench_ui/theme/app_icons.dart';
 import 'activity_target.dart';
 import '../../controllers/app_layout_controller.dart';
 
-class ActivityBarButton extends ConsumerWidget {
-  final ActivityBarTab tab;
-
-  const ActivityBarButton({super.key, required this.tab});
-
+class const ActivityBarButton({super.key, required final ActivityBarTab tab})
+    extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appLayoutController = ref.watch(appLayoutControllerProvider);
@@ -32,9 +29,7 @@ class ActivityBarButton extends ConsumerWidget {
 /// The Settings button. Not an [ActivityBarButton] because settings is not a
 /// sidebar: it opens as a tab in the center pane, the way VS Code opens its
 /// settings editor, which is the only place a three-column form has room.
-class SettingsTabButton extends ConsumerWidget {
-  const SettingsTabButton({super.key});
-
+class const SettingsTabButton({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final layout = ref.watch(appLayoutControllerProvider);

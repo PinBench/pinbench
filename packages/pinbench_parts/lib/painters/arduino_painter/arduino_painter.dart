@@ -20,8 +20,8 @@ import 'parts/arduino_smd_led.dart';
 import 'parts/arduino_pins.dart';
 import 'parts/arduino_logo.dart';
 
-class ArduinoPainter extends BaseComponentPainter with PortProvider {
-  ArduinoPainter({super.isOutline = false}) : super(repaint: logoNotifier);
+class ArduinoPainter({super.isOutline = false}) extends BaseComponentPainter with PortProvider {
+  this : super(repaint: logoNotifier);
 
   static final ValueNotifier<bool> logoNotifier = ValueNotifier(false);
   static ui.Image? image;

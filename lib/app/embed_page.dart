@@ -10,9 +10,7 @@ import '../layout/views/embed_view.dart';
 /// sits inside somebody else’s page, and a Flutter view that swallows Ctrl-F
 /// or Cmd-S because it happens to hold focus is a genuinely hostile thing to
 /// put in an article.
-class EmbedPage extends StatelessWidget {
-  const EmbedPage({super.key});
-
+class const EmbedPage({super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => const AppScaffold(child: EmbedView());
 }

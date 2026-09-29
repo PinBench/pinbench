@@ -7,12 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../painting/paint_node.dart';
 import '../../../painting/part_palette.dart';
 
-class PinBlockNode extends PaintNode {
-  final List<String> labels;
-  final bool isTop;
-
-  PinBlockNode({required this.labels, this.isTop = true});
-
+class PinBlockNode({required final List<String> labels, final bool isTop = true})
+    extends PaintNode {
   // Pitch is 8 internal units = 16 canvas px — the breadboard hole pitch —
   // so wires from parts whose legs follow the grid drop into the pins
   // vertically straight.
@@ -150,15 +146,13 @@ class PinBlockNode extends PaintNode {
   }
 }
 
-class BoardLabelLineNode extends PaintNode {
-  final double width;
-  final String text;
-  final bool textAbove;
+class BoardLabelLineNode({
+  required final double width,
+  required final String text,
+  final bool textAbove = false,
+}) extends PaintNode {
   @override
-  final Size size;
-
-  BoardLabelLineNode({required this.width, required this.text, this.textAbove = false})
-    : size = Size(width, 10.0);
+  final size = Size(width, 10.0);
 
   @override
   void paint(Canvas canvas, Offset offset) {

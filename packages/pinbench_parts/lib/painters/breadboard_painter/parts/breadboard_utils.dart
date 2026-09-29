@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/widgets.dart';
 
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../painting/part_palette.dart';
 
 class BreadboardUtils {

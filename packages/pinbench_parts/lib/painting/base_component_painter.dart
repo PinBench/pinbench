@@ -8,11 +8,8 @@ import 'port_provider.dart';
 /// Subclasses implement [paintComponent] to draw the part, and override
 /// [shouldRepaintComponent] to repaint only when their visual state changes.
 /// [isOutline] requests a faded "ghost" rendering used for drag previews.
-abstract class BaseComponentPainter extends CustomPainter {
-  final bool isOutline;
-
-  BaseComponentPainter({this.isOutline = false, super.repaint});
-
+abstract class BaseComponentPainter({final bool isOutline = false, super.repaint})
+    extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     paintComponent(canvas, size);

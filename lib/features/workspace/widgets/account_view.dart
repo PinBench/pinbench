@@ -23,9 +23,7 @@ import '../../../core/auth/auth_provider.dart';
 import '../providers/workspace_files_provider.dart';
 import 'share_project_dialog.dart';
 
-class AccountSidebarView extends ConsumerWidget {
-  const AccountSidebarView({super.key});
-
+class const AccountSidebarView({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
@@ -52,12 +50,8 @@ class AccountSidebarView extends ConsumerWidget {
   }
 }
 
-class _SignedInView extends ConsumerStatefulWidget {
-  const _SignedInView({required this.user, required this.onSignOut});
-
-  final AuthUser user;
-  final VoidCallback onSignOut;
-
+class const _SignedInView({required final AuthUser user, required final VoidCallback onSignOut})
+    extends ConsumerStatefulWidget {
   @override
   ConsumerState<_SignedInView> createState() => _SignedInViewState();
 }
@@ -170,10 +164,8 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
   }
 }
 
-class _SignedOutView extends ConsumerStatefulWidget {
-  const _SignedOutView({required this.authService});
-  final AuthService authService;
-
+class const _SignedOutView({required final AuthService authService})
+    extends ConsumerStatefulWidget {
   @override
   ConsumerState<_SignedOutView> createState() => _SignedOutViewState();
 }

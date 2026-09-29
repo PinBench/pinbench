@@ -14,11 +14,7 @@ import '../support/harness.dart';
 /// The middle of the title bar names what the window is showing: the workspace,
 /// and the document on top inside it. It replaced a "Temporary workspace" badge
 /// that named a state instead, and only appeared while the workspace was in it.
-class _FakeWorkspaceFiles extends WorkspaceFiles {
-  _FakeWorkspaceFiles(this.workspacePath);
-
-  final String? workspacePath;
-
+class _FakeWorkspaceFiles(final String? workspacePath) extends WorkspaceFiles {
   @override
   WorkspaceState build() => WorkspaceState(workspacePath: workspacePath);
 }

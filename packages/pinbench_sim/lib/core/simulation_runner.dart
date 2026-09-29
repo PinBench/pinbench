@@ -18,52 +18,41 @@ import 'simulation_runner_backend_io.dart'
 /// owns everything platform-agnostic — compilation, the isSimulating/isPaused
 /// guards, the mic-timer's periodic bookkeeping, and the self-stop teardown
 /// sequence — so the owning `SimulationNotifier` needs no rework.
-class SimulationRunner {
+class SimulationRunner({
   /// The circuit to run and where results go. A port, not the canvas itself —
   /// see `CanvasSimulationOutput` for the binding.
-  final SimulationOutput circuit;
-
-  /// The host's speaker and microphone. Ports, because both are host devices
-  /// the emulator should not have to carry a plugin for.
-  final ToneOutput tone;
-  final MicrophoneDevice microphone;
+  required final SimulationOutput circuit,
 
   /// How a sketch becomes runnable bytes. Injected rather than called
   /// statically so the engine carries no opinion about arduino-cli, remote
   /// build services, or precompiled template hex.
-  final SketchCompiler compiler;
-  final void Function(String)? onSerialPrint;
-  final void Function(String)? onSpiceLog;
-  final void Function(String)? onDebugLog;
+  required final SketchCompiler compiler,
+
+  /// The host's speaker and microphone. Ports, because both are host devices
+  /// the emulator should not have to carry a plugin for.
+  required final ToneOutput tone,
+  required final MicrophoneDevice microphone,
+  final void Function(String)? onSerialPrint,
+  final void Function(String)? onSpiceLog,
+  final void Function(String)? onDebugLog,
 
   /// Reports a compilation error (the message), or `null` when compilation
   /// succeeded — used to surface build failures in the Problems pane.
-  final void Function(String?)? onCompileError;
+  final void Function(String?)? onCompileError,
 
   /// Periodic frame-stats callback (~1 Hz). Fired with rolling averages so the
   /// owning provider can push them to the tracing/metrics service.
-  final void Function(FrameStats stats)? onFrameStats;
+  final void Function(FrameStats stats)? onFrameStats,
 
   /// Solved current (amps) per wire id, signed `start → end`, fired whenever it
   /// changes visibly. This is what the canvas animates flow from.
-  final void Function(Map<String, double> currents)? onWireCurrents;
-
+  final void Function(Map<String, double> currents)? onWireCurrents,
+}) {
   /// Kept for API compatibility. Per-frame samples now live in the sim isolate,
   /// so this stays empty unless profiling is re-plumbed across the boundary.
   final profiler = FrameProfiler();
 
-  SimulationRunner({
-    required this.circuit,
-    required this.compiler,
-    required this.tone,
-    required this.microphone,
-    this.onSerialPrint,
-    this.onSpiceLog,
-    this.onDebugLog,
-    this.onCompileError,
-    this.onFrameStats,
-    this.onWireCurrents,
-  }) {
+  this {
     _backend = SimulationRunnerBackendImpl(
       circuit: circuit,
       tone: tone,

@@ -7,9 +7,7 @@ import '../../../core/edition/edition_provider.dart';
 ///
 /// Only ever built when there is one — the layout has no right-hand pane
 /// otherwise (see `platController`).
-class SidePanelView extends ConsumerWidget {
-  const SidePanelView({super.key});
-
+class const SidePanelView({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) =>
       ref.watch(editionPanelProvider)?.build(context) ?? const SizedBox.shrink();

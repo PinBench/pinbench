@@ -8,7 +8,9 @@ import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench/features/canvas/widgets/controls/toolbar.dart';
 import 'package:pinbench_parts/models/part_model.dart';
 import 'package:pinbench_ui/ui/app_icon_button.dart';
+
 import '../../support/harness.dart';
+
 import 'package:pinbench_ui/theme/app_icons.dart';
 
 /// Regression test: the toolbar must rebuild when the canvas selection

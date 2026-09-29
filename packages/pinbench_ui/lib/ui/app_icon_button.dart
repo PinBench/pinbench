@@ -14,16 +14,11 @@ export 'app_tooltip.dart' show AppTooltipSide;
 /// is drawn, and it should be drawn at the same sizes as everywhere else. The
 /// box half is this enum's own business: it is a hit target, sized so the icon
 /// has air around it rather than to any icon ramp.
-enum AppIconButtonSize {
+enum AppIconButtonSize(final double size, final double iconSize) {
   small(20, AppIconSize.sm),
   medium(28, AppIconSize.lg),
   large(32, AppIconSize.xl),
-  xlarge(40, AppIconSize.xxxl);
-
-  final double size;
-  final double iconSize;
-
-  const AppIconButtonSize(this.size, this.iconSize);
+  xlarge(40, AppIconSize.xxxl),
 }
 
 /// A square, icon-only button.
@@ -31,46 +26,29 @@ enum AppIconButtonSize {
 /// Built on [FTappable] rather than [FButton] because almost everything
 /// [FButton] brings — padding, intrinsic sizing, its own fill per variant — is
 /// something this overrides anyway with a fixed box and an explicit colour.
-class AppIconButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback? onPressed;
-  final AppIconButtonSize size;
-  final String? tooltip;
+class const AppIconButton({
+  super.key,
+  final Color? color,
+  required final IconData icon,
+  final String? tooltip,
+  final VoidCallback? onPressed,
 
   /// What a screen reader announces for the button.
   ///
   /// Defaults to [tooltip], since an icon-only button's tooltip is already the
   /// name of the action. Pass this when there is no tooltip, or when the
   /// spoken name should differ from the visible one.
-  final String? semanticLabel;
-  final String? shortcutLabel;
-  final Color? color;
-  final Color? hoverBackgroundColor;
-  final Color? backgroundColor;
-  final AppTooltipSide tooltipSide;
-  final bool ghost;
-  final bool isEnabled;
-  final bool isActive;
-  final bool isLoading;
-
-  const AppIconButton({
-    super.key,
-    this.color,
-    required this.icon,
-    this.tooltip,
-    this.onPressed,
-    this.semanticLabel,
-    this.shortcutLabel,
-    this.tooltipSide = AppTooltipSide.top,
-    this.backgroundColor,
-    this.hoverBackgroundColor,
-    this.ghost = true,
-    this.isActive = false,
-    this.isEnabled = true,
-    this.isLoading = false,
-    this.size = AppIconButtonSize.medium,
-  });
-
+  final String? semanticLabel,
+  final String? shortcutLabel,
+  final AppTooltipSide tooltipSide = AppTooltipSide.top,
+  final Color? backgroundColor,
+  final Color? hoverBackgroundColor,
+  final bool ghost = true,
+  final bool isActive = false,
+  final bool isEnabled = true,
+  final bool isLoading = false,
+  final AppIconButtonSize size = AppIconButtonSize.medium,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.theme.colors;

@@ -29,9 +29,7 @@ extension type _Avr8._(JSObject _) implements JSObject {
   external JSInt32Array drainI2c(int address);
 }
 
-class AVRBridge {
-  AVRBridge._();
-
+class AVRBridge._() {
   static void Function(double?)? onBuzzerFrequencyChanged;
 
   static int? _buzzerPin;

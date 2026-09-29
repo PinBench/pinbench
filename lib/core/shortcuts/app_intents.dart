@@ -13,146 +13,76 @@ import 'package:flutter/widgets.dart';
 /// by whichever `Actions` scope is nearest the focus, which is the point: the
 /// canvas and the editor both answer to `UndoIntent`, differently.
 
-class UndoIntent extends Intent {
-  const UndoIntent();
-}
+class const UndoIntent() extends Intent;
 
-class RedoIntent extends Intent {
-  const RedoIntent();
-}
+class const RedoIntent() extends Intent;
 
-class CopyIntent extends Intent {
-  const CopyIntent();
-}
+class const CopyIntent() extends Intent;
 
-class PasteIntent extends Intent {
-  const PasteIntent();
-}
+class const PasteIntent() extends Intent;
 
-class DuplicateIntent extends Intent {
-  const DuplicateIntent();
-}
+class const DuplicateIntent() extends Intent;
 
-class DeleteIntent extends Intent {
-  const DeleteIntent();
-}
+class const DeleteIntent() extends Intent;
 
-class SaveIntent extends Intent {
-  const SaveIntent();
-}
+class const SaveIntent() extends Intent;
 
-class OpenIntent extends Intent {
-  const OpenIntent();
-}
+class const OpenIntent() extends Intent;
 
-class NewIntent extends Intent {
-  const NewIntent();
-}
+class const NewIntent() extends Intent;
 
-class ToggleSimulationIntent extends Intent {
-  const ToggleSimulationIntent();
-}
+class const ToggleSimulationIntent() extends Intent;
 
-class PauseSimulationIntent extends Intent {
-  const PauseSimulationIntent();
-}
+class const PauseSimulationIntent() extends Intent;
 
-class ZoomInIntent extends Intent {
-  const ZoomInIntent();
-}
+class const ZoomInIntent() extends Intent;
 
-class ZoomOutIntent extends Intent {
-  const ZoomOutIntent();
-}
+class const ZoomOutIntent() extends Intent;
 
-class PanUpIntent extends Intent {
-  const PanUpIntent();
-}
+class const PanUpIntent() extends Intent;
 
-class PanDownIntent extends Intent {
-  const PanDownIntent();
-}
+class const PanDownIntent() extends Intent;
 
-class PanLeftIntent extends Intent {
-  const PanLeftIntent();
-}
+class const PanLeftIntent() extends Intent;
 
-class PanRightIntent extends Intent {
-  const PanRightIntent();
-}
+class const PanRightIntent() extends Intent;
 
-class CancelWiringIntent extends Intent {
-  const CancelWiringIntent();
-}
+class const CancelWiringIntent() extends Intent;
 
-class RotateRightIntent extends Intent {
-  const RotateRightIntent();
-}
+class const RotateRightIntent() extends Intent;
 
-class RotateLeftIntent extends Intent {
-  const RotateLeftIntent();
-}
+class const RotateLeftIntent() extends Intent;
 
-class FlipHorizontalIntent extends Intent {
-  const FlipHorizontalIntent();
-}
+class const FlipHorizontalIntent() extends Intent;
 
-class FlipVerticalIntent extends Intent {
-  const FlipVerticalIntent();
-}
+class const FlipVerticalIntent() extends Intent;
 
-class LayerUpIntent extends Intent {
-  const LayerUpIntent();
-}
+class const LayerUpIntent() extends Intent;
 
-class LayerDownIntent extends Intent {
-  const LayerDownIntent();
-}
+class const LayerDownIntent() extends Intent;
 
-class ToggleGridIntent extends Intent {
-  const ToggleGridIntent();
-}
+class const ToggleGridIntent() extends Intent;
 
-class ResetViewIntent extends Intent {
-  const ResetViewIntent();
-}
+class const ResetViewIntent() extends Intent;
 
 // --- App-chrome intents (handled globally in AppShortcuts) ---------------
 
-class ToggleLeftPaneIntent extends Intent {
-  const ToggleLeftPaneIntent();
-}
+class const ToggleLeftPaneIntent() extends Intent;
 
-class ToggleBottomPaneIntent extends Intent {
-  const ToggleBottomPaneIntent();
-}
+class const ToggleBottomPaneIntent() extends Intent;
 
-class ToggleRightPaneIntent extends Intent {
-  const ToggleRightPaneIntent();
-}
+class const ToggleRightPaneIntent() extends Intent;
 
-class ToggleThemeIntent extends Intent {
-  const ToggleThemeIntent();
-}
+class const ToggleThemeIntent() extends Intent;
 
-class ExportCircuitIntent extends Intent {
-  const ExportCircuitIntent();
-}
+class const ExportCircuitIntent() extends Intent;
 
-class ViewCodeIntent extends Intent {
-  const ViewCodeIntent();
-}
+class const ViewCodeIntent() extends Intent;
 
-class CloseTabIntent extends Intent {
-  const CloseTabIntent();
-}
+class const CloseTabIntent() extends Intent;
 
-class GoHomeIntent extends Intent {
-  const GoHomeIntent();
-}
+class const GoHomeIntent() extends Intent;
 
 /// Opens app settings. ⌘, is the shortcut every editor on this platform uses
 /// for it, and settings is a tab here, so it opens one.
-class OpenSettingsIntent extends Intent {
-  const OpenSettingsIntent();
-}
+class const OpenSettingsIntent() extends Intent;

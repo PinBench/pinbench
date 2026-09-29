@@ -39,7 +39,7 @@ void main() {
       if (line.trim().startsWith('- assets/templates/')) {
         continue;
       }
-      
+
       // If it's another asset line (e.g., - assets/parts/arduino/)
       if (line.trim().startsWith('- ')) {
         newLines.add(line);
@@ -59,7 +59,7 @@ void main() {
         newLines.add(line);
         continue;
       }
-      
+
       newLines.add(line);
     } else {
       newLines.add(line);

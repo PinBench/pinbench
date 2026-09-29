@@ -55,9 +55,11 @@ void main() {
   /// standalone package that replaced it.
   const bannedEverywhere = ['package:flutter/material.dart', 'package:material_ui/'];
 
-  Iterable<File> dartFilesIn(String directory) => Directory(
-    directory,
-  ).listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.dart'));
+  Iterable<File> dartFilesIn(String directory) =>
+      Directory(directory)
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart'));
 
   /// Every first-party root, app and packages alike.
   ///

@@ -35,11 +35,8 @@ import '../features/workspace/widgets/shared_project_banner.dart';
 /// whatever [workspaceLoadingProvider] happened to read then. Watching the
 /// provider directly here means this widget rebuilds on its own the instant
 /// the provider changes, independent of whether `_buildLeaf` runs again.
-class WorkspaceLoadingScope extends ConsumerStatefulWidget {
-  final Widget child;
-
-  const WorkspaceLoadingScope({required this.child, super.key});
-
+class const WorkspaceLoadingScope({required final Widget child, super.key})
+    extends ConsumerStatefulWidget {
   @override
   ConsumerState<WorkspaceLoadingScope> createState() => _WorkspaceLoadingScopeState();
 }
@@ -111,9 +108,7 @@ class _WorkspaceLoadingScopeState extends ConsumerState<WorkspaceLoadingScope> {
   }
 }
 
-class _WorkspaceLoadingOverlay extends StatelessWidget {
-  const _WorkspaceLoadingOverlay();
-
+class const _WorkspaceLoadingOverlay() extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = context.appColors;
@@ -133,9 +128,7 @@ class _WorkspaceLoadingOverlay extends StatelessWidget {
   }
 }
 
-class Layout extends ConsumerWidget {
-  const Layout({super.key});
-
+class const Layout({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.watch(platControllerProvider);
@@ -356,11 +349,7 @@ class Layout extends ConsumerWidget {
 /// builder is typed to return a `PlatTabBar`, and a theme decoration is painted
 /// behind the tabs — which this rule depends on, since the active tab has to
 /// cover its own segment of it or it is fenced off from the view it opens onto.
-class _TabStripOutline extends Decoration {
-  const _TabStripOutline({required this.color});
-
-  final Color color;
-
+class const _TabStripOutline({required final Color color}) extends Decoration {
   @override
   BoxPainter createBoxPainter([VoidCallback? onChanged]) => _TabStripOutlinePainter(color);
 
@@ -372,11 +361,7 @@ class _TabStripOutline extends Decoration {
   int get hashCode => color.hashCode;
 }
 
-class _TabStripOutlinePainter extends BoxPainter {
-  _TabStripOutlinePainter(this.color);
-
-  final Color color;
-
+class _TabStripOutlinePainter(final Color color) extends BoxPainter {
   @override
   void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
     final size = configuration.size;
