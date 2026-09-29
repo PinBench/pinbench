@@ -50,13 +50,42 @@ class ThemeModeNotifier extends Notifier<AppThemeMode> {
   }
 }
 
-/// The brand teal. This is the identity color — it appears in the logo and in
-/// marketing — but it is deliberately *not* used as an interactive fill:
-/// white text on it lands at 3.6:1, short of WCAG AA. The per-brightness
-/// [AppPalette.lightPrimary] and [AppPalette.darkPrimary] values below are the
-/// ones the UI actually paints, each tuned to clear 4.5:1 against its own
-/// foreground.
-const primary = Color(0xFF009696);
+/// The brand kit v1 palette (solder mask, copper and silkscreen), exactly as
+/// the brand guide lists it — `handbook/brand/README.md`.
+///
+/// These are identity colours, not UI tokens: the logo, the app icon and
+/// marketing use them verbatim. The UI paints the per-brightness values in
+/// [AppPalette], which are derived from them and tuned for WCAG AA. Nothing
+/// here moves with light/dark.
+abstract final class BrandPalette {
+  /// PCB teal — carries the brand. White on it is 4.32:1 and board ink
+  /// 3.05:1, so neither is body text on it: white is safe from 24 px up only.
+  static const pcbTeal = Color(0xFF00878F);
+
+  /// Board ink — dark UI, drilled holes, the dark icon.
+  static const boardInk = Color(0xFF06363A);
+
+  /// Solder gold — the pads, and the brand's only accent. 1.86:1 on white, so
+  /// never text on a light ground.
+  static const solderGold = Color(0xFFE0B95C);
+
+  /// Trace cyan — connections, links on dark. 7.72:1 on [boardInk].
+  static const traceCyan = Color(0xFF6FD6DB);
+
+  /// Flux cream — light ground, print stock.
+  static const fluxCream = Color(0xFFF3F1EA);
+
+  /// Graphite — body text on light. 14.37:1 on [fluxCream].
+  static const graphite = Color(0xFF142322);
+}
+
+/// The brand teal — [BrandPalette.pcbTeal]. This is the identity color — it
+/// appears in the logo and in marketing — but it is deliberately *not* used as
+/// an interactive fill: white text on it lands at 4.32:1, short of WCAG AA.
+/// The per-brightness [AppPalette.lightPrimary] and [AppPalette.darkPrimary]
+/// values below are the ones the UI actually paints, each derived from it and
+/// tuned to clear 4.5:1 against its own foreground.
+const primary = BrandPalette.pcbTeal;
 
 /// The resolved color values for one brightness.
 ///
@@ -81,12 +110,15 @@ abstract final class AppPalette {
   static const lightCard = Color(0xFFFFFFFF);
   static const lightForeground = Color(0xFF0E1717);
 
-  /// Interactive teal fill. 4.84:1 with white.
-  static const lightPrimary = Color(0xFF007F7F);
+  /// Interactive teal fill: PCB teal with its channels scaled to 92%, so the
+  /// hue is the brand's exactly. 4.98:1 with white, and as text 4.98:1 on
+  /// card, 4.63:1 on the gutter and 4.57:1 on forui's muted `#F5F5F5`.
+  static const lightPrimary = Color(0xFF007C84);
 
-  /// Hover/active wash. Its foreground reaches 6.20:1 — up from 1.85:1.
-  static const lightAccent = Color(0xFFDCEDEC);
-  static const lightAccentForeground = Color(0xFF005F5F);
+  /// Hover/active wash: 13% PCB teal over white. Its foreground is board ink,
+  /// at 11.09:1 (13.15:1 on card) — up from 1.85:1 before this scale.
+  static const lightAccent = Color(0xFFDEEFF0);
+  static const lightAccentForeground = BrandPalette.boardInk;
 
   static const lightSecondary = Color(0xFFE4EAEA);
   static const lightSecondaryForeground = Color(0xFF1B2B2B);
@@ -105,15 +137,18 @@ abstract final class AppPalette {
   static const darkCard = Color(0xFF181D1D);
   static const darkForeground = Color(0xFFE8EDED);
 
-  /// Brighter than the brand teal so it carries on a dark ground: 6.03:1 as
-  /// text on the gutter, and 5.62:1 against [darkPrimaryForeground] as a fill.
-  static const darkPrimary = Color(0xFF12A5A5);
+  /// PCB teal mixed halfway to trace cyan, so it carries on a dark ground:
+  /// as text 6.85:1 on the gutter and 6.40:1 on card (7.44:1 / 6.74:1 /
+  /// 5.69:1 on forui's `#0A0A0A` background, `#171717` card and `#262626`
+  /// muted), and 4.94:1 against [darkPrimaryForeground] as a fill.
+  static const darkPrimary = Color(0xFF38AEB5);
 
-  /// Dark text on the bright teal fill — white would only reach 3.02:1.
-  static const darkPrimaryForeground = Color(0xFF08201F);
+  /// Board ink on the bright teal fill — white would only reach 2.66:1.
+  static const darkPrimaryForeground = BrandPalette.boardInk;
 
-  static const darkAccent = Color(0xFF1B2E2E);
-  static const darkAccentForeground = Color(0xFF7FD9D9);
+  /// Board ink as the active wash, with trace cyan on it at 7.72:1.
+  static const darkAccent = BrandPalette.boardInk;
+  static const darkAccentForeground = BrandPalette.traceCyan;
 
   static const darkSecondary = Color(0xFF1F2727);
   static const darkSecondaryForeground = Color(0xFFDDE4E4);
