@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:plat/plat.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../core/edition/edition_provider.dart';
 import '../bars/activity/activity_target.dart';
 import '../components/pane_sizing.dart';
 
@@ -15,6 +16,10 @@ final hoveredTabNotifier = ValueNotifier<int?>(-1);
 
 @Riverpod(keepAlive: true)
 Raw<PlatController> platController(Ref ref) {
+  // The right-hand pane exists only for an edition's side panel. Read once:
+  // the edition is fixed at startup, and rebuilding the controller would throw
+  // away every open tab.
+  final hasSidePanel = ref.read(editionPanelProvider) != null;
   final controller = PlatController(
     initialPlat: .row(
       children: [
@@ -56,17 +61,18 @@ Raw<PlatController> platController(Ref ref) {
           ],
         ),
         // A slot, not a bare leaf, because only a slot collapses — and the
-        // assistant has to close the same way the sidebar does, leaving its
+        // side panel has to close the same way the sidebar does, leaving its
         // divider behind to reopen it. The id stays on the slot: `right_pane`
-        // is what the toggles, shortcuts and menu entries have always named.
-        .slot(
-          id: assistantPane.id,
-          persistent: true,
-          collapsible: true,
-          collapseThreshold: assistantPane.collapseThreshold,
-          size: assistantPane.size,
-          child: const .leaf(id: 'assistant'),
-        ),
+        // is what the toggles, shortcuts and menu entries name.
+        if (hasSidePanel)
+          .slot(
+            id: sidePanelPane.id,
+            persistent: true,
+            collapsible: true,
+            collapseThreshold: sidePanelPane.collapseThreshold,
+            size: sidePanelPane.size,
+            child: const .leaf(id: 'side_panel'),
+          ),
       ],
     ),
   );
@@ -75,9 +81,9 @@ Raw<PlatController> platController(Ref ref) {
   // the tree from the first frame.
   controller.setCollapsed(sidebarPane.id, collapsed: true);
   controller.setHidden('bottom_pane', hidden: true);
-  // The app opens on the welcome screen, which has its own prompt box — the
-  // assistant pane appears with the project, in `closeWelcome()`.
-  controller.setCollapsed(assistantPane.id, collapsed: true);
+  // The app opens on the welcome screen, which carries the side panel's own
+  // entry — the pane itself appears with the project, in `closeWelcome()`.
+  if (hasSidePanel) controller.setCollapsed(sidePanelPane.id, collapsed: true);
   controller.focus('welcome');
   ref.onDispose(controller.dispose);
   return controller;

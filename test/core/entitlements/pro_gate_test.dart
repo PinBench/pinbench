@@ -1,11 +1,28 @@
-import 'package:pinbench_pro/pinbench_pro.dart';
+import 'package:pinbench_entitlements/pinbench_entitlements.dart';
 import 'package:pinbench/core/entitlements/pro_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+/// Stands in for the gateway a hosted edition registers.
+final class _Paid implements ProGateway {
+  const _Paid();
+
+  @override
+  ProTier get tier => ProTier.pro;
+
+  @override
+  ProLimits get limits => ProLimits.unlimited;
+
+  @override
+  ProAccess check(ProFeature feature) => const ProAllowed();
+
+  @override
+  Stream<void> get changes => const Stream<void>.empty();
+}
+
 /// The first paywall in the app. What matters is which side of the line each
 /// feature sits on, and that the free tier stays a real product rather than a
-/// demo — see packages/pinbench_pro/README.md.
+/// demo — see packages/pinbench_entitlements/README.md.
 void main() {
   late ProviderContainer container;
 
@@ -23,10 +40,8 @@ void main() {
     expect(container.read(proFeatureProvider(ProFeature.privateShareLinks)).isAllowed, isFalse);
   });
 
-  test('a self-hosted build unlocks them', () {
-    // Standing up your own backend is a supported path, not something to be
-    // upsold out of. The share sheet says so rather than offering checkout.
-    Pro.register(const SelfHostedProGateway());
+  test('an edition that registers a gateway unlocks them', () {
+    Pro.register(const _Paid());
     final container2 = ProviderContainer();
     addTearDown(container2.dispose);
     expect(container2.read(proFeatureProvider(ProFeature.privateShareLinks)).isAllowed, isTrue);
@@ -35,8 +50,8 @@ void main() {
   test('the denial explains itself', () {
     final access = container.read(proFeatureProvider(ProFeature.privateShareLinks));
     expect(access, isA<ProDenied>());
-    // Drives which copy the dialog shows: "upgrade" is the wrong thing to say
-    // to someone running their own instance.
+    // Drives which copy the dialog shows: a build from source has no checkout
+    // to send anyone to.
     expect((access as ProDenied).reason, ProDenialReason.notAvailableInThisBuild);
   });
 

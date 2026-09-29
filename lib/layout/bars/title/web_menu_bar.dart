@@ -15,6 +15,7 @@ import '../../../features/canvas/providers/canvas_controller_provider.dart';
 import '../../../features/editor/edit_action_router.dart';
 import '../../../features/workspace/providers/dirty_files_provider.dart';
 import '../../../features/simulation/providers/simulation_provider.dart';
+import '../../../core/edition/edition_provider.dart';
 import '../../../features/workspace/providers/workspace_files_provider.dart';
 import '../../../features/workspace/services/file_picker_actions.dart';
 import '../../../shell/menus/shared_menu_actions.dart';
@@ -268,7 +269,11 @@ class _WebMenuBarState extends ConsumerState<WebMenuBar> {
         AppStrings.toggleBottomPaneTooltip,
         onPressed: () => layout.togglePane('bottom_pane'),
       ),
-      _action(AppStrings.toggleRightPaneTooltip, onPressed: () => layout.togglePane('right_pane')),
+      if (ref.read(editionPanelProvider) != null)
+        _action(
+          AppStrings.toggleRightPaneTooltip,
+          onPressed: () => layout.togglePane('right_pane'),
+        ),
       // Under View rather than File: settings is a tab you show, the same as
       // the panes above it.
       _action(

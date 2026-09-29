@@ -102,10 +102,13 @@ representations in Section 5 has become inaccurate.
 ## How to sign
 
 Signing is automated. When you open your first pull request, a bot
-([CLA Assistant](https://github.com/cla-assistant/cla-assistant)) will
-comment with a link. Click it, sign in with GitHub, and confirm. Your
-signature is recorded against your GitHub account and covers all future
-pull requests — you only do this once.
+([CLA Assistant Lite](https://github.com/contributor-assistant/github-action))
+comments on it. Reply with exactly:
+
+> I have read the CLA Document and I hereby sign the CLA
+
+Your signature is recorded against your GitHub account and covers all future
+pull requests to that repository — you only do this once per repository.
 
 Corporate contributors submitting on behalf of an entity should contact the
 maintainer for a Corporate CLA before their first contribution.

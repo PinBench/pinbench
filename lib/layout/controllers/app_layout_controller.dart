@@ -3,6 +3,7 @@ import 'package:plat/plat.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../core/chrome/chrome_commands.dart';
+import '../../core/edition/edition_provider.dart';
 import '../../core/telemetry/analytics_service.dart';
 import '../../core/telemetry/telemetry_providers.dart';
 import '../../core/utils/logger.dart';
@@ -18,26 +19,35 @@ class AppLayoutController {
   final PlatController _platController;
   final AnalyticsService _analytics;
 
-  AppLayoutController(this._platController, this._analytics);
+  AppLayoutController(this._platController, this._analytics, {required this.hasSidePanel});
 
   /// Access to the underlying controller if natively needed by PlatView.
   PlatController get platController => _platController;
 
+  /// Whether this build has a right-hand pane — only when its edition supplies
+  /// a side panel. From `editionPanelProvider`, the same answer the toolbar and
+  /// menus use. Revealing or collapsing a pane that is not in the tree is
+  /// already a no-op in the layout, so only [togglePane] needs this.
+  final bool hasSidePanel;
+
   /// Closes the welcome tab and reveals the chrome that belongs with an open
-  /// project: the explorer, and the assistant pane.
+  /// project: the explorer, and the side panel if there is one.
   ///
-  /// The assistant is hidden on the welcome screen because that screen has a
-  /// prompt box of its own — two ways to say the same thing, side by side.
+  /// The side panel is hidden on the welcome screen because that screen
+  /// carries the panel's own entry — two ways to the same thing, side by side.
   /// Every path off the welcome screen goes through here, so this and
   /// [resetToWelcome] are the only two places the rule is expressed.
   void closeWelcome() {
     _platController.close(AppTabs.welcome);
     sidebarPane.reveal(_platController);
-    assistantPane.reveal(_platController);
+    sidePanelPane.reveal(_platController);
   }
 
   /// Toggles the visibility of a specified pane slot.
   void togglePane(String paneId) {
+    // The shortcut exists in every build; don't report toggling a pane that
+    // isn't there.
+    if (paneId == sidePanelPane.id && !hasSidePanel) return;
     _analytics.panelToggled(paneId);
     setPaneVisible(paneId, visible: isPaneHidden(paneId));
   }
@@ -64,7 +74,7 @@ class AppLayoutController {
 
   CollapsiblePane? _sidePane(String paneId) => switch (paneId) {
     _ when paneId == sidebarPane.id => sidebarPane,
-    _ when paneId == assistantPane.id => assistantPane,
+    _ when paneId == sidePanelPane.id => sidePanelPane,
     _ => null,
   };
 
@@ -192,9 +202,9 @@ class AppLayoutController {
 
       sidebarPane.collapse(_platController);
       _platController.setHidden('bottom_pane', hidden: true);
-      // The welcome screen carries its own prompt box, so the assistant pane
+      // The welcome screen carries the side panel's own entry, so the pane
       // would be a second one beside it. See [closeWelcome].
-      assistantPane.collapse(_platController);
+      sidePanelPane.collapse(_platController);
       _platController.focus('welcome');
     });
   }
@@ -212,5 +222,9 @@ class AppLayoutController {
 @Riverpod(keepAlive: true)
 AppLayoutController appLayoutController(Ref ref) {
   final platController = ref.watch(platControllerProvider);
-  return AppLayoutController(platController, ref.watch(analyticsProvider));
+  return AppLayoutController(
+    platController,
+    ref.watch(analyticsProvider),
+    hasSidePanel: ref.read(editionPanelProvider) != null,
+  );
 }

@@ -69,7 +69,7 @@ List<Widget> _leaveActions(
 /// Asks what to do with a temporary project before leaving it, and carries the
 /// answer out.
 ///
-/// Templates and assistant-built projects live in a throwaway folder under the
+/// Templates and blank projects live in a throwaway folder under the
 /// system temp directory. Leaving one loses it with no warning and no undo,
 /// which is the worst moment to be quiet — the user has just spent time on it.
 ///

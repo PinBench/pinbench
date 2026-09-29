@@ -23,9 +23,6 @@ migrate_working_dir/
 # is commented out by default.
 #.vscode/
 
-# Node (compile_service and functions/ dependencies)
-node_modules/
-
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
@@ -68,9 +65,6 @@ patrol_test/test_bundle.dart
 # graphify — code-graph tool output cache (not source)
 graphify-out/
 
-# Where the compile service runs: host, SSH user and key (see tools/deploy.env.example)
-tools/deploy.env
-
 # Grafana Cloud OTLP secrets (used by tools/run_otel.sh)
 .grafana.env
 
@@ -82,6 +76,11 @@ tools/deploy.env
 # local clone, a fork — without touching the tracked pubspec.
 pubspec_overrides.yaml
 
-# Firebase CLI deploy cache (regenerated on every `firebase deploy`).
-.firebase/
+# fvm's per-project SDK link (the version itself is in .fvmrc, which is
+# committed)
+.fvm/
 
+# Firebase configuration. Only builds with telemetry have one: PinBench/pro's
+# tools/link.sh puts these in place, and a build from source has none.
+/firebase.json
+/macos/Runner/GoogleService-Info.plist

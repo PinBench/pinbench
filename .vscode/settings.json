@@ -1,0 +1,18 @@
+{
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "match": "\\.dart$",
+        "cmd": "dart pub global run better_imports --silent --files \"${file}\""
+      }
+    ]
+  },
+  "files.exclude": {
+    "**/*.g.dart": true,
+    "**/*.freezed.dart": true
+  },
+  "search.exclude": {
+    "**/*.g.dart": true,
+    "**/*.freezed.dart": true
+  }
+}

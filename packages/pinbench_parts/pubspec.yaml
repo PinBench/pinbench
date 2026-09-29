@@ -1,0 +1,52 @@
+name: pinbench_parts
+description: >-
+  The circuit-parts domain for PinBench: what a part is, how
+  one is drawn, and the catalog of them. No view of the app, so the canvas, the
+  simulation and the .cdl parsers can all share it.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Painters draw at real physical size and label pins in a monospace face;
+  # the Arduino board art is an SVG. That is the whole dependency list, and it
+  # is worth keeping that way — this package is the one part of the codebase
+  # with no app infrastructure in it.
+  flutter_svg: ^2.2.3
+  google_fonts: ^8.1.0
+  # The .cdl format as pure Dart. lib/cdl/ is its canvas side: placed parts
+  # to a document and back.
+  pinbench_cdl:
+    git:
+      url: https://github.com/PinBench/cdl.git
+      ref: main
+  # The .pdl format — parser, expressions, the part model — as pure Dart, so
+  # editor tooling can read part files without Flutter. This package is its
+  # Flutter side: painters, the catalog, and the conversions in pdl_flutter.
+  pinbench_pdl:
+    git:
+      url: https://github.com/PinBench/pdl.git
+      ref: main
+
+dev_dependencies:
+  # The same lint preset the app uses — see analysis_options.yaml.
+  all_lints: ^0.1.2
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  assets:
+    # Referenced as `packages/pinbench_parts/assets/...` by consumers, which is what
+    # Flutter prefixes package assets with. `PartRegistry` scans the manifest
+    # for that prefix to find `.pdl` definitions.
+    - assets/parts/arduino/
+    - assets/parts/cr2032/
+    - assets/parts/diode_1n4148/
+    - assets/parts/ldr/
+    - assets/parts/pir_sensor/
+    - assets/parts/slide_switch/
+    - assets/parts/thermistor/

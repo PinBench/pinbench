@@ -4,35 +4,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:patrol_finders/patrol_finders.dart';
+import 'package:pinbench_edition_api/side_panel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:pinbench/core/auth/auth_provider.dart';
+import 'package:pinbench/core/edition/edition_provider.dart';
 import 'package:pinbench_cloud/auth/auth_service.dart';
 import 'package:pinbench/core/utils/shared_preferences_provider.dart';
-import 'package:pinbench_ai/models/ai_config.dart';
-import 'package:pinbench/features/ai/providers/ai_config_provider.dart';
 import 'package:pinbench/features/workspace/providers/recent_workspaces_provider.dart';
 import 'package:pinbench/features/workspace/services/template_service.dart';
 import 'package:pinbench/layout/views/center/welcome_view.dart';
 import 'package:pinbench_ui/strings.dart';
 import '../../support/harness.dart';
 
-class _FakeConfig extends AiConfigController {
-  _FakeConfig(this._config);
-
-  final AiConfig _config;
-
-  @override
-  AiConfig build() => _config;
-}
-
 Widget _app(List<Override> overrides) =>
     ProviderScope(overrides: overrides, child: appTestApp(const WelcomeView()));
 
 List<Override> _baseOverrides(SharedPreferences prefs) => [
   sharedPreferencesProvider.overrideWithValue(prefs),
-  aiConfigControllerProvider.overrideWith(() => _FakeConfig(const AiConfig(model: 'test-model'))),
-  availableAiModelsProvider.overrideWith((ref) async => const <String>[]),
   // A real auth backend would try to reach the network from a widget test.
   authServiceProvider.overrideWithValue(const DisabledAuthService()),
   availableTemplatesProvider.overrideWith((ref) async => const ['blink']),
@@ -52,15 +41,30 @@ void main() {
     prefs = await SharedPreferences.getInstance();
   });
 
-  // One welcome screen now: the mode toggle that used to choose between
-  // leading with the prompt and leading with the cards is gone, so there is
-  // no second arrangement left to test.
-  patrolWidgetTest('leads with the prompt, keeping the cards below it', ($) async {
+  patrolWidgetTest('a build from source leads with the start and template cards', ($) async {
     await $.pumpWidgetAndSettle(_app(_baseOverrides(prefs)));
 
-    expect($(AppStrings.welcomePromptHeading).exists, isTrue);
-    // The prompt is the headline, not a replacement — the entry points the
-    // existing patrol journeys tap stay on the screen beneath it.
+    // The entry points the patrol journeys tap.
+    expect($(AppStrings.newBlankProjectTitle).exists, isTrue);
+    expect($(AppStrings.templatesSectionTitle).exists, isTrue);
+  });
+
+  patrolWidgetTest("puts an edition side panel's entry above the cards", ($) async {
+    const entry = Key('side-panel-welcome');
+    await $.pumpWidgetAndSettle(
+      _app([
+        ..._baseOverrides(prefs),
+        editionPanelProvider.overrideWithValue(
+          SidePanel(
+            build: (_) => const SizedBox(),
+            welcome: (_) => const SizedBox(key: entry),
+          ),
+        ),
+      ]),
+    );
+
+    expect($(entry).exists, isTrue);
+    // The entry is a headline, not a replacement.
     expect($(AppStrings.newBlankProjectTitle).exists, isTrue);
     expect($(AppStrings.templatesSectionTitle).exists, isTrue);
   });

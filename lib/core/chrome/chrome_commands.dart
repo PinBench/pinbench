@@ -61,8 +61,8 @@ abstract interface class ChromeCommands {
   /// Opens app settings as a center-pane tab, or focuses it if already open.
   ///
   /// A command rather than a feature reaching for the settings widget itself:
-  /// the assistant sends the user here when there is no model configured, and
-  /// where settings live is the chrome's business, not the assistant's.
+  /// a side panel sends the user here to set itself up, and where settings
+  /// live is the chrome's business, not the panel's.
   void openSettingsTab();
 
   /// Closes one tab. Takes an id rather than a path because the editor's own
@@ -80,8 +80,8 @@ abstract interface class ChromeCommands {
   /// belongs with an open project.
   ///
   /// One command rather than the three it expands to, because the rule about
-  /// what the welcome screen hides — the assistant pane, which has a prompt box
-  /// of its own there — is expressed in exactly two places on the chrome side
+  /// what the welcome screen hides — the side panel, which has an entry of its
+  /// own there — is expressed in exactly two places on the chrome side
   /// and would be re-derived, slightly differently, by every caller otherwise.
   void closeWelcome();
 

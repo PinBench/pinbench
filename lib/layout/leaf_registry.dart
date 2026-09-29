@@ -10,7 +10,7 @@ import 'views/bottom/serial_monitor_view.dart';
 import 'views/bottom/serial_plotter_view.dart';
 import 'views/bottom/spice_logs_view.dart';
 import 'views/center/canvas_view.dart';
-import 'views/center/right_view.dart';
+import 'views/center/side_panel_view.dart';
 import 'views/center/welcome_view.dart';
 import '../features/workspace/widgets/account_view.dart';
 import '../features/workspace/widgets/explorer_view.dart';
@@ -25,10 +25,10 @@ abstract final class LeafRegistry {
   // Single-leaf regions (no tab strip above them): the activity-bar sidebars
   // and the right pane. Everything else lives in a tab group, so its island
   // should merge with the tab strip rather than float free.
-  // `assistant`, not `right_pane`: `right_pane` is the collapsible *slot* that
-  // holds it, and the id everything outside this file names when it toggles the
-  // assistant. The leaf inside it needs an id of its own.
-  static const _untabbedLeaves = {'explorer', 'parts', 'properties', 'account', 'assistant'};
+  // `side_panel`, not `right_pane`: `right_pane` is the collapsible *slot*
+  // that holds it, and the id everything outside this file names when it
+  // toggles the panel. The leaf inside it needs an id of its own.
+  static const _untabbedLeaves = {'explorer', 'parts', 'properties', 'account', 'side_panel'};
 
   // Bottom-pane leaves (terminal, logs, monitors) — like the sidebars above,
   // these live outside `center_pane` and must stay clear of the loading
@@ -59,7 +59,7 @@ abstract final class LeafRegistry {
     // A center-pane document, matched on its id: the tab carries no `data`,
     // precisely so nothing mistakes it for a file. See `AppTabs.settings`.
     'settings' => const SettingsTabView(),
-    'assistant' => const RightView(),
+    'side_panel' => const SidePanelView(),
     'problems' => const ProblemsView(),
     'terminal' => const TerminalView(),
     'debug_console' => const DebugConsoleView(),

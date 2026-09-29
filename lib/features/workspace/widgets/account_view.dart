@@ -87,8 +87,7 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
     } catch (e) {
       // Surface the failure instead of silently doing nothing — the most
       // common causes are the backend being unreachable (offline, or a
-      // browser extension blocking the Appwrite endpoint) or a permission
-      // error.
+      // browser extension blocking it) or a permission error.
       if (mounted) {
         showAppToast(context, title: AppStrings.cloudSaveFailedTitle, message: '$e', isError: true);
       }

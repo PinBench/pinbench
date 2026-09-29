@@ -1,0 +1,21 @@
+name: pinbench_edition
+description: >-
+  The edition a PinBench build runs as. This copy has none: a build from
+  source is the full local app, with no sign-in, cloud or side panel.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  pinbench_edition_api:
+    path: ../pinbench_edition_api
+
+dev_dependencies:
+  # The same lint preset the app uses — see analysis_options.yaml.
+  all_lints: ^0.1.2
+  flutter_test:
+    sdk: flutter

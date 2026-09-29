@@ -22,9 +22,13 @@ class Milestones {
 
   /// Emits [milestone] as an analytics event the first time it occurs for this
   /// install; later calls are ignored.
+  ///
+  /// Only counted as fired when it was actually sent: a milestone reached while
+  /// analytics is off (the user has not agreed, or declined) stays unfired, so
+  /// it can still be reported after they agree.
   void fireOnce(String milestone) {
     final prefs = _prefs;
-    if (prefs == null) return;
+    if (prefs == null || !_analytics.enabled) return;
     final key = 'milestone.$milestone';
     if (prefs.getBool(key) ?? false) return;
     unawaited(prefs.setBool(key, true));

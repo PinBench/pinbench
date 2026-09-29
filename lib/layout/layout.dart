@@ -330,7 +330,7 @@ class Layout extends ConsumerWidget {
     final pane = paneForLeaf(id);
     if (pane != null) content = PaneContentFloor(pane: pane, child: content);
     // Every pane fills its rect. A tabbed pane's strip already marks the top
-    // edge, so only the untabbed regions (sidebars, the assistant) draw the
+    // edge, so only the untabbed regions (sidebars, the side panel) draw the
     // hairline that separates them from whatever sits above.
     final tabbed = LeafRegistry.isTabbed(id);
     return PaneSurface(

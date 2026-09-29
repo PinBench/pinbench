@@ -1,0 +1,35 @@
+# NTC thermistor (10 kΩ at 25 °C, B = 3950).
+#
+# Resistance follows the Beta equation:
+#   R = R25 * exp(B * (1/T - 1/T25))       with T in kelvin
+#
+# `temperature` stands in for a heat source the way the LDR's `illumination`
+# stands in for light: a user-set number today, drivable by another part later.
+
+PART "Thermistor (NTC)"
+ID thermistor
+CATEGORY sensors
+DESCRIPTION "10k NTC thermistor — resistance falls as temperature rises"
+
+SIZE 12.7mm 6.35mm
+SVG "thermistor.svg"
+
+PINS
+  a  4px   20px  passive "A"
+  b  68px  20px  passive "B"
+
+PROPERTIES
+  nominal      number  10000  unit:"Ω"   label:"Resistance at 25 °C"
+  beta         number  3950   unit:"K"   label:"B constant"
+  temperature  number  25     unit:"°C"  label:"Temperature"
+
+STATE
+  kelvin  decimal  298.15
+
+BEHAVIOR
+  state.kelvin       = clamp(prop.temperature, -55, 150) + 273.15
+  physics.resistance = prop.nominal * exp(prop.beta * (1 / state.kelvin - 1 / 298.15))
+
+PHYSICS resistor
+  n1 = a
+  n2 = b

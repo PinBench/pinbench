@@ -72,7 +72,7 @@ class _WindowState extends ConsumerState<Window> {
   /// Opens the app's window maximized.
   ///
   /// An IDE laid out as four panes around a canvas has nothing to show in an
-  /// 800x600 default: the sidebars and the assistant leave the editor a
+  /// 800x600 default: the sidebars and the side panel leave the editor a
   /// column. Maximizing is the state a user would put it in anyway.
   ///
   /// After the first frame, because the OS window is only there to maximize

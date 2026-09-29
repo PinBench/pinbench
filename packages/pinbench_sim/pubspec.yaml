@@ -1,0 +1,34 @@
+name: pinbench_sim
+description: >-
+  The Arduino + SPICE simulation engine for PinBench: the AVR
+  emulator bridge, the analog solver, the netlist, and the per-frame loop that
+  drives placed parts. No canvas, no Riverpod, no host devices.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  avr8_dart: ^0.1.0
+  collection: ^1.19.1
+  flutter:
+    sdk: flutter
+  # Local pure-Dart port (no FFI / libngspice). API-compatible Ngspice facade.
+  ngspice_dart:
+    git:
+      url: https://github.com/burhankhanzada/ngspice_dart.git
+      # Pinned to a commit, not a branch — see the app's pubspec.yaml.
+      ref: 1061e5f824186f73671495080fe6c37433b71a1c
+  pinbench_parts:
+    path: ../pinbench_parts
+  # Part definitions and the behaviour evaluator a `.pdl` part runs on.
+  pinbench_pdl:
+    git:
+      url: https://github.com/PinBench/pdl.git
+      ref: main
+
+dev_dependencies:
+  all_lints: ^0.1.2
+  flutter_test:
+    sdk: flutter

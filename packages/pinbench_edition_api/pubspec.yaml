@@ -1,0 +1,30 @@
+name: pinbench_edition_api
+description: >-
+  What a PinBench edition can add to the app — entitlements, a cloud backend
+  and a side panel — and the host API a side panel talks to the app through.
+  A build from source has no edition; see package:pinbench_edition.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  # For FirebaseOptions (see telemetry.dart); the app depends on it already.
+  firebase_core: ^4.11.0
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^3.4.2
+  pinbench_cloud:
+    path: ../pinbench_cloud
+  pinbench_entitlements:
+    path: ../pinbench_entitlements
+  # For the part catalog a side panel may read (see hostPartsProvider).
+  pinbench_parts:
+    path: ../pinbench_parts
+
+dev_dependencies:
+  # The same lint preset the app uses — see analysis_options.yaml.
+  all_lints: ^0.1.2
+  flutter_test:
+    sdk: flutter

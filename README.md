@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/PinBench/pinbench/actions/workflows/ci.yml/badge.svg)](https://github.com/PinBench/pinbench/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![Flutter](https://img.shields.io/badge/Flutter-3.44+-02569B?logo=flutter)](https://flutter.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.47+-02569B?logo=flutter)](https://flutter.dev)
 
 **Design, code, and simulate Arduino circuits — on your desktop or in the browser.**
 
@@ -17,7 +17,7 @@ Works fully offline on desktop. No account required.
 &nbsp;·&nbsp; [What it is](https://pinbench.web.app/)
 &nbsp;·&nbsp; [Download for desktop](https://pinbench.web.app/download)
 
-![The circuit canvas: an Arduino Uno wired across a breadboard to three LEDs, three push buttons, a piezo buzzer and a microphone module](https://raw.githubusercontent.com/PinBench/website/main/screens/canvas-light.jpg)
+![The circuit canvas: an Arduino Uno wired across a breadboard to three LEDs, three push buttons, a piezo buzzer and a microphone module](.github/readme/canvas-light.jpg)
 
 <!-- Shared with the landing page rather than kept separately, so there is one
      set of screenshots to keep honest instead of two.
@@ -65,8 +65,8 @@ way.
 ## Quick start
 
 ```bash
-# Prerequisites: Flutter 3.44+
-git clone --recursive https://github.com/PinBench/pinbench.git   # packages/* are submodules
+# Prerequisites: Flutter 3.47.5 (pinned in .fvmrc; `fvm use` picks it up)
+git clone --recursive https://github.com/PinBench/pinbench.git   # the .cdl/.pdl packages are submodules
 cd pinbench
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs
@@ -97,7 +97,7 @@ arduino-cli lib install "Adafruit SSD1306"
 
 The browser cannot run `arduino-cli`, so the web build compiles edited sketches
 through a small remote service. Without one it still runs the bundled examples.
-See [`compile_service/`](https://github.com/PinBench/compile-server) to run your own.
+See [`PinBench/compile-service`](https://github.com/PinBench/compile-service) to run your own.
 
 ## Development
 
@@ -108,24 +108,23 @@ flutter test --exclude-tags arduino
 # Formatting — CI enforces this at the project's page_width of 100
 dart format lib test
 
-# Web preview with local compilation:
-#   terminal 1
-tools/run_compile_service.sh
-#   terminal 2
+# Web preview with local compilation: start PinBench/compile-service on :8080
+# (see its README), then
 flutter run -d chrome --dart-define=COMPILE_API_URL=http://localhost:8080
 ```
 
 
-## Self-hosting
+## Building from source
 
-Everything the hosted version does, you can run yourself:
+A build from this repository is the full local app: the canvas, the
+simulator, the code editor and every component, with no account needed.
+Accounts, cloud projects, sharing and the circuit assistant belong to
+PinBench's hosted builds and are absent from a build from source.
 
-- **Compile service** — [`compile_service/`](https://github.com/PinBench/compile-server) is a small
-  Node service wrapping `arduino-cli`, with a Dockerfile and a hardening guide.
-- **Cloud sync** — point the app at your own Appwrite project (cloud or
-  self-hosted). `tools/appwrite_schema.sh` builds the schema for you.
-- **Everything enabled** — a self-hosted build turns on every Pro feature with
-  `SelfHostedProGateway`; see [`pinbench_pro`](https://github.com/PinBench/pro).
+The one service you may want alongside it is the compile service —
+[`PinBench/compile-service`](https://github.com/PinBench/compile-service), a small
+Node service wrapping `arduino-cli`, with a Dockerfile and a hardening guide —
+which lets the web build compile edited sketches.
 
 ## File formats
 
@@ -136,8 +135,9 @@ specified, with pure-Dart readers any tool can use, in their own repositories:
 
 ## Contributing
 
-Contributions are welcome — components, board definitions, bug fixes, and
-translations especially.
+Contributions are welcome — components, board definitions and bug fixes
+especially. (The interface is English-only for now; it has no translation
+support yet.)
 
 Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) first. Note that we ask
 contributors to sign a [CLA](CLA.md); it takes one click, you keep your
@@ -150,7 +150,7 @@ Security issues should **not** go in a public issue — see
 
 - The app is **Apache-2.0** — see [`LICENSE`](LICENSE).
 - The compile service is **AGPL-3.0** — see
-  [`compile_service/LICENSE`](https://github.com/PinBench/compile-server/blob/main/LICENSE). A commercial licence is
+  [`PinBench/compile-service`](https://github.com/PinBench/compile-service/blob/main/LICENSE). A commercial licence is
   available if you need to run a modified copy as a closed service.
 
 Apache-2.0 covers the code, not the name. See [`TRADEMARKS.md`](TRADEMARKS.md) —
@@ -160,7 +160,7 @@ forking is welcome and always will be, just under your own name.
 
 | Area | Technology |
 |---|---|
-| Framework | Flutter 3.44+ / Dart 3.10+ |
+| Framework | Flutter 3.47+ / Dart 3.13+ |
 | State | Riverpod 3.x with codegen |
 | Canvas | Custom `CustomPainter` |
 | Editor | `re_editor` |

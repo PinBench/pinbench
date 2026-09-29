@@ -8,28 +8,23 @@ on:
     # release.yml's job.
     tags: ["v*"]
   pull_request:
-  # Manual run — the only path that publishes to the live Hosting channel.
-  # See the deploy-web job.
   workflow_dispatch:
 
-# Cancel superseded runs on the same ref to save CI minutes — except manual
-# runs, which are the ones that publish to live. Cancelling a deploy halfway
-# through is worse than paying for a duplicate run.
+# Cancel superseded runs on the same ref to save CI minutes.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
-  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+  cancel-in-progress: true
 
 # Least privilege by default. GITHUB_TOKEN is handed to every action in the
 # run, including third-party ones, so it should carry no more than reading the
-# checkout. Jobs that need more opt in for themselves (see deploy-web).
+# checkout. Jobs that need more opt in for themselves.
 permissions:
   contents: read
 
-env:
-  # Single source of truth — this was pinned separately in three jobs, which is
-  # how the removed --web-renderer flag survived the 3.44 upgrade in some steps
-  # and not others.
-  FLUTTER_VERSION: 3.44.4
+# The Flutter version is .fvmrc's, in every job here and in the workflows
+# elsewhere that build this app — one file, which fvm reads locally too. It was
+# pinned separately in three jobs once, which is how the removed
+# --web-renderer flag survived the 3.44 upgrade in some steps and not others.
 
 jobs:
   analyze-and-test:
@@ -39,8 +34,23 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # packages/* are submodules in the published repository.
+          # pinbench_cdl and pinbench_pdl are submodules. While their
+          # repositories are private the default token cannot clone them, so
+          # SUBMODULES_TOKEN (read access to both) is used when it is set.
+          # Drop it once they are public.
           submodules: recursive
+          token: ${{ secrets.SUBMODULES_TOKEN || github.token }}
+
+      # The per-package step below resolves each package on its own, and
+      # pinbench_parts and pinbench_sim depend on the format packages by git —
+      # which, while those repositories are private, needs the same token.
+      - name: Let pub fetch the private format packages
+        env:
+          SUBMODULES_TOKEN: ${{ secrets.SUBMODULES_TOKEN }}
+        run: |
+          if [ -n "${SUBMODULES_TOKEN:-}" ]; then
+            git config --global url."https://x-access-token:${SUBMODULES_TOKEN}@github.com/PinBench/".insteadOf "https://github.com/PinBench/"
+          fi
 
       # No GTK/clang/ninja here on purpose: this job only analyzes and runs
       # unit tests, which execute on the Dart VM and compile nothing native.
@@ -48,12 +58,15 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
+          flutter-version-file: .fvmrc
           channel: stable
           cache: true
 
+      # --enforce-lockfile: the committed pubspec.lock must be exactly what this
+      # repository resolves to. A lockfile regenerated under a local
+      # pubspec_overrides.yaml fails here instead of being merged.
       - name: Install dependencies
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
 
       # Generated *.g.dart files are git-ignored, so regenerate them before
       # analysis/tests (riverpod_generator, etc.).
@@ -104,8 +117,8 @@ jobs:
 
       # The root analysis_options excludes packages/**, and `flutter test` at
       # the root does not descend into them either — so until this step existed
-      # nothing in packages/ was ever analyzed or run on CI. pinbench_pro's tests had
-      # never executed here at all.
+      # nothing in packages/ was ever analyzed or run on CI. The entitlements
+      # package's tests had never executed here at all.
       #
       # Each package carries its own analysis_options and pubspec, so they are
       # checked on their own terms rather than the app's. Looping keeps a new
@@ -134,6 +147,18 @@ jobs:
             )
             echo "::endgroup::"
           done
+
+      # The figure, where it is seen: the run's summary page. It counts the
+      # lines of files the tests load, so files no test touches are missing
+      # from both sides — read it as a trend, not an absolute.
+      - name: Coverage summary
+        if: always()
+        run: |
+          if [ -f coverage/lcov.info ]; then
+            awk -F'[:,]' '/^DA:/ { t++; if ($3 > 0) h++ }
+              END { if (t) printf "**Line coverage: %.1f%%** (%d of %d lines, in the files the tests load)\n", 100 * h / t, h, t }' \
+              coverage/lcov.info >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       # Nice to have, never a reason to fail the gate. A full artifact
       # storage quota once turned a run with clean analysis and 431 passing
@@ -173,37 +198,9 @@ jobs:
           bash <(curl -sS https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.7.12 .
           ./actionlint -color
 
-  compile-service:
-    name: Compile Service
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    defaults:
-      run:
-        working-directory: compile_service
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          # compile_service/ is a submodule in the published repository.
-          submodules: recursive
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: compile_service/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      # Covers request validation and the abuse controls (rate limiting,
-      # concurrency shedding, CORS, auth) — no arduino-cli or network needed.
-      - name: Test
-        run: npm test
-
-  # Web is its own job, not a matrix leg, so deploy-web can depend on it
-  # alone. `needs:` cannot target one leg of a matrix, so while web shared a
-  # matrix with the desktop builds the deploy sat idle ~10 min waiting for
-  # Windows to finish a binary it does not use.
+  # Proves the web target still compiles. Only proves it: this repository does
+  # not publish the web app anywhere, so nothing here needs a deploy
+  # configuration or its secrets.
   build-web:
     name: Build Web
     needs: analyze-and-test
@@ -212,13 +209,17 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # packages/* are submodules in the published repository.
+          # pinbench_cdl and pinbench_pdl are submodules. While their
+          # repositories are private the default token cannot clone them, so
+          # SUBMODULES_TOKEN (read access to both) is used when it is set.
+          # Drop it once they are public.
           submodules: recursive
+          token: ${{ secrets.SUBMODULES_TOKEN || github.token }}
 
       - name: Set up Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
+          flutter-version-file: .fvmrc
           channel: stable
           cache: true
 
@@ -228,37 +229,10 @@ jobs:
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs
 
-      # Built with the service configuration baked in, so this artifact is
-      # byte-for-byte what deploy-web publishes — it downloads this rather than
-      # rebuilding. Previously the artifact was a bare build with no compile
-      # service and no App Check, i.e. not the thing that shipped.
-      #
-      # On a pull request from a fork these are empty and the bundle falls back
-      # to precompiled templates. That is fine: deploy-web only runs on main.
-      # build_site.sh, not `flutter build web`: the deployed site is the static
-      # landing page at / plus the Flutter bundle under /app/, and that
-      # assembly has to happen here because the deploy job below ships this
-      # artifact verbatim. tools/deploy_web.sh calls the same script, so a
-      # local deploy and this one cannot drift apart. --wasm,
-      # --pwa-strategy=none, --base-href and --output live inside it.
-      - name: Build the site (landing page + WASM app)
-        run: tools/build_site.sh --dart-define=FLUTTER_WEB_CANVASKIT_MAX_SURFACE_SIZE=2048 ${COMPILE_API_URL:+--dart-define=COMPILE_API_URL=$COMPILE_API_URL} ${COMPILE_API_TOKEN:+--dart-define=COMPILE_API_TOKEN=$COMPILE_API_TOKEN}
-        env:
-          COMPILE_API_URL: ${{ vars.COMPILE_API_URL }}
-          # A secret to keep it out of logs, but NOT secret once built — it
-          # ships in the JavaScript bundle. See compile_service/README.md.
-          COMPILE_API_TOKEN: ${{ secrets.COMPILE_API_TOKEN }}
-
-      - name: Package
-        run: tar -czf pinbench_web.tar.gz -C build/web .
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: pinbench-web
-          path: pinbench_web.tar.gz
-          if-no-files-found: error
-          retention-days: 7
+      # --wasm because that is the configuration that ships; a dart2js-only
+      # build would miss a WASM-specific compile failure.
+      - name: Build (WASM)
+        run: flutter build web --wasm --pwa-strategy=none
 
   # Whether this push/PR touches code only a desktop toolchain compiles.
   #
@@ -346,21 +320,23 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # packages/* are submodules in the published repository.
+          # pinbench_cdl and pinbench_pdl are submodules. While their
+          # repositories are private the default token cannot clone them, so
+          # SUBMODULES_TOKEN (read access to both) is used when it is set.
+          # Drop it once they are public.
           submodules: recursive
+          token: ${{ secrets.SUBMODULES_TOKEN || github.token }}
 
       - name: Install Linux build dependencies
         if: matrix.platform == 'linux'
         run: |
           sudo apt-get update
-          # webkit 4.1 + soup3 are for desktop_webview_window — release.yml's
-          # Linux leg carries the explanation.
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libblkid-dev libasound2-dev libwebkit2gtk-4.1-dev libsoup-3.0-dev
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libblkid-dev libasound2-dev
 
       - name: Set up Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
+          flutter-version-file: .fvmrc
           channel: stable
           cache: true
 
@@ -398,54 +374,28 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  # Pushes to main publish a preview channel; only a manual run
-  # (Actions -> CI -> Run workflow) publishes to live. Production releases
-  # should be a decision, not a side effect of merging.
-  deploy-web:
-    name: Deploy Web (${{ github.event_name == 'workflow_dispatch' && 'live' || 'preview' }})
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+  # Asks PinBench/website to build and publish a preview of this commit; that
+  # repository owns the web deploy. Only on main, and only once the web build
+  # above has proven the commit compiles.
+  #
+  # WEBSITE_DISPATCH_TOKEN needs Contents: write on PinBench/website, which is
+  # what the repository_dispatch API requires. Without it the job succeeds with
+  # a notice rather than failing every run.
+  notify-website:
+    name: Request web preview
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: [analyze-and-test, build-web]
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    environment: production
-    # Opts in on top of the workflow-wide read-only default: the Firebase
-    # action posts the preview URL back to the commit/PR.
-    permissions:
-      contents: read
-      pull-requests: write
-      checks: write
+    timeout-minutes: 5
     steps:
-      # Only for firebase.json / .firebaserc — the bundle itself comes from the
-      # build job, so this job needs no Flutter toolchain at all.
-      - uses: actions/checkout@v7
-
-      # Deploy exactly the artifact CI already built and tested. Rebuilding
-      # here meant ~5 extra minutes and, worse, a second binary that nothing
-      # had verified.
-      - name: Download the web build
-        uses: actions/download-artifact@v8
-        with:
-          name: pinbench-web
-
-      - name: Unpack it where firebase.json expects it
+      - name: Send repository_dispatch
+        env:
+          GH_TOKEN: ${{ secrets.WEBSITE_DISPATCH_TOKEN }}
         run: |
-          mkdir -p build/web
-          tar -xzf pinbench_web.tar.gz -C build/web
-          # Both halves, because either one missing deploys a broken site that
-          # still looks like a successful deploy: no landing page means the
-          # front door falls through to the SPA rewrite, and no app/index.html
-          # means every "Try it in your browser" link 404s.
-          test -f build/web/index.html || { echo "::error::no landing page (index.html) in the artifact"; exit 1; }
-          test -f build/web/app/index.html || { echo "::error::no Flutter app (app/index.html) in the artifact"; exit 1; }
-
-      - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a # v0.11.0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
-          # 'live' is production. Anything else is a preview channel with its
-          # own throwaway URL, which the action prints in the run summary.
-          # Pushes land on a stable 'main' preview so the URL does not change
-          # between runs.
-          channelId: ${{ github.event_name == 'workflow_dispatch' && 'live' || 'main' }}
+          if [ -z "${GH_TOKEN}" ]; then
+            echo "::notice::WEBSITE_DISPATCH_TOKEN is not set; no preview requested."
+            exit 0
+          fi
+          gh api repos/PinBench/website/dispatches \
+            -f event_type=app-updated \
+            -f "client_payload[ref]=${GITHUB_SHA}"

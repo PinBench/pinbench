@@ -10,6 +10,7 @@ import 'core/routing/url_strategy.dart';
 import 'core/remote_config/remote_config_bootstrap.dart';
 import 'core/services/feedback_service.dart';
 import 'core/telemetry/analytics_milestones.dart';
+import 'core/telemetry/telemetry_consent.dart';
 import 'core/utils/logger.dart';
 import 'shell/window.dart';
 
@@ -24,11 +25,19 @@ void main() async {
 
   // Telemetry + auth bootstrap (see app/bootstrap.dart) — each step is
   // best-effort and degrades to a disabled/no-op handle on failure.
-  final firebase = await setupFirebase();
-  final featureFlags = await setupRemoteConfig();
-  final tracing = await setupTracing();
-  final auth = await setupAuth();
+  final edition = loadEdition();
   final storage = await setupLocalStorage();
+  final consent = readTelemetryConsent(storage.sharedPreferences);
+  final granted = consent == TelemetryConsent.granted;
+  final firebase = await setupFirebase(config: edition?.telemetry, consent: consent);
+  // Independent of one another, so together: startup waits for the slowest
+  // (a Remote Config fetch, a cloud session restore), not for the sum.
+  final (featureFlags, tracingSetup, editionSetup) = await (
+    setupRemoteConfig(firebaseReady: firebase.initialized, granted: granted),
+    setupTracing(granted: granted),
+    setupEdition(edition),
+  ).wait;
+  final tracing = tracingSetup.tracing;
   FeedbackService.onFeedbackSent = firebase.analytics.feedbackSent;
 
   // Fire-once activation events (GA4 key events) need persistence + analytics.
@@ -39,9 +48,10 @@ void main() async {
     appTempDir: storage.appTempDir,
     firebase: firebase,
     tracing: tracing,
+    telemetryControl: CombinedTelemetryControl([firebase.control, ?tracingSetup.control]),
     milestones: milestones,
-    authService: auth.authService,
-    client: auth.client,
+    cloud: editionSetup.cloud,
+    panel: editionSetup.panel,
     featureFlags: featureFlags,
   );
 

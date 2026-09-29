@@ -6,15 +6,5 @@ title = "PinBench"
 useDefault = true
 
 [[allowlists]]
-description = """Firebase client API keys. They identify the project to Firebase and \
-ship in every build by design; what protects the project is the key's API \
-restrictions and App Check, configured in the console."""
-targetRules = ["gcp-api-key", "generic-api-key"]
-paths = [
-  '''lib/firebase_options\.dart$''',
-  '''Runner/GoogleService-Info\.plist$''',
-]
-
-[[allowlists]]
 description = "Lockfiles: package checksums and hashes, not credentials."
 paths = ['''(^|/)[^/]+\.lock$''']

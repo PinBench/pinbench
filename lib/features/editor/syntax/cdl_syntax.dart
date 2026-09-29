@@ -18,6 +18,7 @@ final langCdl = buildSyntaxMode(
       'Potentiometer',
       'Capacitor',
       'ServoMotor',
+      'OLEDDisplay',
     ],
     'built_in': [
       'true',

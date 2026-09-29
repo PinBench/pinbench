@@ -25,16 +25,18 @@ Cloned without `--recursive`? `git submodule update --init` fills in `packages/`
 
 ### Changing a package
 
-Everything under `packages/pinbench_*` is a submodule — each package is its own
-repository under [PinBench](https://github.com/PinBench) (`pinbench_parts` is
-`PinBench/parts`, `pinbench_pdl` is `PinBench/pdl`, and so on), and this repo
-pins the commit of each that the app is tested with. The app resolves every one
-of them to the checked-out submodule, so an edit there takes effect in the app
-immediately.
+Most packages under `packages/` are ordinary folders in this repository: change
+them in the same pull request as the app code that needs the change.
 
-To send it: commit inside the submodule and open the pull request against that
-package's repository. If the app needs the change, a second pull request here
-moves the submodule pointer (`git add packages/pinbench_parts`).
+The two file formats are the exception. `pinbench_cdl` and `pinbench_pdl` are
+meant for other tools as well, so each is a repository of its own
+([`PinBench/cdl`](https://github.com/PinBench/cdl),
+[`PinBench/pdl`](https://github.com/PinBench/pdl)), checked out here as a
+submodule pinned to the commit the app is tested with. The app resolves both to
+the checked-out copy, so an edit there takes effect immediately. To send one:
+commit inside the submodule and open the pull request against that repository;
+if the app needs it, a second pull request here moves the submodule pointer
+(`git add packages/pinbench_pdl`).
 
 Generated `*.g.dart` files are gitignored, so `build_runner` is not optional —
 run it after every clone, pull, or branch switch.
@@ -46,6 +48,9 @@ you touch the compile path.
 ## Before you push
 
 CI runs these on every pull request; running them first saves a round trip.
+`./setup_hooks.sh`, once after cloning, has git do it for you: the pre-commit
+hook formats, sorts imports and analyzes what you staged, and the pre-push hook
+runs the analysis and the tests below.
 
 ```bash
 dart analyze --fatal-infos            # must be clean, infos included — as CI runs it
@@ -53,7 +58,6 @@ dart format lib test                  # page_width is 100, set in analysis_optio
 flutter test --exclude-tags arduino
 for p in packages/*/; do [ -d "$p/test" ] && (cd "$p" && flutter test); done
                                       # packages are not covered by the root run
-cd compile_service && npm test        # only if you touched compile_service/
 ```
 
 Packages under `packages/` carry their own `pubspec.yaml` and
@@ -152,8 +156,9 @@ change is very hard to review, and impossible to revert cleanly.
 
 ## The CLA
 
-First PR triggers a bot asking you to sign the [CLA](CLA.md). One click, once,
-covering all future PRs.
+Your first PR gets a comment from a bot asking you to sign the [CLA](CLA.md):
+reply with the sentence it gives you. Once per repository, covering all your
+future PRs there.
 
 You keep your copyright — it is a licence, not an assignment — and it grants you
 an explicit licence back to your own contribution. It exists so the project can

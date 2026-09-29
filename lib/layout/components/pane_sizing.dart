@@ -41,7 +41,7 @@ class CollapsiblePane {
 
   /// Which edge the pane's contents stay pinned to while it is narrower than
   /// [minWidth] — the edge it hinges on. The sidebar closes leftwards, so its
-  /// contents slide out under their own left edge; the assistant closes the
+  /// contents slide out under their own left edge; the side panel closes the
   /// other way. See [PaneContentFloor].
   final Alignment contentAlignment;
 
@@ -99,9 +99,10 @@ const sidebarPane = CollapsiblePane(
   contentAlignment: Alignment.centerLeft,
 );
 
-/// The assistant. Wider throughout: it holds a composer and proposal cards,
-/// which a sidebar's width would make unusable.
-const assistantPane = CollapsiblePane(
+/// The right-hand pane, holding an edition's side panel when there is one.
+/// Wider than the sidebar throughout: a panel there is a working surface, not
+/// a list, and a sidebar's width would make it unusable.
+const sidePanelPane = CollapsiblePane(
   id: 'right_pane',
   initialWidth: 320,
   minWidth: 300,
@@ -116,7 +117,7 @@ const assistantPane = CollapsiblePane(
 /// width to know what it is protecting the contents from.
 CollapsiblePane? paneForLeaf(String leafId) => switch (leafId) {
   'explorer' || 'parts' || 'properties' || 'account' => sidebarPane,
-  'assistant' => assistantPane,
+  'side_panel' => sidePanelPane,
   _ => null,
 };
 
@@ -171,7 +172,7 @@ const contentMinWidth = 160.0;
 /// narrow to read is worse than no panel, and the space it takes is space the
 /// canvas or editor needs more.
 ///
-/// The assistant gives way before the sidebar: it is the wider of the two, and
+/// The side panel gives way before the sidebar: it is the wider of the two, and
 /// the one whose absence costs the least while the window is this small. It is
 /// also the last to come back, so a window worked down and back up ends where
 /// it started.
@@ -201,7 +202,7 @@ class _PaneFitState extends State<PaneFit> {
   final _closedByFit = <String, bool>{};
 
   /// The panes, in the order they are given up — last first.
-  static const _keptLongest = [sidebarPane, assistantPane];
+  static const _keptLongest = [sidebarPane, sidePanelPane];
 
   /// What a pane needs to be worth drawing: room for itself, for the content
   /// beside it, and for everything the window keeps ahead of it.
@@ -209,8 +210,8 @@ class _PaneFitState extends State<PaneFit> {
   /// That last term is what puts the two panes in order, and it is deliberately
   /// not "whatever the other pane happens to be taking right now": a threshold
   /// that moves as its neighbour opens and closes gives back in the wrong
-  /// order, since the assistant would clear its own bar on the way up while the
-  /// sidebar it displaced was still under one raised by the assistant's return.
+  /// order, since the side panel would clear its own bar on the way up while
+  /// the sidebar it displaced was still under one raised by the panel's return.
   static double _needs(CollapsiblePane pane) {
     var width = contentMinWidth;
     for (final other in _keptLongest) {

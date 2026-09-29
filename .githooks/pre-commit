@@ -1,0 +1,106 @@
+#!/bin/sh
+
+# Find staged files
+staged_dart_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.dart$')
+staged_pubspec=$(git diff --cached --name-only --diff-filter=ACM | grep 'pubspec.yaml$')
+staged_scratch_files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^[^/]+\.(dart|py|ino)$')
+
+# 0. Check for scratch files in the root directory
+if [ -n "$staged_scratch_files" ]; then
+    echo "⚠️ Temporary scratch files found in the root directory. Deleting them and continuing..."
+    for file in $staged_scratch_files; do
+        if [ -f "$file" ]; then
+            git rm -f --cached "$file" > /dev/null 2>&1
+            rm -f "$file"
+            echo "   🗑️ Deleted: $file"
+        fi
+    done
+fi
+
+# 1. Update templates and sort pubspec if it was staged or templates changed
+echo "📦 Syncing templates to pubspec.yaml..."
+dart run tools/update_templates.dart
+
+# 2. Sort pubspec if it was staged
+if [ -n "$staged_pubspec" ] || git diff --cached --name-only | grep -q 'assets/templates/'; then
+    echo "📦 Sorting pubspec.yaml dependencies..."
+    dart run sort_pubspec_dependencies
+    git add pubspec.yaml
+fi
+
+# 3. Fix and format Dart files if any were staged
+if [ -n "$staged_dart_files" ]; then
+    echo "🧹 Applying automated dart fixes and sorting imports..."
+    dart fix --apply
+
+    # Sort imports in the STAGED files only. `--folders lib` rewrote every file
+    # under lib/ on every commit, and better_imports renders long `show` clauses
+    # wrapped at 80 columns while this project formats at page_width:100 — so
+    # each commit left unrelated, unstaged files dirty and oscillating.
+    staged_csv=$(printf '%s,' $staged_dart_files | sed 's/,$//')
+    dart pub global run better_imports --silent --relative --files "$staged_csv"
+
+    # Format LAST. `dart fix` and better_imports both rewrite code, and their
+    # output is not formatter-clean at page_width:100. Formatting before them
+    # (or not at all) is how the tree drifted to 145 unformatted files and kept
+    # CI's "Check formatting" step red for a month.
+    echo "🎨 Formatting staged Dart files..."
+    printf '%s\n' $staged_dart_files | xargs dart format >/dev/null
+
+    # Re-stage only the dart files that were initially staged to include the fixes
+    for file in $staged_dart_files; do
+        if [ -f "$file" ]; then
+            git add "$file"
+        fi
+    done
+fi
+
+# 4. Analyze, when the commit could actually affect analysis
+#
+# This was commented out, which meant a broken commit was accepted and the
+# breakage surfaced at the next `git push` — several commits later, blamed on
+# whoever happened to run into it. Both of the last two push failures were
+# that.
+#
+# `dart analyze`, not `flutter analyze`. The note that used to sit here had it
+# backwards: it said `flutter analyze` was used *because* the Flutter tool sets
+# up the analyzer plugins this repo's analysis_options registers. It does not.
+# `flutter analyze` never loads them, which is why 34 riverpod_lint findings
+# accumulated while every hook and CI run reported a clean tree — they were
+# only ever visible in the IDE. `dart analyze` does load them.
+#
+# `--fatal-infos` because the two disagree on what counts as failure:
+# `flutter analyze` exits non-zero on an info, plain `dart analyze` exits 0.
+# Without the flag this swap would have *loosened* the gate — and most of what
+# riverpod_lint reports (`avoid_public_notifier_properties`, and every lint in
+# `all_lints` that is info-level) would have stopped blocking anything.
+#
+# Costs about 11s more than `flutter analyze` did, which is the plugin loading.
+#
+# Skipped for commits that cannot change the result (docs, assets, workflows)
+# so that writing a README stays instant. pre-push analyzes unconditionally,
+# so nothing reaches the remote unchecked either way.
+staged_analysis_config=$(git diff --cached --name-only --diff-filter=ACM | grep -E '(^|/)analysis_options\.yaml$')
+
+if [ -n "$staged_dart_files" ] || [ -n "$staged_pubspec" ] || [ -n "$staged_analysis_config" ]; then
+    echo "🔍 Analyzing..."
+    if ! dart analyze --fatal-infos; then
+        # Generated *.g.dart files are gitignored, so a fresh clone or a branch
+        # switch can leave the tree needing a regenerate. Say so plainly rather
+        # than leaving a wall of undefined-symbol errors that all have the same
+        # one-line cause.
+        echo ""
+        echo "❌ Analysis failed. If these are missing generated symbols, run:"
+        echo "   dart run build_runner build --delete-conflicting-outputs"
+        echo "Commit blocked; use --no-verify to override."
+        exit 1
+    fi
+fi
+
+# Tests deliberately stay in pre-push. They take ~30s against ~430 tests,
+# which is tolerable once per push but not once per commit — and a commit is
+# not the thing that reaches anyone else. Run them yourself before
+# committing; these hooks are the backstop, not the gate.
+
+echo "✅ All pre-commit checks passed!"
+exit 0

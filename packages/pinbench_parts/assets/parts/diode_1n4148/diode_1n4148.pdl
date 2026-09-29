@@ -1,0 +1,21 @@
+# 1N4148 small-signal diode.
+#
+# No BEHAVIOR: a diode's non-linearity is the solver's job, not a rule's. It
+# is here as the reference part for the PHYSICS-only case — artwork, pins, and
+# a SPICE primitive.
+
+PART "Diode (1N4148)"
+ID diode_1n4148
+CATEGORY basic
+DESCRIPTION "Small-signal switching diode"
+
+SIZE 12.7mm 6.35mm
+SVG "diode_1n4148.svg"
+
+PINS
+  anode    4px   20px  passive "A"
+  cathode  68px  20px  passive "K"
+
+PHYSICS diode
+  n1 = anode
+  n2 = cathode

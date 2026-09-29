@@ -12,7 +12,6 @@ Closes #
 - [ ] `dart analyze --fatal-infos` — clean
 - [ ] `dart format lib test` — no changes
 - [ ] `flutter test --exclude-tags arduino` — passing
-- [ ] `cd compile_service && npm test` — only if you touched compile_service/
 - [ ] Tried it in the running app
 
 ## If you changed a painter

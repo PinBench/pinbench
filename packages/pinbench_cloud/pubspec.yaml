@@ -1,0 +1,23 @@
+name: pinbench_cloud
+description: >-
+  Who the user is, and where their projects live: the interfaces PinBench's
+  cloud features are written against, with no backend of their own. A build
+  gets a backend from its edition (package:pinbench_edition_api); without one
+  it runs fully local with every cloud feature hidden.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  # For `@immutable`, and for `FlutterError.reportError` — the fallback that
+  # keeps an error visible when no log sink is installed. No widgets.
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  # The same lint preset the app uses — see analysis_options.yaml.
+  all_lints: ^0.1.2
+  flutter_test:
+    sdk: flutter

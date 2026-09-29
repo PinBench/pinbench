@@ -10,8 +10,9 @@ import 'package:pinbench_ui/theme/app_colors.dart';
 import 'package:pinbench_ui/theme/app_icons.dart';
 
 import '../../../core/auth/auth_provider.dart';
-import 'welcome/welcome_prompt_section.dart';
+import '../../../core/edition/edition_provider.dart';
 import 'welcome/welcome_cloud_section.dart';
+import 'welcome/welcome_consent_card.dart';
 import 'welcome/welcome_recent_section.dart';
 import 'welcome/welcome_start_section.dart';
 import 'welcome/welcome_templates_section.dart';
@@ -48,8 +49,13 @@ class WelcomeView extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildHeader(context),
-                  const WelcomePromptSection(),
-                  Gap.vLg,
+                  const WelcomeConsentCard(),
+                  // The side panel's entry point, when the edition has one. The
+                  // pane itself stays closed here; see `closeWelcome`.
+                  if (ref.watch(editionPanelProvider)?.welcome case final welcome?) ...[
+                    Builder(builder: welcome),
+                    Gap.vLg,
+                  ],
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

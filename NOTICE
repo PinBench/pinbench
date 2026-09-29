@@ -7,14 +7,14 @@ PinBench contributors.
 Licensed under the Apache License, Version 2.0 (see LICENSE), with the
 following exceptions:
 
-  * compile_service/  — licensed under the GNU Affero General Public
-    License v3.0 (see compile_service/LICENSE). A separate commercial
-    license is available; contact the maintainer.
-
-  * packages/pinbench_pro/ — the published implementation of this package is
-    proprietary and is NOT covered by the Apache License. Only the
+  * packages/pinbench_entitlements/ — the published implementation of this
+    package is proprietary and is NOT covered by the Apache License. Only the
     open-source stub implementation is distributed under Apache-2.0.
-    See packages/pinbench_pro/README.md.
+    See packages/pinbench_entitlements/README.md.
+
+  * packages/pinbench_edition/ — likewise: the edition PinBench's hosted
+    builds run as is proprietary and not distributed. Only the stub in this
+    repository, which provides no edition, is Apache-2.0.
 
 TRADEMARKS
 ----------
@@ -34,10 +34,6 @@ licenses, including but not limited to:
                                      separate process, not linked
   * Firebase SDKs                  — Apache-2.0 (Google LLC)
   * OpenTelemetry / dartastic      — Apache-2.0
-  * Geist (site/fonts/)            — SIL Open Font License 1.1 (The Geist
-                                     Project Authors / Vercel). Redistributed
-                                     as woff2 subsets with the marketing site;
-                                     license text in site/fonts/OFL.txt
 
 "Arduino" is a trademark of Arduino SA. This project is not affiliated
 with, endorsed by, or sponsored by Arduino SA. Run `flutter pub deps` or
