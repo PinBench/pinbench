@@ -39,8 +39,9 @@ accent pair at 1.85:1, which made active toolbar buttons nearly unreadable.
 
 Two traps are recorded in the code and worth repeating: `muted` is a *surface*
 and `mutedForeground` is the secondary *text* on it — an earlier scale had them
-inverted — and the brand teal `#009696` is the identity colour but is
-deliberately not an interactive fill, because white on it reaches only 3.6:1.
+inverted — and the brand teal (PCB teal `#00878F`, `BrandPalette.pcbTeal`) is
+the identity colour but is deliberately not an interactive fill, because white
+on it reaches only 4.32:1.
 
 ## One hand-written provider
 

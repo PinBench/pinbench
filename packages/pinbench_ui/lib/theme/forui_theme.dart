@@ -16,7 +16,7 @@ import 'package:flutter/widgets.dart';
 
 import 'package:forui/forui.dart';
 
-import 'theme.dart' show primary;
+import 'theme.dart' show AppPalette, primary;
 
 /// Tokens the app leans on that [FColors] has no slot for.
 ///
@@ -60,20 +60,22 @@ extension AppColorsX on FColors {
 
 /// The interactive teal, per brightness.
 ///
-/// Not the brand [primary] (`#009696`) itself: white on it is 3.62:1, under
-/// WCAG AA. These are the two values the UI actually paints, each tuned to
-/// clear 4.5:1 against its own foreground.
-const _lightPrimary = Color(0xFF007F7F);
-const _lightPrimaryForeground = Color(0xFFFFFFFF);
+/// Not the brand [primary] (PCB teal, `#00878F`) itself: white on it is
+/// 4.32:1, under WCAG AA. These are the values the UI actually paints, each
+/// derived from it and tuned to clear 4.5:1 against its own foreground. They
+/// are read from `AppPalette`, where the measured ratios are recorded, so the
+/// two cannot drift apart.
+const _lightPrimary = AppPalette.lightPrimary;
+const _lightPrimaryForeground = AppPalette.white;
 
-const _lightAccent = Color(0xFFDCEDEC);
-const _lightAccentForeground = Color(0xFF005F5F);
+const _lightAccent = AppPalette.lightAccent;
+const _lightAccentForeground = AppPalette.lightAccentForeground;
 
-const _darkPrimary = Color(0xFF12A5A5);
-const _darkPrimaryForeground = Color(0xFF08201F);
+const _darkPrimary = AppPalette.darkPrimary;
+const _darkPrimaryForeground = AppPalette.darkPrimaryForeground;
 
-const _darkAccent = Color(0xFF1B2E2E);
-const _darkAccentForeground = Color(0xFF7FD9D9);
+const _darkAccent = AppPalette.darkAccent;
+const _darkAccentForeground = AppPalette.darkAccentForeground;
 
 FColors _colors(Brightness brightness) => brightness == Brightness.light
     ? FColors.neutralLight.copyWith(
