@@ -73,7 +73,7 @@ dependencies:
   # Local pure-Dart port (no FFI / libngspice). API-compatible Ngspice facade.
   ngspice_dart:
     git:
-      url: https://github.com/burhankhanzada/ngspice_dart.git
+      url: https://github.com/PinBench/ngspice_dart.git
       # Pinned to a commit, not a branch: a moving ref lets `pub upgrade`
       # swap third-party code underneath us with no diff in this repo.
       # Bump deliberately. Was: branch main

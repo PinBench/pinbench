@@ -21,7 +21,7 @@ dependencies:
   # Local pure-Dart port (no FFI / libngspice). API-compatible Ngspice facade.
   ngspice_dart:
     git:
-      url: https://github.com/burhankhanzada/ngspice_dart.git
+      url: https://github.com/PinBench/ngspice_dart.git
       # Pinned to a commit, not a branch — see the app's pubspec.yaml.
       ref: 1061e5f824186f73671495080fe6c37433b71a1c
   pinbench_parts:

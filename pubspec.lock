@@ -1030,7 +1030,7 @@ packages:
       path: "."
       ref: "1061e5f824186f73671495080fe6c37433b71a1c"
       resolved-ref: "1061e5f824186f73671495080fe6c37433b71a1c"
-      url: "https://github.com/burhankhanzada/ngspice_dart.git"
+      url: "https://github.com/PinBench/ngspice_dart.git"
     source: git
     version: "0.2.1"
   objective_c:
