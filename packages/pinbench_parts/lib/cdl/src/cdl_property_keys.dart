@@ -10,6 +10,7 @@ abstract final class CdlPropertyKeys {
   static const _internalToCdl = {
     ComponentProps.color: 'color',
     ComponentProps.resistance: 'resistance',
+    ComponentProps.voltage: 'voltage',
   };
   static final _cdlToInternal = {
     for (final entry in _internalToCdl.entries) entry.value: entry.key,

@@ -45,7 +45,6 @@ flutter:
     # for that prefix to find `.pdl` definitions.
     - assets/parts/aht20/
     - assets/parts/arduino/
-    - assets/parts/battery_9v/
     - assets/parts/bh1750/
     - assets/parts/cr2032/
     - assets/parts/diode_1n4148/

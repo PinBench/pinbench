@@ -16,6 +16,7 @@ import 'painters/ky037_mic_sensor_painter.dart';
 import 'painters/potentiometer_painter.dart';
 import 'painters/servo_motor_painter.dart';
 import 'painters/oled_display_painter.dart';
+import 'painters/battery_9v_painter.dart';
 
 /// The catalog of data-driven parts, loaded from the `.pdl` files under
 /// this package's `assets/parts/`. Built-in parts (the ones with a
@@ -252,5 +253,21 @@ final standardParts = <PartModel>[
     defaults: const {ComponentProps.i2cAddress: '0x3C', ComponentProps.pixelColor: 'White'},
     painterBuilder: ({isOutline = false, properties}) =>
         OledDisplayPainter(isOutline: isOutline, properties: properties),
+  ),
+  PartModel(
+    name: PartNames.battery9v,
+    size: Battery9vPainter.componentSize,
+    category: PartCategory.basic,
+    // An ideal source: it does not sag under load or run down. Enough to power
+    // a circuit off-board, or to show what 9 V does to an LED with no resistor.
+    spice: const SpiceModelDef(
+      type: SpiceComponentType.voltageSource,
+      pinMapping: {'n1': 'plus', 'n2': 'minus'},
+      valueProperty: ComponentProps.voltage,
+      defaultValue: 9,
+    ),
+    defaults: const {ComponentProps.voltage: '9'},
+    painterBuilder: ({isOutline = false, properties}) =>
+        Battery9vPainter(isOutline: isOutline, properties: properties),
   ),
 ];

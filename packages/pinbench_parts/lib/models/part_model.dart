@@ -163,6 +163,9 @@ abstract class PartNames {
   static const potentiometer = 'Potentiometer';
   static const servoMotor = 'Servo Motor';
   static const oledDisplay = 'OLED Display';
+  // The name the `.pdl` part had, so `.cdl` files (`Battery9V`) and saved
+  // circuits that used it still resolve.
+  static const battery9v = 'Battery (9V)';
 }
 
 /// Canonical keys for `ComponentInstance.properties` (the per-component property
@@ -240,6 +243,9 @@ abstract class ComponentProps {
   /// What colour an OLED's lit pixels glow — `White`, `Blue` or `Yellow`,
   /// matching the panels sold. Cosmetic: the panel is monochrome either way.
   static const pixelColor = 'Pixel Color';
+
+  /// A battery's terminal voltage in volts, as a string (e.g. `9`).
+  static const voltage = 'Voltage';
 
   /// Runtime-flag keys the property editor must hide (they are not user-editable).
   /// Includes legacy lowercase keys that may still be present in older `.cdl`
