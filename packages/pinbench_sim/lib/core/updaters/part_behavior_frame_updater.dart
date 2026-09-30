@@ -198,11 +198,16 @@ abstract final class PartBehaviorFrameUpdater {
       SpiceComponentType.resistor => result.physics['resistance'],
       SpiceComponentType.voltageSource => result.physics['voltage'],
       SpiceComponentType.capacitor => result.physics['capacitance'],
+      SpiceComponentType.spdt => result.physics['position'],
       _ => null,
     };
     if (value == null || !value.isFinite) return;
 
-    if (spiceEngine.setElementValue(element, value)) {
+    // An SPDT is the one type that is two elements thrown by one value.
+    final changed = definition?.spiceModel?.type == SpiceComponentType.spdt
+        ? spiceEngine.setSwitchPosition(element, value)
+        : spiceEngine.setElementValue(element, value);
+    if (changed) {
       onDebugLog?.call(
         '[Debug] ${definition?.id ?? node.part.name} $element = ${value.toStringAsFixed(3)}',
       );

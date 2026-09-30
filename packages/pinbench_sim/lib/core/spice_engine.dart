@@ -352,6 +352,29 @@ class SpiceEngine({
             );
           }
 
+        case SpiceComponentType.spdt:
+          // The common pole to each throw, one closed and one open. The pair is
+          // one PDL element to `alter`: see [setSwitchPosition].
+          final element = 'R_$keyStr';
+          _pdlElements[node.key] = element;
+          final toB =
+              (physics['position'] ?? spiceDef.valueFor(node.properties, 'position') ?? 0) >= 0.5;
+          for (final (role, closed) in [('a', !toB), ('b', toB)]) {
+            final ohms = closed ? _switchClosedOhms : _switchOpenOhms;
+            _elementValues['${element}_$role'] = ohms;
+            circArray.add('${element}_$role n_${nodeFor('c')} n_${nodeFor(role)} $ohms');
+            _branches.add(
+              _ElementBranch.ohmic(
+                a: portFor('c'),
+                b: portFor(role),
+                nodeA: nodeFor('c'),
+                nodeB: nodeFor(role),
+                element: '${element}_$role',
+                ohms: ohms,
+              ),
+            );
+          }
+
         case SpiceComponentType.nmos:
         case SpiceComponentType.pmos:
           final model = 'MM_$keyStr';
@@ -464,6 +487,20 @@ class SpiceEngine({
   /// Only elements whose value can be changed at runtime are registered — a
   /// `physics.resistance` rule needs to name `R_<key>` in an `alter`.
   String? pdlElementFor(Key nodeKey) => _pdlElements[nodeKey];
+
+  /// A closed switch contact and an open one: far enough from anything else in
+  /// a circuit to read as a wire and as a break.
+  static const _switchClosedOhms = 0.01;
+  static const _switchOpenOhms = 1e9;
+
+  /// Throws an SPDT built from [element]: [position] below 0.5 closes its
+  /// `a` contact, anything else its `b`. True if either contact changed.
+  bool setSwitchPosition(String element, double position) {
+    final toB = position >= 0.5;
+    final a = setElementValue('${element}_a', toB ? _switchOpenOhms : _switchClosedOhms);
+    final b = setElementValue('${element}_b', toB ? _switchClosedOhms : _switchOpenOhms);
+    return a || b;
+  }
 
   /// Queues `alter <element> = <value>` for the next [solve].
   ///

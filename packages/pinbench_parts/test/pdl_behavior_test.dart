@@ -259,6 +259,15 @@ PHYSICS resistor
       expect(cap.spiceModel!.pinMapping, {'n1': 'positive', 'n2': 'negative'});
     });
 
+    test('the SPDT switch throws toward whichever side its property names', () async {
+      final sw = await load('slide_switch_spdt');
+      double position(Map<String, dynamic> p) =>
+          PdlBehaviorEvaluator.physicsFor(sw, p)['position']!;
+      expect(position({}), 0, reason: 'it ships thrown to a');
+      expect(position({'position': 'B'}), 1);
+      expect(sw.spiceModel!.pinMapping, {'a': 'a', 'b': 'b', 'c': 'common'});
+    });
+
     test('the diode is PHYSICS-only — no rules to run', () async {
       final diode = await load('diode_1n4148');
       expect(diode.behavior, isEmpty);

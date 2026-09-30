@@ -61,6 +61,7 @@ flutter:
     - assets/parts/power_pmos/
     - assets/parts/rgb_led/
     - assets/parts/slide_switch/
+    - assets/parts/slide_switch_spdt/
     - assets/parts/soil_moisture/
     - assets/parts/thermistor/
     - assets/parts/tip120/
