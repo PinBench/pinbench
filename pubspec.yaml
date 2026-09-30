@@ -23,7 +23,7 @@ dependencies:
   avr8_dart:
     git:
       url: https://github.com/PinBench/avr8_dart.git
-      ref: db4870522a9b67f4b39fdd593fce19fadbe82474
+      ref: 183c19a5e17e3722666b4d1ad197dca0cf997a30
   collection: ^1.19.1
   crypto: ^3.0.0
   # feedback: ^3.2.0
