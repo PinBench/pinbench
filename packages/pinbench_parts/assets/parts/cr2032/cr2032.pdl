@@ -4,18 +4,24 @@
 # resistance, which is the honest cheap model: enough that shorting it does
 # not produce infinite current, not so much that it pretends to model
 # discharge.
+#
+# Drawn by the `cr2032` painter rather than an SVG: vector paths generated
+# from the "Coin Cell CR2032" frame in the PinBench Parts Figma file by the
+# Flutter Da Vinci plugin. Only the drawing is Dart.
 
 PART "Coin Cell (CR2032)"
 ID cr2032
 CATEGORY basic
 DESCRIPTION "3V lithium coin cell"
 
-SIZE 20.32mm 20.32mm
-SVG "cr2032.svg"
+# The holder stands upright between its leads, whose tips are thirteen hole
+# pitches apart on the lattice: red (+) at the top, black (-) at the bottom.
+SIZE 136px 200px
+PAINTER cr2032
 
 PINS
-  plus   4px    68px  power   "+"
-  minus  116px  68px  ground  "-"
+  plus   68px  4px    power   "+"
+  minus  68px  196px  ground  "-"
 
 PROPERTIES
   voltage  number  3  unit:"V"  label:"Cell voltage"
