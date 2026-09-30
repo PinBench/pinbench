@@ -33,24 +33,23 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
-        with:
-          # pinbench_cdl and pinbench_pdl are submodules. While their
-          # repositories are private the default token cannot clone them, so
-          # SUBMODULES_TOKEN (read access to both) is used when it is set.
-          # Drop it once they are public.
-          submodules: recursive
-          token: ${{ secrets.SUBMODULES_TOKEN || github.token }}
 
-      # The per-package step below resolves each package on its own, and
-      # pinbench_parts and pinbench_sim depend on the format packages by git —
-      # which, while those repositories are private, needs the same token.
-      - name: Let pub fetch the private format packages
-        env:
-          SUBMODULES_TOKEN: ${{ secrets.SUBMODULES_TOKEN }}
-        run: |
-          if [ -n "${SUBMODULES_TOKEN:-}" ]; then
-            git config --global url."https://x-access-token:${SUBMODULES_TOKEN}@github.com/PinBench/".insteadOf "https://github.com/PinBench/"
-          fi
+      # pinbench_pdl and pinbench_cdl are private, and so needed twice: as
+      # submodules, and as git dependencies that `flutter pub get` fetches. The
+      # default token reads neither. Each has a read-only deploy key, whose
+      # private half is a secret here; the key's comment names its repository,
+      # which is how the action rewrites that repository's https:// and git@
+      # URLs to use it — for git and therefore for pub. Drop this once the two
+      # repositories are public.
+      - name: Load the deploy keys for the private format repositories
+        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.PDL_DEPLOY_KEY }}
+            ${{ secrets.CDL_DEPLOY_KEY }}
+
+      - name: Fetch submodules
+        run: git submodule update --init --recursive
 
       # No GTK/clang/ninja here on purpose: this job only analyzes and runs
       # unit tests, which execute on the Dart VM and compile nothing native.
@@ -208,13 +207,23 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
+
+      # pinbench_pdl and pinbench_cdl are private, and so needed twice: as
+      # submodules, and as git dependencies that `flutter pub get` fetches. The
+      # default token reads neither. Each has a read-only deploy key, whose
+      # private half is a secret here; the key's comment names its repository,
+      # which is how the action rewrites that repository's https:// and git@
+      # URLs to use it — for git and therefore for pub. Drop this once the two
+      # repositories are public.
+      - name: Load the deploy keys for the private format repositories
+        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         with:
-          # pinbench_cdl and pinbench_pdl are submodules. While their
-          # repositories are private the default token cannot clone them, so
-          # SUBMODULES_TOKEN (read access to both) is used when it is set.
-          # Drop it once they are public.
-          submodules: recursive
-          token: ${{ secrets.SUBMODULES_TOKEN || github.token }}
+          ssh-private-key: |
+            ${{ secrets.PDL_DEPLOY_KEY }}
+            ${{ secrets.CDL_DEPLOY_KEY }}
+
+      - name: Fetch submodules
+        run: git submodule update --init --recursive
 
       - name: Set up Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
@@ -319,13 +328,23 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+
+      # pinbench_pdl and pinbench_cdl are private, and so needed twice: as
+      # submodules, and as git dependencies that `flutter pub get` fetches. The
+      # default token reads neither. Each has a read-only deploy key, whose
+      # private half is a secret here; the key's comment names its repository,
+      # which is how the action rewrites that repository's https:// and git@
+      # URLs to use it — for git and therefore for pub. Drop this once the two
+      # repositories are public.
+      - name: Load the deploy keys for the private format repositories
+        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         with:
-          # pinbench_cdl and pinbench_pdl are submodules. While their
-          # repositories are private the default token cannot clone them, so
-          # SUBMODULES_TOKEN (read access to both) is used when it is set.
-          # Drop it once they are public.
-          submodules: recursive
-          token: ${{ secrets.SUBMODULES_TOKEN || github.token }}
+          ssh-private-key: |
+            ${{ secrets.PDL_DEPLOY_KEY }}
+            ${{ secrets.CDL_DEPLOY_KEY }}
+
+      - name: Fetch submodules
+        run: git submodule update --init --recursive
 
       - name: Install Linux build dependencies
         if: matrix.platform == 'linux'
