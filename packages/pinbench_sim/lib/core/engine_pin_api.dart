@@ -159,4 +159,7 @@ class const EngineSpiceApi({
 }) implements PartSpiceApi {
   @override
   double current() => isActive ? spiceEngine.getLedCurrent(node.key.toString()) : 0;
+
+  @override
+  double pinCurrent(String pinId) => isActive ? spiceEngine.portCurrent(node.key, pinId) : 0;
 }

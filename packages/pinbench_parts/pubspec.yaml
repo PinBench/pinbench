@@ -57,6 +57,7 @@ flutter:
     - assets/parts/pir_sensor/
     - assets/parts/power_nmos/
     - assets/parts/power_pmos/
+    - assets/parts/rgb_led/
     - assets/parts/slide_switch/
     - assets/parts/soil_moisture/
     - assets/parts/thermistor/

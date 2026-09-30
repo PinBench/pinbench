@@ -1,0 +1,42 @@
+# RGB LED, 5 mm, common cathode.
+#
+# Three LEDs in one lens sharing a cathode. PHYSICS builds a die per colour —
+# red drops about 2 V, green and blue about 3 V — and the `rgb_led` logic lights
+# each from the current through it, exactly as a single LED is judged. Give
+# every colour its own resistor, as on a real board: one shared resistor lets
+# the red die hog the current.
+#
+# Drawn by the `rgb_led` painter: vector paths generated from the "RGB LED"
+# frame in the PinBench Parts Figma file by the Flutter Da Vinci plugin, plus
+# the glow, which it mixes from the state below.
+
+PART "RGB LED"
+ALIAS "Common Cathode RGB LED"
+ID rgb_led
+CATEGORY basic
+DESCRIPTION "5 mm common-cathode RGB LED — red, cathode, green, blue"
+
+# Legs splayed to four holes in a row, in the usual order: R, the common
+# cathode (the longest lead on a real part), G, B.
+SIZE 56px 72px
+PAINTER rgb_led
+
+PINS
+  red      4px   68px  passive  "R"
+  cathode  20px  68px  passive  "K"
+  green    36px  68px  passive  "G"
+  blue     52px  68px  passive  "B"
+
+STATE
+  # Brightness per colour, 0-1, written by the logic and mixed by the painter.
+  red    decimal  0
+  green  decimal  0
+  blue   decimal  0
+
+LOGIC rgb_led
+
+PHYSICS rgbLed
+  r = red
+  g = green
+  b = blue
+  k = cathode

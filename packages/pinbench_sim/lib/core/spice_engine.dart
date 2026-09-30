@@ -334,6 +334,20 @@ class SpiceEngine({
               _ElementBranch.measured(a: portFor('b'), b: portFor('e'), vector: 'i(V_qb_$keyStr)'),
             );
 
+        case SpiceComponentType.rgbLed:
+          // Three dies on one cathode, each with the LED's 0 V sense source.
+          // Red drops about 2 V at 20 mA, green and blue about 3 V.
+          circArray.add('.model DR_$keyStr D(Is=1e-18 N=2)');
+          circArray.add('.model DGB_$keyStr D(Is=1e-22 N=2.5)');
+          for (final (role, model) in [('r', 'DR'), ('g', 'DGB'), ('b', 'DGB')]) {
+            final die = '${role}_$keyStr';
+            circArray.add('D_$die n_${nodeFor(role)} n_int_$die ${model}_$keyStr');
+            circArray.add('V_led_$die n_int_$die n_${nodeFor('k')} 0');
+            _branches.add(
+              _ElementBranch.measured(a: portFor(role), b: portFor('k'), vector: 'i(V_led_$die)'),
+            );
+          }
+
         case SpiceComponentType.nmos:
         case SpiceComponentType.pmos:
           final model = 'MM_$keyStr';
@@ -534,10 +548,7 @@ class SpiceEngine({
     _nodeVoltageCache.clear();
 
     for (final branch in _branches) {
-      final current = branch.isMeasured
-          ? branch.scale * _vectorValue(branch.vector!)
-          : (_nodeVoltage(branch.nodeA) - _nodeVoltage(branch.nodeB)) /
-                (_elementValues[branch.element] ?? branch.ohms!);
+      final current = _branchCurrent(branch);
       if (current == 0 || !current.isFinite) continue;
 
       final a = branch.a;
@@ -547,6 +558,29 @@ class SpiceEngine({
     }
     return _injections;
   }
+
+  /// Current flowing into [nodeKey]'s component at [portId]: the sum over the
+  /// elements that terminal feeds, each read the way [portInjections] reads
+  /// it. What a multi-element part's logic uses to tell its elements apart.
+  double portCurrent(Key nodeKey, String portId) {
+    _nodeVoltageCache.clear();
+    var total = 0.0;
+    for (final branch in _branches) {
+      final into = branch.a?.nodeKey == nodeKey && branch.a?.portId == portId;
+      final outOf = branch.b?.nodeKey == nodeKey && branch.b?.portId == portId;
+      if (!into && !outOf) continue;
+      final current = _branchCurrent(branch);
+      if (!current.isFinite) continue;
+      total += into ? current : -current;
+    }
+    return total;
+  }
+
+  /// The current through [branch], from its `a` terminal to its `b`.
+  double _branchCurrent(_ElementBranch branch) => branch.isMeasured
+      ? branch.scale * _vectorValue(branch.vector!)
+      : (_nodeVoltage(branch.nodeA) - _nodeVoltage(branch.nodeB)) /
+            (_elementValues[branch.element] ?? branch.ohms!);
 
   double _nodeVoltage(int nodeId) {
     if (nodeId == 0) return 0;

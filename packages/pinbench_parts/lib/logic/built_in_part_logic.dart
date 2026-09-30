@@ -33,6 +33,7 @@ abstract final class BuiltInPartLogic {
     PartLogicRegistry.register('one_shot', oneShot);
     PartLogicRegistry.register('servo', servo);
     PartLogicRegistry.register('led', led);
+    PartLogicRegistry.register('rgb_led', rgbLed);
     PartLogicRegistry.register('buzzer', buzzer);
     PartLogicRegistry.register('ssd1306', ssd1306);
     PartLogicRegistry.register('bh1750', I2cSensors.bh1750);
@@ -155,6 +156,26 @@ abstract final class BuiltInPartLogic {
     // Judged on the average too, so dimming an LED with PWM does not read as
     // over-driving it — only actually running it too hard does.
     context.state[ComponentProps.hasError] = averageAmps > ledRatedAmps;
+  }
+
+  /// A common-cathode RGB LED: each colour lit and dimmed from the current
+  /// through its own die, judged exactly as [led] judges one.
+  ///
+  /// Writes `red`, `green` and `blue` as 0–1 brightness, which the part's
+  /// painter mixes into the colour of the lens, and flags an over-driven die.
+  static void rgbLed(PartLogicContext context) {
+    var overdriven = false;
+    for (final colour in const ['red', 'green', 'blue']) {
+      final amps = context.spice.pinCurrent(colour).abs();
+      // Either end may be the pin a sketch drives: each colour's anode, or the
+      // shared cathode when it sinks through all three.
+      final pin = context.pins.connectedTo(colour) ?? context.pins.connectedTo('cathode');
+      final duty = amps <= ledOnAmps ? 0.0 : (pin != null ? context.pins.duty(pin) : 1.0);
+      final averageAmps = amps * duty;
+      context.state[colour] = ((averageAmps / ledRatedAmps).clamp(0.0, 1.0) * 20).round() / 20;
+      overdriven = overdriven || averageAmps > ledRatedAmps;
+    }
+    context.state[ComponentProps.hasError] = overdriven;
   }
 
   /// A hobby servo: horn angle from the HIGH-pulse width on its signal line.

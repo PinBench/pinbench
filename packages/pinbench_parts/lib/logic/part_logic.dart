@@ -110,6 +110,14 @@ abstract interface class PartSpiceApi {
   /// today. Everything else reads 0, which is also what an unsolved circuit
   /// reads, so a caller needs no special case for either.
   double current();
+
+  /// Current flowing *into* this component at [pinId], in amps — for a part
+  /// with more than one element, where [current] cannot say which one.
+  ///
+  /// Summed over the elements that terminal feeds, as far as the netlist
+  /// measures them: an RGB LED's anode reads its colour's current, a
+  /// transistor's base its base current. 0 wherever nothing is measured.
+  double pinCurrent(String pinId);
 }
 
 /// The emulated board, as far as one placed component can see it.

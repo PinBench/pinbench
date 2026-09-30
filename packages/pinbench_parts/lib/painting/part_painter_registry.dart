@@ -3,6 +3,7 @@ import '../painters/cr2032_painter.dart';
 import '../painters/diode_1n4148_painter.dart';
 import '../painters/electrolytic_capacitor_painter.dart';
 import '../painters/ldr_painter.dart';
+import '../painters/rgb_led_painter.dart';
 import '../painters/to220_painter.dart';
 import '../painters/transistor_painter.dart';
 import 'base_component_painter.dart';
@@ -27,6 +28,7 @@ abstract final class PartPainterRegistry {
     'diode_1n4148': Diode1n4148Painter.new,
     'capacitor_electrolytic': ElectrolyticCapacitorPainter.new,
     'ldr': LdrPainter.new,
+    'rgb_led': RgbLedPainter.new,
     for (final kind in TransistorKind.values)
       'transistor_${kind.name}': ({isOutline = false, properties}) =>
           TransistorPainter(kind, isOutline: isOutline, properties: properties),
