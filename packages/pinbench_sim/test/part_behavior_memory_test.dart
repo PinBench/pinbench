@@ -101,7 +101,11 @@ void main() {
     await PartRegistry.initializeAsync();
     final pir = ComponentInstance(
       position: Offset.zero,
-      part: PartModel(name: 'PIR Motion Sensor', size: const Size(128, 96), definitionId: 'pir_sensor'),
+      part: PartModel(
+        name: 'PIR Motion Sensor',
+        size: const Size(128, 96),
+        definitionId: 'pir_sensor',
+      ),
       properties: {'triggered': false, 'active': true, 'holdUntilMs': 1e9},
     );
     final lastState = <LocalKey, Map<String, Object?>>{};

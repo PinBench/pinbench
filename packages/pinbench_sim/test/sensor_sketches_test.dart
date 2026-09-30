@@ -49,8 +49,11 @@ void main() {
           size: Size(definition.visual.width, definition.visual.height),
           definitionId: definition.id,
           logic: definition.logic,
-          painterBuilder: ({isOutline = false, properties}) =>
-              DSLComponentPainter(definition: definition, isOutline: isOutline, properties: properties),
+          painterBuilder: ({isOutline = false, properties}) => DSLComponentPainter(
+            definition: definition,
+            isOutline: isOutline,
+            properties: properties,
+          ),
         ),
         properties: {...properties},
       );

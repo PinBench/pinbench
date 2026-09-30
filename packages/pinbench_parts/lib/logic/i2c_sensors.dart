@@ -48,9 +48,8 @@ abstract final class I2cWiring {
     return address;
   }
 
-  static int? _parse(String text) => text.startsWith('0x')
-      ? int.tryParse(text.substring(2), radix: 16)
-      : int.tryParse(text);
+  static int? _parse(String text) =>
+      text.startsWith('0x') ? int.tryParse(text.substring(2), radix: 16) : int.tryParse(text);
 }
 
 /// I²C sensors: parts whose whole behaviour is a register bank the sketch
@@ -340,7 +339,10 @@ abstract final class I2cSensors {
     context.i2c.setRegisters(
       _aht20Address,
       0,
-      aht20Reading(humidity: context.number('humidity', 50), celsius: context.number('temperature', 25)),
+      aht20Reading(
+        humidity: context.number('humidity', 50),
+        celsius: context.number('temperature', 25),
+      ),
     );
   }
 
@@ -350,7 +352,10 @@ abstract final class I2cSensors {
   static List<int> aht20Reading({required double humidity, required double celsius}) {
     const fullScale = 1 << 20;
     final rawHumidity = (humidity.clamp(0, 100) / 100 * fullScale).round().clamp(0, fullScale - 1);
-    final rawTemperature = ((celsius.clamp(-50, 150) + 50) / 200 * fullScale).round().clamp(0, fullScale - 1);
+    final rawTemperature = ((celsius.clamp(-50, 150) + 50) / 200 * fullScale).round().clamp(
+      0,
+      fullScale - 1,
+    );
     final bytes = [
       _aht20Status,
       rawHumidity >> 12,

@@ -97,7 +97,8 @@ abstract final class BuiltInPartLogic {
   /// [ssd1306DefaultAddress] for anything it cannot read — a typo should cost
   /// a wrong address at worst, not a part that silently never runs.
   static int _i2cAddress(PartLogicContext context) =>
-      I2cWiring.parseAddress(context.properties[ComponentProps.i2cAddress]) ?? ssd1306DefaultAddress;
+      I2cWiring.parseAddress(context.properties[ComponentProps.i2cAddress]) ??
+      ssd1306DefaultAddress;
 
   /// A piezo buzzer: sounding, and at what pitch, from the frequency the
   /// emulator detects on its driving pin.
