@@ -119,7 +119,11 @@
     <div class="spinner"></div>
     <div class="label">Loading PinBench…</div>
   </div>
-  <script type="module" src="avr_bridge.js?v=6"></script>
+  <!-- The AVR emulator (window.AVR8): avr8_dart compiled by dart2js, see
+       tools/build_avr_bridge.sh. A classic script, not a module: dart2js
+       output is one self-running file. The app touches it only once a
+       simulation starts, long after this has run. -->
+  <script src="avr_bridge.js?v=7" defer></script>
   <script>
     window.addEventListener('flutter-first-frame', function () {
       var loader = document.getElementById('loading');

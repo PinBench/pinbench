@@ -1,9 +1,11 @@
 import 'dart:js_interop';
 import 'dart:typed_data';
 
-/// Web [AVRBridge] backed by `avr8js` via the `window.AVR8` bridge defined in
-/// `web/avr_bridge.js`. Mirrors the native `avr_interop_io.dart` API but runs
-/// the emulator in optimized JS so the 16 MHz AVR keeps real time.
+/// Web [AVRBridge]: a facade over `window.AVR8`, which is the native
+/// `avr_interop_io.dart` bridge itself compiled by dart2js into
+/// `web/avr_bridge.js` (`web_bridge/avr_bridge_main.dart`). The emulator is the
+/// same `avr8_dart` code on every platform; it runs as JavaScript here because
+/// dart2js runs it about twice as fast as the app's WebAssembly.
 @JS('AVR8')
 external _Avr8 get _avr8;
 

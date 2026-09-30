@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:avr8_dart/avr8_dart.dart';
 
-import 'sim_log.dart';
 import 'frequency_detector.dart';
 import 'i2c_recorder.dart';
 
@@ -15,9 +14,19 @@ import 'i2c_recorder.dart';
 /// RX queueing ([queueSerialInput]) and TX (via onSerialPrint), and buzzer
 /// frequency detection. State is static because the emulator is a singleton per
 /// process; [loadHex] fully re-creates the CPU on each run.
+///
+/// **The same code runs on the web.** This file imports nothing from Flutter,
+/// so `tools/build_avr_bridge.sh` compiles it with dart2js into
+/// `web/avr_bridge.js` (see `web_bridge/avr_bridge_main.dart`), which the web
+/// build's [AVRBridge] facade calls. Keep it that way: an import of Flutter,
+/// or of anything that imports Flutter, breaks the web build of the emulator.
 class AVRBridge {
-  static const _log = SimLog('app.simulation.avr');
   static late CPU _cpu;
+
+  /// Whether a program has been loaded. Everything that reads the CPU answers
+  /// a harmless default before then, because the canvas asks for pin states
+  /// before the first Run.
+  static var _loaded = false;
   static CPU get cpu => _cpu;
   static late AVRIOPort _portB;
   static late AVRIOPort _portC;
@@ -107,6 +116,7 @@ class AVRBridge {
   /// Fraction of the last [tick] window that [pin] was driven high (0.0–1.0).
   /// Falls back to the instantaneous level if no samples were taken yet.
   static double getPinDuty(int pin) {
+    if (!_loaded) return 0;
     if (pin < 0 || pin >= _dutyPinCount) return getPinState(pin) ? 1.0 : 0.0;
     if (_dutyTotalSamples == 0) return getPinState(pin) ? 1.0 : 0.0;
     return _dutyHighSamples[pin] / _dutyTotalSamples;
@@ -144,9 +154,11 @@ class AVRBridge {
     _twi.eventHandler = _RecordingTwiHandler(_twi, _i2c);
 
     _freqDetector.reset();
+    _loaded = true;
   }
 
   static bool isPinOutput(int pin) {
+    if (!_loaded) return false;
     if (pin >= 0 && pin <= 7) {
       return (_cpu.data[portDConfig.DDR] & (1 << pin)) != 0;
     } else if (pin >= 8 && pin <= 13) {
@@ -199,60 +211,89 @@ class AVRBridge {
   /// over instructions ran typical sketches about 30% fast (`delay(1000)`
   /// lasted 0.77 s). The web bridge counts the same way.
   static void tick(int cycles) {
+    if (!_loaded) return;
+    // Everything the loop touches is read into a local first. `_cpu` and the
+    // other statics are lazily initialised, so every access checks whether
+    // they are set yet; in the dart2js build of this file (the web's
+    // emulator) that check is a call, and the loop runs about 60 million
+    // times a second.
+    final cpu = _cpu;
+    final usart = _usart;
+    final portB = _portB;
+    final portD = _portD;
+    final rxQueue = _rxQueue;
+    final freqDetector = _freqDetector;
+    final dutyHigh = _dutyHighSamples;
+    final ddrD = portDConfig.DDR;
+    final ddrB = portBConfig.DDR;
+
     // Reset PWM duty accumulators for this frame.
-    _dutyTotalSamples = 0;
+    var dutyTotal = 0;
     for (var p = 0; p < _dutyPinCount; p++) {
-      _dutyHighSamples[p] = 0;
+      dutyHigh[p] = 0;
     }
 
-    final limit = _cpu.cycles + cycles;
-    for (var i = 0; _cpu.cycles < limit; i++) {
-      avrInstruction(_cpu);
+    final limit = cpu.cycles + cycles;
+    for (var i = 0; cpu.cycles < limit; i++) {
+      avrInstruction(cpu);
 
-      // Periodically sample digital pin levels to estimate PWM duty cycles.
+      // Periodically sample digital pin levels to estimate PWM duty cycles:
+      // pins 0-7 are PORTD, 8-13 are PORTB. A pin is driven high exactly when
+      // `AVRIOPort.pinState` would say `High` — an output, last written 1, not
+      // open-collector — and computing that as one mask per port instead of
+      // fourteen enum lookups keeps the sampler off the profile.
       if ((i & (_dutySampleInterval - 1)) == 0) {
-        _dutyTotalSamples++;
-        for (var p = 0; p < _dutyPinCount; p++) {
-          if (getPinState(p)) _dutyHighSamples[p]++;
+        dutyTotal++;
+        final highD = cpu.data[ddrD] & portD.lastValue & ~portD.openCollector;
+        final highB = cpu.data[ddrB] & portB.lastValue & ~portB.openCollector;
+        if (highD != 0) {
+          for (var p = 0; p < 8; p++) {
+            if ((highD & (1 << p)) != 0) dutyHigh[p]++;
+          }
+        }
+        if (highB != 0) {
+          for (var p = 8; p < _dutyPinCount; p++) {
+            if ((highB & (1 << (p - 8))) != 0) dutyHigh[p]++;
+          }
         }
       }
 
       // Process all pending clock events for the current CPU cycle
-      while (_cpu.nextClockEvent != null && _cpu.nextClockEvent!.cycles <= _cpu.cycles) {
-        final event = _cpu.nextClockEvent!;
-        _cpu.nextClockEvent = event.next;
+      while (cpu.nextClockEvent != null && cpu.nextClockEvent!.cycles <= cpu.cycles) {
+        final event = cpu.nextClockEvent!;
+        cpu.nextClockEvent = event.next;
         event.callback();
-        if (_cpu.clockEventPool.length < 10) {
-          _cpu.clockEventPool.add(event);
+        if (cpu.clockEventPool.length < 10) {
+          cpu.clockEventPool.add(event);
         }
       }
 
       // Feed queued serial input into the receiver as it frees up. writeByte
       // returns false while the USART is busy or RX is disabled, so the byte
       // stays queued until the sketch is ready for it.
-      if (_rxQueue.isNotEmpty && !_usart.rxBusy && _usart.writeByte(_rxQueue.first)) {
-        _rxQueue.removeFirst();
+      if (rxQueue.isNotEmpty && !usart.rxBusy && usart.writeByte(rxQueue.first)) {
+        rxQueue.removeFirst();
       }
 
       // Process interrupts
-      if (_cpu.interruptsEnabled && _cpu.nextInterrupt >= 0) {
-        final interrupt = _cpu.pendingInterrupts[_cpu.nextInterrupt];
+      if (cpu.interruptsEnabled && cpu.nextInterrupt >= 0) {
+        final interrupt = cpu.pendingInterrupts[cpu.nextInterrupt];
         if (interrupt != null) {
-          avrInterrupt(_cpu, interrupt.address);
+          avrInterrupt(cpu, interrupt.address);
           if (!interrupt.constant) {
-            _cpu.clearInterrupt(interrupt);
+            cpu.clearInterrupt(interrupt);
           }
         }
       }
 
-      if (_freqDetector.checkTimeout(_cpu.cycles)) {
-        _log.trace('Tone stopped at cycle ${_cpu.cycles}');
+      if (freqDetector.checkTimeout(cpu.cycles)) {
         onBuzzerFrequencyChanged?.call(null);
       }
     }
+    _dutyTotalSamples = dutyTotal;
   }
 
-  static bool getPin13State() => _portB.pinState(5) == PinState.High;
+  static bool getPin13State() => _loaded && _portB.pinState(5) == PinState.High;
 
   /// Whether the Arduino Uno's on-board LED is currently lit.
   ///
@@ -264,6 +305,7 @@ class AVRBridge {
   static bool get isBuiltinLedOn => getPin13State();
 
   static bool getPinState(int pin) {
+    if (!_loaded) return false;
     if (pin >= 0 && pin <= 7) {
       return _portD.pinState(pin) == PinState.High;
     } else if (pin >= 8 && pin <= 13) {
@@ -275,12 +317,14 @@ class AVRBridge {
   }
 
   static void setAnalogVoltage(int channel, double voltage) {
+    if (!_loaded) return;
     if (channel >= 0 && channel < _adc.channelValues.length) {
       _adc.channelValues[channel] = voltage;
     }
   }
 
   static void setDigitalPin(int pin, {required bool isHigh}) {
+    if (!_loaded) return;
     if (pin >= 0 && pin <= 7) {
       _portD.setPin(pin, isHigh);
     } else if (pin >= 8 && pin <= 13) {
@@ -290,9 +334,9 @@ class AVRBridge {
     }
   }
 
-  static int getPortBValue() => _cpu.data[0x25]; // PORTB address
+  static int getPortBValue() => _loaded ? _cpu.data[0x25] : 0; // PORTB address
 
-  static int getCycles() => _cpu.cycles;
+  static int getCycles() => _loaded ? _cpu.cycles : 0;
 
   static void _parseHex(String hexString, Uint16List flash) {
     flash.fillRange(0, flash.length, 0);
