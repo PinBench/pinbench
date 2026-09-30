@@ -143,7 +143,7 @@ function handlePortChange(pinOffset, value, oldValue) {
   }
 }
 
-// --- I2C bus recording (port of I2cRecorder) --------------------------------
+// --- I2C bus recording and register serving (port of I2cRecorder) ---------
 //
 // Bus traffic is queued rather than sampled: the frame loop runs the CPU for a
 // whole frame before any part looks, and a screen refresh is a thousand bytes.
@@ -158,17 +158,55 @@ const i2c = {
   buffered: new Map(),  // address -> queued byte count
   current: null,
   currentAddress: null,
+  // Devices that answer reads: address -> { registers: Uint8Array,
+  // pointerBytes, pointer }. Kept here, beside the CPU, so a read is answered
+  // mid-frame without crossing into Dart.
+  devices: new Map(),
+  device: null,         // the device the open transaction talks to
+  writing: false,
+  pointerBytesLeft: 0,
 
   reset() {
     this.listening.clear();
     this.pending.clear();
     this.buffered.clear();
+    this.devices.clear();
     this.current = null;
     this.currentAddress = null;
+    this.device = null;
+    this.pointerBytesLeft = 0;
+  },
+
+  // Same shape again keeps registers and pointer; a new shape starts over.
+  serve(address, size, pointerBytes) {
+    this.listening.add(address);
+    const existing = this.devices.get(address);
+    if (existing && existing.registers.length === size && existing.pointerBytes === pointerBytes) return;
+    this.devices.set(address, { registers: new Uint8Array(size), pointerBytes, pointer: 0 });
+  },
+
+  setRegisters(address, offset, bytes) {
+    const device = this.devices.get(address);
+    if (!device) return;
+    const registers = device.registers;
+    for (let i = 0; i < bytes.length; i++) {
+      registers[(offset + i) % registers.length] = bytes[i] & 0xff;
+    }
   },
 
   begin(address, write) {
     this.end();
+    const device = this.devices.get(address) || null;
+    this.device = device;
+    this.writing = write;
+    if (device) {
+      if (write) {
+        this.pointerBytesLeft = device.pointerBytes;
+        if (device.pointerBytes > 0) device.pointer = 0;
+      } else if (device.pointerBytes === 0) {
+        device.pointer = 0;
+      }
+    }
     if (!write) return;
     if (!this.pending.has(address) && this.pending.size >= MAX_I2C_ADDRESSES) return;
     this.currentAddress = address;
@@ -176,7 +214,28 @@ const i2c = {
   },
 
   write(value) {
-    if (this.current) this.current.push(value & 0xff);
+    const byte = value & 0xff;
+    if (this.current) this.current.push(byte);
+    const device = this.device;
+    if (!device || !this.writing) return;
+    if (this.pointerBytesLeft > 0) {
+      device.pointer = ((device.pointer << 8) | byte) % device.registers.length;
+      this.pointerBytesLeft--;
+    } else if (device.pointerBytes > 0) {
+      // A pointer-less device's writes drive outputs, not readable registers.
+      device.registers[device.pointer] = byte;
+      device.pointer = (device.pointer + 1) % device.registers.length;
+    }
+  },
+
+  // The register under the pointer, which then advances; 0xff (a pulled-up,
+  // undriven bus) when nothing serves the address.
+  read() {
+    const device = this.device;
+    if (!device || this.writing) return 0xff;
+    const value = device.registers[device.pointer];
+    device.pointer = (device.pointer + 1) % device.registers.length;
+    return value;
   },
 
   end() {
@@ -184,6 +243,8 @@ const i2c = {
     const bytes = this.current;
     this.currentAddress = null;
     this.current = null;
+    this.device = null;
+    this.pointerBytesLeft = 0;
     if (address === null || !bytes || !bytes.length) return;
 
     if (!this.pending.has(address)) this.pending.set(address, []);
@@ -229,14 +290,15 @@ function attachTwi() {
       twi.completeConnect(i2c.listening.has(addr));
     },
     writeByte(value) { i2c.write(value); twi.completeWrite(true); },
-    // Nothing on the canvas talks back yet; 0xff is what an idle bus reads.
-    readByte() { twi.completeRead(0xff); },
+    readByte() { twi.completeRead(i2c.read()); },
   };
 }
 
 window.AVR8 = {
   listenI2c(address) { i2c.listening.add(address); },
   drainI2c(address) { return i2c.drain(address); },
+  serveI2c(address, size, pointerBytes) { i2c.serve(address, size, pointerBytes); },
+  setI2cRegisters(address, offset, bytes) { i2c.setRegisters(address, offset, bytes); },
 
   setSerialPrint(cb) { onSerialPrint = cb; },
   setBuzzerFrequencyCallback(cb) { onBuzzerFrequency = cb; },

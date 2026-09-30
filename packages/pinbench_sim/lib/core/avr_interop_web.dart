@@ -1,4 +1,5 @@
 import 'dart:js_interop';
+import 'dart:typed_data';
 
 /// Web [AVRBridge] backed by `avr8js` via the `window.AVR8` bridge defined in
 /// `web/avr_bridge.js`. Mirrors the native `avr_interop_io.dart` API but runs
@@ -27,6 +28,8 @@ extension type _Avr8._(JSObject _) implements JSObject {
   external bool getPin13State();
   external void listenI2c(int address);
   external JSInt32Array drainI2c(int address);
+  external void serveI2c(int address, int size, int pointerBytes);
+  external void setI2cRegisters(int address, int offset, JSInt32Array bytes);
 }
 
 class AVRBridge._() {
@@ -92,6 +95,17 @@ class AVRBridge._() {
   /// Claims [address] on the I²C bus, so a device at it acknowledges and its
   /// traffic is kept for [drainI2c].
   static void listenI2c(int address) => _avr8.listenI2c(address);
+
+  /// Makes [address] answer the sketch's reads from a bank of [size]
+  /// registers. The registers live in `avr_bridge.js`, next to the CPU, so a
+  /// read is answered without crossing into Dart.
+  static void serveI2c(int address, {int size = 256, int pointerBytes = 1}) =>
+      _avr8.serveI2c(address, size, pointerBytes);
+
+  /// Publishes [bytes] into [address]'s registers from [offset], as one
+  /// typed-array copy.
+  static void setI2cRegisters(int address, int offset, List<int> bytes) =>
+      _avr8.setI2cRegisters(address, offset, Int32List.fromList(bytes).toJS);
 
   /// Every transaction written to [address] since the last call.
   ///

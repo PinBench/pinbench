@@ -173,13 +173,20 @@ abstract interface class PartPinApi {
 /// bytes would show a corrupt picture forever after. So this hands over a
 /// queue rather than a reading, and hands it over exactly once.
 ///
-/// Narrow in the same way as [PartPinApi]: a part may listen at its own
-/// address. It cannot see another device's traffic, and it cannot write to the
-/// bus — a peripheral that could put bytes on the wire would be modelling the
-/// sketch's side of the conversation.
-// One method today, and still an interface: it is the seam a fake bus is
-// installed at in tests, and the shape the other capability APIs here take.
-abstract interface class PartI2cApi() {
+/// A part talks back the way real I²C devices do: through **registers**. It
+/// [serve]s a bank of them at its address and keeps them current with
+/// [setRegisters]; the sketch writes a register pointer, then reads, and the
+/// pointer advances after every byte. The bus answers from those registers
+/// the moment the sketch clocks a read, mid-frame, which a part running
+/// between frames could not. A reading refreshed every frame is at most 16 ms
+/// old — fresher than any real sensor's conversion.
+///
+/// Narrow in the same way as [PartPinApi]: a part may listen at and serve its
+/// own address. It cannot see another device's traffic, and it never drives
+/// the bus itself — the sketch is always the one clocking bytes.
+// An interface, not a concrete class: it is the seam a fake bus is installed
+// at in tests, and the shape the other capability APIs here take.
+abstract interface class PartI2cApi {
   /// Every transaction the sketch has addressed to [address] since the last
   /// call, oldest first, each holding the bytes that followed the address.
   ///
@@ -188,6 +195,25 @@ abstract interface class PartI2cApi() {
   /// nobody listens on costs nothing. The first answer after a fresh claim is
   /// therefore empty, and a display simply keeps the frame it already had.
   List<List<int>> drain(int address);
+
+  /// Makes [address] answer the sketch's reads from a bank of [size]
+  /// registers, and claims it, so the address is acknowledged.
+  ///
+  /// [pointerBytes] is how many bytes at the start of a write select the
+  /// register: 1 for most sensors (MPU6050, DS1307, BME280), 2 for large
+  /// EEPROMs, 0 for devices with nothing to select (a PCF8574), whose every
+  /// read starts at register 0. Bytes the sketch writes after the pointer are
+  /// stored, so reading back a register returns what the sketch put there —
+  /// which is what setting an RTC's clock relies on.
+  ///
+  /// Safe to call every frame: the same shape keeps the registers and the
+  /// pointer, a different one starts over, zero-filled.
+  void serve(int address, {int size = 256, int pointerBytes = 1});
+
+  /// Writes [bytes] into [address]'s registers from [offset], wrapping at the
+  /// end of the bank — how a part publishes a new reading. Ignored unless the
+  /// address is [serve]d.
+  void setRegisters(int address, int offset, List<int> bytes);
 }
 
 /// The bus a part sees when there is no emulator behind it — in a unit test,
@@ -195,6 +221,12 @@ abstract interface class PartI2cApi() {
 class const NoI2cBus() implements PartI2cApi {
   @override
   List<List<int>> drain(int address) => const [];
+
+  @override
+  void serve(int address, {int size = 256, int pointerBytes = 1}) {}
+
+  @override
+  void setRegisters(int address, int offset, List<int> bytes) {}
 }
 
 /// Maps the name in a `LOGIC` line to an implementation.

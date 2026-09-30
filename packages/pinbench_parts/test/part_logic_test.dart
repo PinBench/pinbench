@@ -689,6 +689,12 @@ class _FakeBus(final Map<int, List<List<int>>> traffic) implements PartI2cApi {
     drained.add(address);
     return traffic[address] ?? const [];
   }
+
+  @override
+  void serve(int address, {int size = 256, int pointerBytes = 1}) {}
+
+  @override
+  void setRegisters(int address, int offset, List<int> bytes) {}
 }
 
 /// A minimal definition for the helper tests — nothing about it matters except

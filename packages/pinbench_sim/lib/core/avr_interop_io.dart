@@ -52,6 +52,15 @@ class AVRBridge {
   /// Every transaction written to [address] since the last call.
   static List<List<int>> drainI2c(int address) => _i2c.drain(address);
 
+  /// Makes [address] answer the sketch's reads from a bank of [size]
+  /// registers. See [I2cRecorder.serve].
+  static void serveI2c(int address, {int size = 256, int pointerBytes = 1}) =>
+      _i2c.serve(address, size: size, pointerBytes: pointerBytes);
+
+  /// Publishes [bytes] into [address]'s registers from [offset].
+  static void setI2cRegisters(int address, int offset, List<int> bytes) =>
+      _i2c.setRegisters(address, offset, bytes);
+
   static void Function(double?)? onBuzzerFrequencyChanged;
 
   /// The Arduino pin number connected to the piezo buzzer.
@@ -338,9 +347,8 @@ class _RecordingTwiHandler(final AVRTWI twi, final I2cRecorder recorder)
 
   @override
   void readByte(bool ack) {
-    // Nothing on the canvas talks back yet. 0xFF is what an idle bus reads,
-    // pulled up and undriven, which is also what a sketch reading from a
-    // device that is not there would see.
-    twi.completeRead(0xFF);
+    // From the registers a part serves, or 0xFF — what a pulled-up, undriven
+    // bus reads — when nothing on the canvas answers at this address.
+    twi.completeRead(recorder.readByte());
   }
 }
