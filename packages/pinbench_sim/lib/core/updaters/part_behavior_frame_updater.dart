@@ -193,8 +193,10 @@ abstract final class PartBehaviorFrameUpdater {
 
     // One element, one alterable value: ngspice's `alter <name> = <v>` sets an
     // element's principal value, so a part maps to exactly one of these.
-    // Whichever parameter its PHYSICS type uses is the one that applies.
-    final value = switch (definition?.spiceModel?.type) {
+    // Whichever parameter its PHYSICS type uses is the one that applies —
+    // resolved by type, so a built-in part whose logic writes physics (an
+    // LDR) is applied the same as a `.pdl` one.
+    final value = switch (PartRegistry.spiceFor(node.part)?.type) {
       SpiceComponentType.resistor => result.physics['resistance'],
       SpiceComponentType.voltageSource => result.physics['voltage'],
       SpiceComponentType.capacitor => result.physics['capacitance'],

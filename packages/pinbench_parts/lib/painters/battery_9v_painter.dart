@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../painting/base_component_painter.dart';
 import '../painting/grid_system.dart';
+import '../painting/path_art.dart';
 import '../painting/port_provider.dart';
 import '../models/port_model.dart';
 
@@ -16,7 +17,7 @@ import '../models/port_model.dart';
 /// sag under load or run down.
 class Battery9vPainter({final Map<String, dynamic>? properties, super.isOutline})
     extends BaseComponentPainter
-    with PortProvider {
+    with PortProvider, PathArtPainter {
   // The PP3 case is 48.5 × 26.5 mm; the footprint is rounded to whole hole
   // pitches (19 × 10) so both lead tips land on the connection lattice.
   static const width = 19 * GridSystem.pitch;
@@ -39,23 +40,12 @@ class Battery9vPainter({final Map<String, dynamic>? properties, super.isOutline}
   ];
 
   @override
-  void paintComponent(Canvas canvas, Size size) {
-    canvas.save();
-    // Drawn at the design size; scale onto whatever the instance is sized to.
-    canvas.scale(size.width / width, size.height / height);
-    if (isOutline) canvas.saveLayer(null, Paint()..color = const Color(0x66FFFFFF));
-    for (final (paths, color) in _layers) {
-      final paint = Paint()..color = color;
-      for (final path in paths) {
-        canvas.drawPath(path, paint);
-      }
-    }
-    if (isOutline) canvas.restore();
-    canvas.restore();
-  }
+  Size get designSize => componentSize;
 
-  /// Paint order, bottom to top.
-  static final _layers = [
+  @override
+  List<PathArtLayer> get layers => _layers;
+
+  static final _layers = <PathArtLayer>[
     (_copper, const Color(0xFFCB804F)),
     (_polarityRings, const Color(0xFFAB6F48)),
     (_dark, const Color(0xFF2D2D2D)),
@@ -65,17 +55,8 @@ class Battery9vPainter({final Map<String, dynamic>? properties, super.isOutline}
     (_label, const Color(0xFFD8D8D8)),
   ];
 
-  /// One Figma layer, moved to where it sits in the frame.
-  ///
-  /// Its paths stay separate rather than merged: each was filled on its own in
-  /// Figma, and one nonzero fill over all of them would cancel wherever two
-  /// with opposite winding overlap.
-  static List<Path> _layer(Offset offset, List<Path> paths) => [
-    for (final path in paths) path.shift(offset),
-  ];
-
   /// Copper cap over the terminal end.
-  static final _copper = _layer(const Offset(60, 8), [
+  static final _copper = PathArtPainter.layer(const Offset(60, 8), [
     Path()
       ..moveTo(0, 5)
       ..cubicTo(0, 2.24, 2.24, 0, 5, 0)
@@ -88,7 +69,7 @@ class Battery9vPainter({final Map<String, dynamic>? properties, super.isOutline}
   ]);
 
   /// Embossed rings around the polarity marks.
-  static final _polarityRings = _layer(const Offset(63.5, 37.5), [
+  static final _polarityRings = PathArtPainter.layer(const Offset(63.5, 37.5), [
     Path()
       ..moveTo(15.7, 8.5)
       ..cubicTo(15.7, 4.52, 12.48, 1.3, 8.5, 1.3)
@@ -118,7 +99,7 @@ class Battery9vPainter({final Map<String, dynamic>? properties, super.isOutline}
   ]);
 
   /// Body wrap, snap clip, black lead and the polarity marks.
-  static final _dark = _layer(const Offset(8, 8), [
+  static final _dark = PathArtPainter.layer(const Offset(8, 8), [
     Path()
       ..moveTo(126, 0)
       ..lineTo(291, 0)
@@ -189,7 +170,7 @@ class Battery9vPainter({final Map<String, dynamic>? properties, super.isOutline}
   ]);
 
   /// Terminal shoulders and the lead pin tips.
-  static final _terminalShadow = _layer(const Offset(0, 26), [
+  static final _terminalShadow = PathArtPainter.layer(const Offset(0, 26), [
     Path()
       ..moveTo(36, 1)
       ..cubicTo(36, 0.45, 36.45, 0, 37, 0)
@@ -233,7 +214,7 @@ class Battery9vPainter({final Map<String, dynamic>? properties, super.isOutline}
   ]);
 
   /// Terminal faces.
-  static final _terminalFace = _layer(const Offset(44, 22), [
+  static final _terminalFace = PathArtPainter.layer(const Offset(44, 22), [
     Path()
       ..moveTo(0, 2)
       ..cubicTo(0, 0.9, 0.9, 0, 2, 0)
@@ -253,7 +234,7 @@ class Battery9vPainter({final Map<String, dynamic>? properties, super.isOutline}
   ]);
 
   /// Red (+) lead.
-  static final _redLead = _layer(const Offset(8, 80.25), [
+  static final _redLead = PathArtPainter.layer(const Offset(8, 80.25), [
     Path()
       ..moveTo(0, 2.25)
       ..cubicTo(0, 1.15, 0.9, 0.25, 2, 0.25)
@@ -277,7 +258,7 @@ class Battery9vPainter({final Map<String, dynamic>? properties, super.isOutline}
   ]);
 
   /// The "9V" legend, reading bottom to top.
-  static final _label = _layer(const Offset(188.47, 53.4976), [
+  static final _label = PathArtPainter.layer(const Offset(188.47, 53.4976), [
     Path()
       ..moveTo(30.45, 44.21)
       ..cubicTo(30.45, 45.42, 30.27, 46.66, 29.9, 47.95)

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import '../models/part_model.dart';
 
 import 'i2c_sensors.dart';
@@ -34,6 +36,7 @@ abstract final class BuiltInPartLogic {
     PartLogicRegistry.register('servo', servo);
     PartLogicRegistry.register('led', led);
     PartLogicRegistry.register('buzzer', buzzer);
+    PartLogicRegistry.register('ldr', ldr);
     PartLogicRegistry.register('ssd1306', ssd1306);
     PartLogicRegistry.register('bh1750', I2cSensors.bh1750);
     PartLogicRegistry.register('mpu6050', I2cSensors.mpu6050);
@@ -155,6 +158,29 @@ abstract final class BuiltInPartLogic {
     // Judged on the average too, so dimming an LED with PWM does not read as
     // over-driving it — only actually running it too hard does.
     context.state[ComponentProps.hasError] = averageAmps > ledRatedAmps;
+  }
+
+  /// What an LDR is placed with: half light, and the published resistances
+  /// of a GL5528-class cell.
+  static const ldrDefaults = {
+    ComponentProps.illumination: '50',
+    ComponentProps.darkResistance: '1000000',
+    ComponentProps.lightResistance: '1000',
+  };
+
+  /// A light-dependent resistor: its resistance from the light falling on it.
+  ///
+  /// `Illumination` is a user-set percentage standing in for a light source;
+  /// the resistance falls linearly from `Dark Resistance` at 0 % to
+  /// `Light Resistance` at 100 %, and never below the latter. This was the
+  /// LDR's `.pdl` `BEHAVIOR`, carried over when it became a built-in part.
+  static void ldr(PartLogicContext context) {
+    double number(String key) => context.number(key, double.parse(ldrDefaults[key]!));
+
+    final level = number(ComponentProps.illumination).clamp(0.0, 100.0) / 100;
+    final dark = number(ComponentProps.darkResistance);
+    final light = number(ComponentProps.lightResistance);
+    context.physics['resistance'] = math.max(dark - level * (dark - light), light);
   }
 
   /// A hobby servo: horn angle from the HIGH-pulse width on its signal line.

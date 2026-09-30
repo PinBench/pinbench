@@ -28,9 +28,12 @@ abstract final class CircuitCanvasApplier {
     for (final element in data.parts) {
       try {
         // `element.type` is the type token (`ArduinoUno` for "Arduino Uno");
-        // resolve it back to a catalog part by comparing tokens.
+        // resolve it back to a catalog part by comparing tokens. Aliases count,
+        // so a file written under a part's old name still loads.
         final partModel = catalog
-            .firstWhere((p) => ParserUtils.typeToken(p.name) == element.type)
+            .firstWhere(
+              (p) => [p.name, ...p.aliases].any((n) => ParserUtils.typeToken(n) == element.type),
+            )
             .clone();
         // Derive the key DETERMINISTICALLY from the part id (which is unique
         // within a circuit) rather than minting a fresh UniqueKey() on every

@@ -11,6 +11,10 @@ abstract final class CdlPropertyKeys {
     ComponentProps.color: 'color',
     ComponentProps.resistance: 'resistance',
     ComponentProps.voltage: 'voltage',
+    // The spellings the LDR's `.pdl` used, so older files keep their values.
+    ComponentProps.illumination: 'illumination',
+    ComponentProps.darkResistance: 'darkResistance',
+    ComponentProps.lightResistance: 'lightResistance',
   };
   static final _cdlToInternal = {
     for (final entry in _internalToCdl.entries) entry.value: entry.key,

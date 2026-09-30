@@ -75,16 +75,20 @@ void main() {
       // the next run the last run's value to start from.
       TestWidgetsFlutterBinding.ensureInitialized();
       await PartRegistry.initializeAsync();
-      final ldr = ComponentInstance(
-        key: const ValueKey('ldr'),
+      final ntc = ComponentInstance(
+        key: const ValueKey('ntc'),
         position: Offset.zero,
-        part: PartModel(name: 'Photoresistor', size: const Size(80, 40), definitionId: 'ldr'),
-        properties: const {'illumination': 30, 'level': 0.3},
+        part: PartModel(
+          name: 'Thermistor (NTC)',
+          size: const Size(80, 40),
+          definitionId: 'thermistor',
+        ),
+        properties: const {'temperature': 30, 'kelvin': 303.15},
       );
 
-      final generated = CircuitParser.generate([ldr], const []);
-      expect(generated, contains('illumination: 30'));
-      expect(generated, isNot(contains('level')));
+      final generated = CircuitParser.generate([ntc], const []);
+      expect(generated, contains('temperature: 30'));
+      expect(generated, isNot(contains('kelvin')));
     });
 
     test('regenerating after a simulated run produces identical text (no false-dirty)', () {
@@ -249,6 +253,27 @@ Circuit {
       final names = applied.nodes.map((n) => n.part.name).toList();
       expect(names, contains(PartNames.arduinoUno));
       expect(names, contains(PartNames.led));
+    });
+
+    test('resolves an alias, so a file written under an old name still loads', () {
+      // The LDR was a `.pdl` part called "Photoresistor"; files saved then say
+      // `Photoresistor`, and its properties in the `.pdl`'s camelCase.
+      final data = CircuitParser.parse('''
+Circuit {
+    ldr1 := Photoresistor {
+        position: (0, 0);
+        illumination: 80;
+    }
+}''');
+      final node = CircuitParser.applyToCanvas(data, standardParts).nodes.single;
+      expect(node.part.name, PartNames.ldr);
+      expect(node.properties[ComponentProps.illumination], '80');
+
+      expect(
+        CircuitParser.generate([node], const []),
+        allOf(contains('ldr1 := LDR {'), contains('illumination: 80;')),
+        reason: 'it is written back under its current name',
+      );
     });
 
     test('parses Wire from/to ports, color and bend tuples', () {

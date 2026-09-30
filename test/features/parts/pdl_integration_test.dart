@@ -31,9 +31,9 @@ void main() {
   });
 
   test('a relative SVG path resolves to the package-namespaced asset key', () {
-    final ldr = PartRegistry.getPart('ldr');
-    expect(ldr, isNotNull, reason: 'the reference part should be in the catalog');
-    expect(ldr!.visual.svgPath, 'packages/pinbench_parts/assets/parts/ldr/ldr.svg');
+    final ntc = PartRegistry.getPart('thermistor');
+    expect(ntc, isNotNull, reason: 'a bundled part should be in the catalog');
+    expect(ntc!.visual.svgPath, 'packages/pinbench_parts/assets/parts/thermistor/thermistor.svg');
   });
 
   test('a declared CATEGORY reaches the palette', () async {
@@ -44,16 +44,16 @@ void main() {
     addTearDown(container.dispose);
     final parts = await container.read(partRegistryProvider.future);
 
-    final ldr = parts.firstWhere((p) => p.definitionId == 'ldr');
-    expect(ldr.category, PartCategory.sensors);
+    final ntc = parts.firstWhere((p) => p.definitionId == 'thermistor');
+    expect(ntc.category, PartCategory.sensors);
 
     final cell = parts.firstWhere((p) => p.definitionId == 'cr2032');
     expect(cell.category, PartCategory.basic);
   });
 
   test('that artwork actually decodes, at the size its viewBox declares', () async {
-    final ldr = PartRegistry.getPart('ldr')!;
-    final path = ldr.visual.svgPath!;
+    final ntc = PartRegistry.getPart('thermistor')!;
+    final path = ntc.visual.svgPath!;
 
     // First ask returns null and starts the load — that is the contract the
     // painter relies on to draw something on frame one.
@@ -68,9 +68,9 @@ void main() {
     expect(art, isNotNull, reason: 'the SVG never finished decoding');
     expect(
       art!.size.width,
-      76,
+      80,
       reason: 'the painter scales the part footprint onto this intrinsic size',
     );
-    expect(art.size.height, 38);
+    expect(art.size.height, 40);
   });
 }

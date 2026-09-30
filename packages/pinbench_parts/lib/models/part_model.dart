@@ -79,7 +79,17 @@ class PartModel({
   /// carrying it. Empty for every part that reads its own defaults from the
   /// painter, which is all of the older ones.
   final Map<String, dynamic> defaults = const {},
+
+  /// Other names the part goes by — `Photoresistor` for an `LDR`.
+  ///
+  /// The palette search matches them, and so does a `.cdl` type token or a
+  /// saved circuit, which is also what keeps files written under a part's old
+  /// name loading after a rename. The part is always *written* under [name].
+  final List<String> aliases = const [],
 }) {
+  /// Whether [candidate] is this part's name or one of its [aliases].
+  bool isCalled(String candidate) => candidate == name || aliases.contains(candidate);
+
   BaseComponentPainter? getPainter({bool isOutline = false, Map<String, dynamic>? properties}) =>
       painterBuilder?.call(isOutline: isOutline, properties: properties);
 
@@ -90,6 +100,7 @@ class PartModel({
     definitionId: definitionId,
     category: category,
     defaults: defaults,
+    aliases: aliases,
     // Every placed instance is a clone of a catalog entry, so dropping this
     // here would mean a part behaves in the palette and not on the canvas.
     logic: logic,
@@ -110,7 +121,7 @@ class PartModel({
 
     // First try standard components
     for (final sc in standardParts) {
-      if (sc.name == name) {
+      if (sc.isCalled(name)) {
         return sc.clone();
       }
     }
@@ -166,6 +177,7 @@ abstract class PartNames {
   // The name the `.pdl` part had, so `.cdl` files (`Battery9V`) and saved
   // circuits that used it still resolve.
   static const battery9v = 'Battery (9V)';
+  static const ldr = 'LDR';
 }
 
 /// Canonical keys for `ComponentInstance.properties` (the per-component property
@@ -246,6 +258,16 @@ abstract class ComponentProps {
 
   /// A battery's terminal voltage in volts, as a string (e.g. `9`).
   static const voltage = 'Voltage';
+
+  /// How much light falls on an LDR, 0–100 %, as a string (e.g. `50`). A
+  /// user-set stand-in for a light source.
+  static const illumination = 'Illumination';
+
+  /// An LDR's resistance in the dark, in ohms, as a string (e.g. `1000000`).
+  static const darkResistance = 'Dark Resistance';
+
+  /// An LDR's resistance at full light, in ohms, as a string (e.g. `1000`).
+  static const lightResistance = 'Light Resistance';
 
   /// Runtime-flag keys the property editor must hide (they are not user-editable).
   /// Includes legacy lowercase keys that may still be present in older `.cdl`

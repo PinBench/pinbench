@@ -45,7 +45,10 @@ class _PartsSidebarViewState extends ConsumerState<PartsSidebarView> {
               error: (e, st) => Center(child: Text(AppStrings.genericErrorMessage(e))),
               data: (allComponents) {
                 final filtered = allComponents
-                    .where((c) => c.name.toLowerCase().contains(_searchQuery))
+                    .where(
+                      (c) =>
+                          [c.name, ...c.aliases].any((n) => n.toLowerCase().contains(_searchQuery)),
+                    )
                     .toList();
 
                 if (filtered.isEmpty) {
