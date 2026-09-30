@@ -1,5 +1,6 @@
 import '../painters/battery_9v_painter.dart';
 import '../painters/cr2032_painter.dart';
+import '../painters/diode_1n4148_painter.dart';
 import '../painters/ldr_painter.dart';
 import 'base_component_painter.dart';
 
@@ -20,6 +21,7 @@ abstract final class PartPainterRegistry {
   static final Map<String, PartPainterBuilder> _painters = {
     'battery_9v': Battery9vPainter.new,
     'cr2032': Cr2032Painter.new,
+    'diode_1n4148': Diode1n4148Painter.new,
     'ldr': LdrPainter.new,
   };
 
