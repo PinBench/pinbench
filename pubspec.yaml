@@ -17,7 +17,13 @@ dependencies:
   # PWYW builds update themselves in place. Linux has no Sparkle equivalent
   # and falls back to the notify-only path in `core/updates/`.
   auto_updater: ^1.0.0
-  avr8_dart: ^0.1.0
+  # 0.2.0 (about 2.4x faster natively, fast enough for the web's Wasm build)
+  # is not on pub.dev yet, so it comes from its commit. Back to a version
+  # constraint once it is published.
+  avr8_dart:
+    git:
+      url: https://github.com/burhankhanzada/avr8_dart.git
+      ref: 00d14d21840886158291a54fb663201af2f33f3d
   collection: ^1.19.1
   crypto: ^3.0.0
   # feedback: ^3.2.0

@@ -165,7 +165,7 @@ forking is welcome and always will be, just under your own name.
 | State | Riverpod 3.x with codegen |
 | Canvas | Custom `CustomPainter` |
 | Editor | `re_editor` |
-| AVR emulation | `avr8_dart` (native; compiled by dart2js on the web) |
+| AVR emulation | `avr8_dart` (native, and WebAssembly on the web) |
 | Analog solver | `ngspice_dart` — a pure-Dart port, no FFI or native libngspice |
 | Audio | `flutter_soloud` (native), Web Audio (web) |
 | Multi-window | `multiview_desktop` |

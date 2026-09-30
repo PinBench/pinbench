@@ -5,8 +5,7 @@ import 'package:pinbench_parts/models/wire_model.dart';
 /// a background isolate running the AVR+SPICE engine; the web runs the
 /// engine inline on the UI isolate (no `Isolate.spawn` there). Selected at
 /// compile time via the conditional-import trio
-/// (`simulation_runner_backend_io.dart`/`_web.dart`), mirroring the
-/// `avr_interop_io.dart`/`_web.dart` precedent already used by this feature.
+/// (`simulation_runner_backend_io.dart`/`_web.dart`).
 ///
 /// `SimulationRunner` owns everything platform-agnostic (the
 /// isSimulating/isPaused guards, the mic-timer's periodic bookkeeping, the

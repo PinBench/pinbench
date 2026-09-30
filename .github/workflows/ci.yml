@@ -148,16 +148,6 @@ jobs:
             echo "::endgroup::"
           done
 
-      # web/avr_bridge.js is the web's emulator: the native AVRBridge compiled
-      # by dart2js, committed so a web build needs no extra step. A change to
-      # the bridge that forgot to rebuild it would ship the old emulator to
-      # the web alone, so check it matches, then run the compiled file itself:
-      # I²C reads, cycle-accurate ticks, and real-time speed.
-      - name: Check the web emulator build
-        run: |
-          tools/build_avr_bridge.sh --check
-          node tools/test_avr_bridge.mjs
-
       # The figure, where it is seen: the run's summary page. It counts the
       # lines of files the tests load, so files no test touches are missing
       # from both sides — read it as a trend, not an absolute.

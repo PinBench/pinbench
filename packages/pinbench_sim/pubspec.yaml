@@ -10,7 +10,11 @@ environment:
   sdk: ^3.13.0
 
 dependencies:
-  avr8_dart: ^0.1.0
+  # Not on pub.dev yet; pinned to the same commit as the app's pubspec.yaml.
+  avr8_dart:
+    git:
+      url: https://github.com/burhankhanzada/avr8_dart.git
+      ref: 00d14d21840886158291a54fb663201af2f33f3d
   collection: ^1.19.1
   flutter:
     sdk: flutter

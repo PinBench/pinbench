@@ -24,9 +24,8 @@ import 'dart:typed_data';
 /// fresher than any real sensor's conversion time.
 ///
 /// Kept out of the emulator facades because both of them need it and neither
-/// owns it: the bridge feeds this from `avr8_dart`'s TWI callbacks (on the web
-/// too, inside the dart2js build in `web/avr_bridge.js`, so reads never cross
-/// into the app), and the frame loop drains the same shape either way.
+/// owns it: the bridge feeds this from `avr8_dart`'s TWI callbacks, and the
+/// frame loop drains it.
 class I2cRecorder {
   /// Addresses some part has claimed by draining them.
   ///

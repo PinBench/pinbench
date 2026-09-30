@@ -18,8 +18,7 @@ void main() {
   test('a Wire sketch reads, reads back and is refused where nothing answers', () {
     final hex = File('test/fixtures/i2c_read/i2c_read.hex').readAsStringSync();
     final lines = <String>[];
-    // `Serial.println` ends lines with CRLF; the bridge splits on the LF.
-    AVRBridge.loadHex(hex, onSerialPrint: (line) => lines.add(line.trimRight()));
+    AVRBridge.loadHex(hex, onSerialPrint: lines.add);
 
     // Served after loading: a load resets the bus, so a new run never sees
     // the previous one's devices.
