@@ -1,0 +1,35 @@
+# Aluminium electrolytic capacitor.
+#
+# Polarized: the stripe marks the negative lead. The solve is an operating
+# point, where any capacitor is an open circuit, so the capacitance only
+# matters to what the value on the part says; reversing it is not modelled.
+#
+# Drawn by the `capacitor_electrolytic` painter rather than an SVG: vector
+# paths generated from the "Electrolytic Capacitor" frame in the PinBench
+# Parts Figma file by the Flutter Da Vinci plugin. Only the drawing is Dart.
+
+PART "Electrolytic Capacitor"
+ALIAS "Polarized Capacitor"
+ID capacitor_electrolytic
+CATEGORY basic
+DESCRIPTION "Polarized electrolytic capacitor — the stripe marks the negative lead"
+
+# Standing on its leads, their tips two hole pitches apart on the lattice:
+# negative (under the stripe) on the left, positive on the right. Not
+# `plus`/`minus`: the netlist grounds any pin whose id says minus.
+SIZE 72px 88px
+PAINTER capacitor_electrolytic
+
+PINS
+  negative  20px  84px  passive  "-"
+  positive  52px  84px  passive  "+"
+
+PROPERTIES
+  capacitance  number  100  unit:"µF"  label:"Capacitance"
+
+BEHAVIOR
+  physics.capacitance = max(prop.capacitance, 0) / 1000000
+
+PHYSICS capacitor
+  n1 = positive
+  n2 = negative

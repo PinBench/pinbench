@@ -250,6 +250,15 @@ PHYSICS resistor
       expect(voltage({'voltage': -5}), 0, reason: 'a dead cell reads 0V, not a reversed one');
     });
 
+    test('the electrolytic takes microfarads and hands SPICE farads', () async {
+      final cap = await load('capacitor_electrolytic');
+      double farads(Map<String, dynamic> p) =>
+          PdlBehaviorEvaluator.physicsFor(cap, p)['capacitance']!;
+      expect(farads({}), closeTo(100e-6, 1e-12));
+      expect(farads({'capacitance': 470}), closeTo(470e-6, 1e-12));
+      expect(cap.spiceModel!.pinMapping, {'n1': 'positive', 'n2': 'negative'});
+    });
+
     test('the diode is PHYSICS-only — no rules to run', () async {
       final diode = await load('diode_1n4148');
       expect(diode.behavior, isEmpty);
