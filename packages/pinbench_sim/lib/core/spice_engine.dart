@@ -87,8 +87,45 @@ class SpiceEngine({
   // subsequent simulation run corrupts the simulator so `op` yields no output
   // vectors. These statics track global ngspice state across SpiceEngine
   // instances (a new instance is created for every simulation run).
-  static final _elementLine = RegExp('^[VRDCI]_');
+  static final _elementLine = RegExp('^[VRDCIQM]_');
   static final _unoElementLine = RegExp(r'^[VR]_uno_|^V_gnd\b');
+
+  /// The `.model` a transistor is built with when its part says nothing: the
+  /// DC parameters of a 2N3904 and 2N3906, and level-1 MOSFETs near a 2N7000
+  /// and its P-channel counterpart. Only DC matters to an operating point.
+  static const _modelDefaults = {
+    SpiceComponentType.npn: {
+      'is': 6.734e-15,
+      'bf': 416.4,
+      'br': 0.7371,
+      'vaf': 74.03,
+      'ikf': 0.06678,
+      'ne': 1.259,
+      'ise': 6.734e-15,
+      'rb': 10,
+      'rc': 1,
+    },
+    SpiceComponentType.pnp: {
+      'is': 1.41e-15,
+      'bf': 180.7,
+      'br': 4.977,
+      'vaf': 18.7,
+      'ikf': 0.08,
+      'ne': 1.5,
+      'ise': 0,
+      'rb': 10,
+      'rc': 2.5,
+    },
+    SpiceComponentType.nmos: {'level': 1, 'vto': 2.1, 'kp': 0.2, 'lambda': 0.01},
+    SpiceComponentType.pmos: {'level': 1, 'vto': -2.1, 'kp': 0.1, 'lambda': 0.01},
+  };
+
+  /// A transistor's `.model` parameters: the defaults for its type, overridden
+  /// by any numeric `PHYSICS` parameter its part declares (`bf = 300`).
+  static String _modelParameters(SpiceModelDef spiceDef) => {
+    ...?_modelDefaults[spiceDef.type],
+    ...spiceDef.parameters,
+  }.entries.map((e) => '${e.key.toUpperCase()}=${e.value}').join(' ');
 
   static var _ngspiceInitialized = false;
   static var _circuitLoaded = false;
@@ -243,6 +280,42 @@ class SpiceEngine({
                 ohms: bottom,
               ),
             );
+
+        case SpiceComponentType.npn:
+        case SpiceComponentType.pnp:
+          // 0 V sources in series with the collector and base, as the LED has,
+          // make the terminal currents measurable; the emitter's is the rest.
+          final model = 'QM_$keyStr';
+          final polarity = spiceDef.type == SpiceComponentType.npn ? 'NPN' : 'PNP';
+          circArray.add('.model $model $polarity(${_modelParameters(spiceDef)})');
+          circArray.add('V_qc_$keyStr n_${nodeFor('c')} n_qc_$keyStr 0');
+          circArray.add('V_qb_$keyStr n_${nodeFor('b')} n_qb_$keyStr 0');
+          circArray.add('Q_$keyStr n_qc_$keyStr n_qb_$keyStr n_${nodeFor('e')} $model');
+          _branches
+            ..add(
+              _ElementBranch.measured(a: portFor('c'), b: portFor('e'), vector: 'i(V_qc_$keyStr)'),
+            )
+            ..add(
+              _ElementBranch.measured(a: portFor('b'), b: portFor('e'), vector: 'i(V_qb_$keyStr)'),
+            );
+
+        case SpiceComponentType.nmos:
+        case SpiceComponentType.pmos:
+          final model = 'MM_$keyStr';
+          final channel = spiceDef.type == SpiceComponentType.nmos ? 'NMOS' : 'PMOS';
+          circArray.add('.model $model $channel(${_modelParameters(spiceDef)})');
+          circArray.add('V_md_$keyStr n_${nodeFor('d')} n_md_$keyStr 0');
+          // Body tied to source, as in a discrete MOSFET.
+          circArray.add(
+            'M_$keyStr n_md_$keyStr n_${nodeFor('g')} n_${nodeFor('s')} n_${nodeFor('s')} $model',
+          );
+          // A gate has no DC path, so one left unwired is a floating node the
+          // solver cannot place. 1 GΩ to the source holds it off instead,
+          // drawing nothing a real gate would not.
+          circArray.add('R_mg_$keyStr n_${nodeFor('g')} n_${nodeFor('s')} 1e9');
+          _branches.add(
+            _ElementBranch.measured(a: portFor('d'), b: portFor('s'), vector: 'i(V_md_$keyStr)'),
+          );
 
         case SpiceComponentType.currentSource:
         case SpiceComponentType.none:

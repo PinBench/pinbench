@@ -2,6 +2,7 @@ import '../painters/battery_9v_painter.dart';
 import '../painters/cr2032_painter.dart';
 import '../painters/diode_1n4148_painter.dart';
 import '../painters/ldr_painter.dart';
+import '../painters/transistor_painter.dart';
 import 'base_component_painter.dart';
 
 /// Builds a part's painter for one placed instance.
@@ -23,6 +24,9 @@ abstract final class PartPainterRegistry {
     'cr2032': Cr2032Painter.new,
     'diode_1n4148': Diode1n4148Painter.new,
     'ldr': LdrPainter.new,
+    for (final kind in TransistorKind.values)
+      'transistor_${kind.name}': ({isOutline = false, properties}) =>
+          TransistorPainter(kind, isOutline: isOutline, properties: properties),
   };
 
   /// The painter registered as [name], or null.

@@ -58,3 +58,7 @@ flutter:
     - assets/parts/soil_moisture/
     - assets/parts/thermistor/
     - assets/parts/tmp36/
+    - assets/parts/transistor_nmos/
+    - assets/parts/transistor_npn/
+    - assets/parts/transistor_pmos/
+    - assets/parts/transistor_pnp/

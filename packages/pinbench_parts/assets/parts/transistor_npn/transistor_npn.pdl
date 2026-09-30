@@ -1,0 +1,31 @@
+# NPN Transistor in a TO-92 package.
+#
+# No BEHAVIOR: switching and amplifying are the solver's job, from the
+# transistor model PHYSICS names.
+# The 2N3904 is the default model; a line like `bf = 300` under PHYSICS
+# overrides one of its parameters.
+#
+# Drawn by the shared `transistor_npn` painter: vector paths generated from
+# the "Transistor NPN" frame in the PinBench Parts Figma file by the
+# Flutter Da Vinci plugin. Only the drawing is Dart.
+
+PART "NPN Transistor"
+ALIAS "2N3904"
+ID transistor_npn
+CATEGORY basic
+DESCRIPTION "Bipolar NPN transistor, TO-92 — collector, base, emitter"
+
+# Flat face forward, legs C B E left to right, their tips one hole pitch
+# apart on the lattice.
+SIZE 40px 72px
+PAINTER transistor_npn
+
+PINS
+  collector 4px   68px  passive  "C"
+  base      20px  68px  passive  "B"
+  emitter   36px  68px  passive  "E"
+
+PHYSICS npn
+  c = collector
+  b = base
+  e = emitter

@@ -1,0 +1,31 @@
+# PNP Transistor in a TO-92 package.
+#
+# No BEHAVIOR: switching and amplifying are the solver's job, from the
+# transistor model PHYSICS names.
+# The 2N3906 is the default model; a line like `bf = 200` under PHYSICS
+# overrides one of its parameters.
+#
+# Drawn by the shared `transistor_pnp` painter: vector paths generated from
+# the "Transistor PNP" frame in the PinBench Parts Figma file by the
+# Flutter Da Vinci plugin. Only the drawing is Dart.
+
+PART "PNP Transistor"
+ALIAS "2N3906"
+ID transistor_pnp
+CATEGORY basic
+DESCRIPTION "Bipolar PNP transistor, TO-92 — emitter, base, collector"
+
+# Flat face forward, legs E B C left to right, their tips one hole pitch
+# apart on the lattice.
+SIZE 40px 72px
+PAINTER transistor_pnp
+
+PINS
+  emitter   4px   68px  passive  "E"
+  base      20px  68px  passive  "B"
+  collector 36px  68px  passive  "C"
+
+PHYSICS pnp
+  c = collector
+  b = base
+  e = emitter
