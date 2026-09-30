@@ -257,6 +257,21 @@ PHYSICS resistor
       expect(diode.spiceModel!.pinMapping, {'n1': 'anode', 'n2': 'cathode'});
     });
   });
+
+  test('the bundled photoresistor behaves as its datasheet comment claims', () async {
+    // An end-to-end check against the part actually shipped, not a fixture.
+    final result = PdlParser.parse(
+      await _readAsset('packages/pinbench_parts/assets/parts/ldr/ldr.pdl'),
+      assetDirectory: 'packages/pinbench_parts/assets/parts/ldr',
+    );
+    expect(result.diagnostics, isEmpty, reason: result.diagnostics.join('\n'));
+
+    final ldr = result.definition!;
+    final dark = PdlBehaviorEvaluator.physicsFor(ldr, {'illumination': 0})['resistance']!;
+    final lit = PdlBehaviorEvaluator.physicsFor(ldr, {'illumination': 100})['resistance']!;
+    expect(dark, greaterThan(lit), reason: 'resistance must fall as light rises');
+    expect(lit, 1000);
+  });
 }
 
 Future<String> _readAsset(String key) async {

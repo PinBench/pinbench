@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:pinbench_parts/painting/dsl_component_painter.dart';
 import 'package:pinbench_parts/painting/grid_system.dart';
+import 'package:pinbench_parts/painting/part_painter_registry.dart';
 import 'package:pinbench_parts/painting/pdl_svg_cache.dart';
 import 'package:pinbench_parts/part_registry.dart';
 import 'package:flutter/services.dart';
@@ -103,6 +104,34 @@ void main() {
           completes,
           reason: '${part.id} names artwork "$path" that is not in the bundle',
         );
+      }
+    });
+
+    test('a named PAINTER is registered, and draws in the declared SIZE', () {
+      // An unregistered name is not fatal at runtime — the part still loads
+      // and draws its VISUALS — so this is where a typo gets caught.
+      for (final part in parts) {
+        final name = part.visual.painter;
+        if (name == null) continue;
+        final builder = PartPainterRegistry.find(name);
+        expect(
+          builder,
+          isNotNull,
+          reason: '${part.id} names PAINTER "$name", which nothing registers',
+        );
+
+        // A painted body smaller than the footprint says where it is, so the
+        // part is hit on its body rather than across its whole bounds.
+        final body = builder!().bodyRect(part.visual.size);
+        if (body != null) {
+          // SIZE in millimetres converts to a hair off whole pixels.
+          final bounds = (ui.Offset.zero & part.visual.size).inflate(0.01);
+          expect(
+            bounds.contains(body.topLeft) && bounds.contains(body.bottomRight),
+            isTrue,
+            reason: "${part.id}: the painter's body $body spills outside SIZE",
+          );
+        }
       }
     });
 

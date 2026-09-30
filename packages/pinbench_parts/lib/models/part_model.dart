@@ -80,16 +80,12 @@ class PartModel({
   /// painter, which is all of the older ones.
   final Map<String, dynamic> defaults = const {},
 
-  /// Other names the part goes by — `Photoresistor` for an `LDR`.
-  ///
-  /// The palette search matches them, and so does a `.cdl` type token or a
-  /// saved circuit, which is also what keeps files written under a part's old
-  /// name loading after a rename. The part is always *written* under [name].
+  /// Other names the part goes by, from its `.pdl`'s `ALIAS` lines —
+  /// `Photoresistor` for the `LDR`. The palette search matches them, and so
+  /// does a `.cdl` type token, which keeps a file written under a part's old
+  /// name loading. The part is always *written* under [name].
   final List<String> aliases = const [],
 }) {
-  /// Whether [candidate] is this part's name or one of its [aliases].
-  bool isCalled(String candidate) => candidate == name || aliases.contains(candidate);
-
   BaseComponentPainter? getPainter({bool isOutline = false, Map<String, dynamic>? properties}) =>
       painterBuilder?.call(isOutline: isOutline, properties: properties);
 
@@ -121,7 +117,7 @@ class PartModel({
 
     // First try standard components
     for (final sc in standardParts) {
-      if (sc.isCalled(name)) {
+      if (sc.name == name) {
         return sc.clone();
       }
     }
@@ -134,6 +130,7 @@ class PartModel({
           name: def.name,
           size: Size(def.visual.width, def.visual.height),
           definitionId: definitionId,
+          aliases: def.aliases,
           logic: def.logic,
           painterBuilder: ({isOutline = false, properties}) =>
               DSLComponentPainter(definition: def, isOutline: isOutline, properties: properties),
@@ -174,10 +171,6 @@ abstract class PartNames {
   static const potentiometer = 'Potentiometer';
   static const servoMotor = 'Servo Motor';
   static const oledDisplay = 'OLED Display';
-  // The name the `.pdl` part had, so `.cdl` files (`Battery9V`) and saved
-  // circuits that used it still resolve.
-  static const battery9v = 'Battery (9V)';
-  static const ldr = 'LDR';
 }
 
 /// Canonical keys for `ComponentInstance.properties` (the per-component property
@@ -255,19 +248,6 @@ abstract class ComponentProps {
   /// What colour an OLED's lit pixels glow — `White`, `Blue` or `Yellow`,
   /// matching the panels sold. Cosmetic: the panel is monochrome either way.
   static const pixelColor = 'Pixel Color';
-
-  /// A battery's terminal voltage in volts, as a string (e.g. `9`).
-  static const voltage = 'Voltage';
-
-  /// How much light falls on an LDR, 0–100 %, as a string (e.g. `50`). A
-  /// user-set stand-in for a light source.
-  static const illumination = 'Illumination';
-
-  /// An LDR's resistance in the dark, in ohms, as a string (e.g. `1000000`).
-  static const darkResistance = 'Dark Resistance';
-
-  /// An LDR's resistance at full light, in ohms, as a string (e.g. `1000`).
-  static const lightResistance = 'Light Resistance';
 
   /// Runtime-flag keys the property editor must hide (they are not user-editable).
   /// Includes legacy lowercase keys that may still be present in older `.cdl`

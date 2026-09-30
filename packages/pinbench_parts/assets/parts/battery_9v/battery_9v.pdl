@@ -1,0 +1,33 @@
+# 9 V battery (PP3).
+#
+# Like the coin cell: an ideal source. It does not sag under load or run
+# down. Enough to power a circuit off-board, or to show what 9 V does to an
+# LED with no resistor.
+#
+# Drawn by the `battery_9v` painter rather than an SVG: vector paths
+# generated from the "Battery 9V" frame in the PinBench Parts Figma file by
+# the Flutter Da Vinci plugin. Only the drawing is Dart.
+
+PART "Battery (9V)"
+ID battery_9v
+CATEGORY basic
+DESCRIPTION "9V PP3 battery"
+
+SIZE 48.26mm 25.4mm
+PAINTER battery_9v
+
+# The snap clip's leads leave on the left, one hole pitch apart: black (-)
+# above red (+).
+PINS
+  plus   4px  84px  power   "+"
+  minus  4px  68px  ground  "-"
+
+PROPERTIES
+  voltage  number  9  unit:"V"  label:"Battery voltage"
+
+BEHAVIOR
+  physics.voltage = max(prop.voltage, 0)
+
+PHYSICS voltageSource
+  n1 = plus
+  n2 = minus

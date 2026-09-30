@@ -17,6 +17,7 @@ Future<List<PartModel>> partRegistry(Ref ref) async {
           name: def.name,
           size: Size(def.visual.width, def.visual.height),
           definitionId: def.id,
+          aliases: def.aliases,
           // Without this every data-driven part landed in `other`, however
           // carefully its .pdl declared a CATEGORY.
           category: PartCategory.fromName(def.category),

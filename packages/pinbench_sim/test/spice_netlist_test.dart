@@ -3,9 +3,7 @@ import 'package:pinbench_parts/models/part_model.dart';
 import 'package:pinbench_parts/models/wire_model.dart';
 import 'package:pinbench_parts/part_registry.dart';
 import 'package:pinbench_sim/core/circuit_netlist.dart';
-import 'package:pinbench_sim/core/engine_pin_api.dart';
 import 'package:pinbench_sim/core/spice_engine.dart';
-import 'package:pinbench_sim/core/updaters/part_behavior_frame_updater.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -123,33 +121,6 @@ void main() {
     // and belongs to no part.
     final lines = netlistFor([place(PartNames.breadboardHalf)]);
     expect(lines.where((l) => RegExp('^[VRDC]_').hasMatch(l) && l != 'V_gnd n_0 0 0'), isEmpty);
-  });
-
-  test("a built-in part's logic reaches its SPICE element, not just a .pdl's", () {
-    // The LDR is a resistor whose value its logic sets from the light on it.
-    // Physics used to be applied only to parts with a `.pdl` definition, so a
-    // built-in one computed its resistance every frame and none of it arrived.
-    final ldr = place(PartNames.ldr, properties: {ComponentProps.illumination: '100'});
-    final nodes = [ldr];
-    final netlist = CircuitNetlist()
-      ..buildStatic(nodes, const <WireModel>[], bridgeResistors: false);
-    final engine = SpiceEngine()..build(netlist, nodes);
-    final log = <String>[];
-
-    PartBehaviorFrameUpdater.update(
-      nodes: nodes,
-      spiceEngine: engine,
-      isSpiceActive: true,
-      lastState: {},
-      elapsed: Duration.zero,
-      netlist: netlist,
-      unoNode: null,
-      measurements: EmulatorMeasurements(),
-      queueUpdate: (_, _) {},
-      onDebugLog: log.add,
-    );
-
-    expect(log, contains(matches(RegExp(r'R_\S+ = 1000\.000$'))), reason: log.join('\n'));
   });
 
   test('every built-in part declaring a SPICE model can be resolved by type', () {

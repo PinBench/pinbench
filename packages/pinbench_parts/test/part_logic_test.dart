@@ -213,46 +213,6 @@ void main() {
     });
   });
 
-  group('the LDR, moved out of its .pdl', () {
-    double resistance(Map<String, Object?> properties) {
-      final physics = <String, double>{};
-      BuiltInPartLogic.ldr(
-        PartLogicContext(
-          definition: null,
-          state: {},
-          properties: {...BuiltInPartLogic.ldrDefaults, ...properties},
-          physics: physics,
-          elapsed: Duration.zero,
-          analog: (_) => 0,
-          pins: const _FakePins(),
-          spice: const _FakeSpice(),
-        ),
-      );
-      return physics['resistance']!;
-    }
-
-    test('resistance falls as light rises, between the two published values', () {
-      expect(resistance({ComponentProps.illumination: '0'}), 1000000);
-      expect(resistance({ComponentProps.illumination: '100'}), 1000);
-      expect(
-        resistance({ComponentProps.illumination: '50'}),
-        allOf(lessThan(1000000), greaterThan(1000)),
-      );
-    });
-
-    test('light outside 0-100 % is clamped', () {
-      expect(resistance({ComponentProps.illumination: '150'}), 1000);
-      expect(resistance({ComponentProps.illumination: '-20'}), 1000000);
-    });
-
-    test('its first solve starts where a freshly placed one settles', () {
-      // The netlist is built before the logic first runs, from the static
-      // value; if the two disagreed the reading would jump on frame one.
-      final ldr = standardParts.firstWhere((p) => p.name == PartNames.ldr);
-      expect(ldr.spice!.defaultValue, resistance(const {}));
-    });
-  });
-
   group('the servo, moved out of the engine', () {
     /// A board where the signal port reaches [pin] and reports [us].
     PartLogicContext servoContext({

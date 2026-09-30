@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:pinbench_parts/part_registry.dart';
+import 'package:pinbench_parts/pdl_flutter.dart';
 import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/wire_model.dart';
 import 'package:pinbench_parts/cdl/circuit_parser.dart';
@@ -75,20 +76,16 @@ void main() {
       // the next run the last run's value to start from.
       TestWidgetsFlutterBinding.ensureInitialized();
       await PartRegistry.initializeAsync();
-      final ntc = ComponentInstance(
-        key: const ValueKey('ntc'),
+      final ldr = ComponentInstance(
+        key: const ValueKey('ldr'),
         position: Offset.zero,
-        part: PartModel(
-          name: 'Thermistor (NTC)',
-          size: const Size(80, 40),
-          definitionId: 'thermistor',
-        ),
-        properties: const {'temperature': 30, 'kelvin': 303.15},
+        part: PartModel(name: 'Photoresistor', size: const Size(80, 40), definitionId: 'ldr'),
+        properties: const {'illumination': 30, 'level': 0.3},
       );
 
-      final generated = CircuitParser.generate([ntc], const []);
-      expect(generated, contains('temperature: 30'));
-      expect(generated, isNot(contains('kelvin')));
+      final generated = CircuitParser.generate([ldr], const []);
+      expect(generated, contains('illumination: 30'));
+      expect(generated, isNot(contains('level')));
     });
 
     test('regenerating after a simulated run produces identical text (no false-dirty)', () {
@@ -255,9 +252,20 @@ Circuit {
       expect(names, contains(PartNames.led));
     });
 
-    test('resolves an alias, so a file written under an old name still loads', () {
-      // The LDR was a `.pdl` part called "Photoresistor"; files saved then say
-      // `Photoresistor`, and its properties in the `.pdl`'s camelCase.
+    test('resolves an ALIAS, so a file written under an old name still loads', () async {
+      // The LDR shipped as "Photoresistor"; files saved then use that token.
+      TestWidgetsFlutterBinding.ensureInitialized();
+      await PartRegistry.initializeAsync();
+      final catalog = [
+        for (final def in PartRegistry.getAllParts())
+          PartModel(
+            name: def.name,
+            size: def.visual.size,
+            definitionId: def.id,
+            aliases: def.aliases,
+          ),
+      ];
+
       final data = CircuitParser.parse('''
 Circuit {
     ldr1 := Photoresistor {
@@ -265,9 +273,8 @@ Circuit {
         illumination: 80;
     }
 }''');
-      final node = CircuitParser.applyToCanvas(data, standardParts).nodes.single;
-      expect(node.part.name, PartNames.ldr);
-      expect(node.properties[ComponentProps.illumination], '80');
+      final node = CircuitParser.applyToCanvas(data, catalog).nodes.single;
+      expect(node.part.definitionId, 'ldr');
 
       expect(
         CircuitParser.generate([node], const []),
