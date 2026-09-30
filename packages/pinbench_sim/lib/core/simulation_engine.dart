@@ -111,6 +111,9 @@ class SimulationEngine({
   /// run would silently expire it.
   var _runElapsedUs = 0;
 
+  /// Whether this run's parts have had their power-on pass — see [runFrame].
+  var _partsPoweredOn = false;
+
   /// Last-seen state of everything that can change circuit *connectivity*
   /// mid-run, so the adjacency map is only rebuilt when it actually moved.
   ///
@@ -186,6 +189,7 @@ class SimulationEngine({
     _lastTopologyState = {};
     _lastPin13State = false;
     _runElapsedUs = 0;
+    _partsPoweredOn = false;
     for (final node in _output.simulationNodes) {
       _nodesByKey[node.key] = node;
 
@@ -466,11 +470,11 @@ class SimulationEngine({
     );
   }
 
-  void _updateBehaviourParts() {
+  void _updateBehaviourParts({bool circuitSolved = true}) {
     PartBehaviorFrameUpdater.update(
       nodes: _behaviourNodes,
       spiceEngine: _spiceEngine,
-      isSpiceActive: _isSpiceActive,
+      isSpiceActive: circuitSolved && _isSpiceActive,
       lastState: _lastBehaviourState,
       elapsed: Duration(microseconds: _runElapsedUs),
       netlist: _netlist,
@@ -583,6 +587,19 @@ class SimulationEngine({
   @visibleForTesting
   int runFrame({int? cycles, bool solveSpice = true}) {
     final sw = Stopwatch()..start();
+
+    // 0. Power the parts on before the CPU's first instruction. Parts normally
+    // run after the tick (step 7), which is too late for a sensor on the first
+    // frame: `setup()` probes the bus straight away, and a device that has not
+    // yet `serve`d its registers is NACKed, so `Adafruit_MPU6050.begin()` and
+    // friends report "chip not found" and never retry. On a desk the sensor is
+    // powered as soon as the board is.
+    // Nothing has been solved yet, so the pass sees the analog model as off:
+    // an LED asking ngspice for its current now would find no result vector.
+    if (!_partsPoweredOn) {
+      _partsPoweredOn = true;
+      if (_behaviourNodes.isNotEmpty) _updateBehaviourParts(circuitSolved: false);
+    }
 
     // 1. Update digital inputs (push buttons → netlist → AVR pins)
     _updateDigitalInputs();

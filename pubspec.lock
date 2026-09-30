@@ -124,11 +124,12 @@ packages:
   avr8_dart:
     dependency: "direct main"
     description:
-      name: avr8_dart
-      sha256: "0abb3aeec58b93a47b9213cdcd9542c4032c32ffb98699d06de62bcd73fe6379"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.0"
+      path: "."
+      ref: "70f44156fbe8ae509313e1c0aace0b0efa079d01"
+      resolved-ref: "70f44156fbe8ae509313e1c0aace0b0efa079d01"
+      url: "https://github.com/PinBench/avr8_dart.git"
+    source: git
+    version: "0.2.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -1029,7 +1030,7 @@ packages:
       path: "."
       ref: "1061e5f824186f73671495080fe6c37433b71a1c"
       resolved-ref: "1061e5f824186f73671495080fe6c37433b71a1c"
-      url: "https://github.com/burhankhanzada/ngspice_dart.git"
+      url: "https://github.com/PinBench/ngspice_dart.git"
     source: git
     version: "0.2.1"
   objective_c:

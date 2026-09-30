@@ -10,14 +10,18 @@ environment:
   sdk: ^3.13.0
 
 dependencies:
-  avr8_dart: ^0.1.0
+  # Not on pub.dev yet; pinned to the same commit as the app's pubspec.yaml.
+  avr8_dart:
+    git:
+      url: https://github.com/PinBench/avr8_dart.git
+      ref: 70f44156fbe8ae509313e1c0aace0b0efa079d01
   collection: ^1.19.1
   flutter:
     sdk: flutter
   # Local pure-Dart port (no FFI / libngspice). API-compatible Ngspice facade.
   ngspice_dart:
     git:
-      url: https://github.com/burhankhanzada/ngspice_dart.git
+      url: https://github.com/PinBench/ngspice_dart.git
       # Pinned to a commit, not a branch — see the app's pubspec.yaml.
       ref: 1061e5f824186f73671495080fe6c37433b71a1c
   pinbench_parts:

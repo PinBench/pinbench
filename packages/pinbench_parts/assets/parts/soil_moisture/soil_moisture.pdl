@@ -1,0 +1,39 @@
+# Capacitive soil moisture sensor (v1.2).
+#
+# The output falls as the soil gets wetter: about 2.8 V in dry air down to
+# about 1.3 V in water, which is roughly analogRead() 570 dry and 265 wet on a
+# 5 V board. Calibrating those two numbers is the first step of every
+# soil-moisture tutorial, so the model keeps the inverted, offset range rather
+# than a tidy 0–5 V.
+#
+# Modelled as a voltage source between AOUT and GND. VCC is there because the
+# real module needs it; the model does not read it.
+
+PART "Soil Moisture Sensor"
+ID soil_moisture
+CATEGORY sensors
+DESCRIPTION "Capacitive soil moisture probe with analog output"
+
+SIZE 10.16mm 35.56mm
+SVG "soil_moisture.svg"
+
+PINS
+  gnd   4px   4px  ground  "GND"
+  vcc   20px  4px  power   "VCC"
+  aout  36px  4px  output  "AOUT"
+
+PROPERTIES
+  moisture  number  40   unit:"%"  label:"Soil moisture"
+  dryVolts  number  2.8  unit:"V"  label:"Output in dry air"
+  wetVolts  number  1.3  unit:"V"  label:"Output in water"
+
+STATE
+  level  decimal  0
+
+BEHAVIOR
+  state.level     = clamp(prop.moisture, 0, 100) / 100
+  physics.voltage = prop.dryVolts - state.level * (prop.dryVolts - prop.wetVolts)
+
+PHYSICS voltageSource
+  n1 = aout
+  n2 = gnd

@@ -141,6 +141,14 @@ class const EngineI2cApi() implements PartI2cApi {
     AVRBridge.listenI2c(address);
     return AVRBridge.drainI2c(address);
   }
+
+  @override
+  void serve(int address, {int size = 256, int pointerBytes = 1}) =>
+      AVRBridge.serveI2c(address, size: size, pointerBytes: pointerBytes);
+
+  @override
+  void setRegisters(int address, int offset, List<int> bytes) =>
+      AVRBridge.setI2cRegisters(address, offset, bytes);
 }
 
 /// [PartSpiceApi] backed by the running solver.

@@ -1,0 +1,31 @@
+# LM35 analog temperature sensor (TO-92).
+#
+# Vout = 10 mV/°C from 0 V at 0 °C, so 250 mV at 25 °C. Wired with a single
+# supply, as in every Arduino tutorial, it cannot go below 0 V, so it reads
+# 2 °C to 150 °C. Modelled as a voltage source between Vout and GND; +Vs is
+# there because the real part needs it, and the model does not read it.
+#
+# Legs left to right with the flat face towards you: +Vs, Vout, GND.
+
+PART "Temperature Sensor (LM35)"
+ID lm35
+CATEGORY sensors
+DESCRIPTION "Analog temperature sensor, 10 mV/°C"
+
+SIZE 7.62mm 10.16mm
+SVG "lm35.svg"
+
+PINS
+  vs    4px   52px  power   "+Vs"
+  vout  20px  52px  output  "Vout"
+  gnd   36px  52px  ground  "GND"
+
+PROPERTIES
+  temperature  number  25  unit:"°C"  label:"Temperature"
+
+BEHAVIOR
+  physics.voltage = clamp(prop.temperature, 2, 150) * 0.01
+
+PHYSICS voltageSource
+  n1 = vout
+  n2 = gnd

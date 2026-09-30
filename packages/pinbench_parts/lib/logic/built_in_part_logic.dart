@@ -1,5 +1,6 @@
 import '../models/part_model.dart';
 
+import 'i2c_sensors.dart';
 import 'part_logic.dart';
 import 'ssd1306.dart';
 
@@ -34,6 +35,10 @@ abstract final class BuiltInPartLogic {
     PartLogicRegistry.register('led', led);
     PartLogicRegistry.register('buzzer', buzzer);
     PartLogicRegistry.register('ssd1306', ssd1306);
+    PartLogicRegistry.register('bh1750', I2cSensors.bh1750);
+    PartLogicRegistry.register('mpu6050', I2cSensors.mpu6050);
+    PartLogicRegistry.register('ds1307', I2cSensors.ds1307);
+    PartLogicRegistry.register('aht20', I2cSensors.aht20);
   });
 
   /// The I²C address an SSD1306 module answers on when its property says
@@ -84,30 +89,16 @@ abstract final class BuiltInPartLogic {
   /// R3 header's separate `SDA`/`SCL` pins count too: they are the same two
   /// pads brought out twice, so a display wired to them is on the same bus.
   static bool _isOnTheBus(PartLogicContext context) =>
-      const {'A4', 'SDA'}.contains(context.pins.boardPortFor('SDA')) &&
-      const {'A5', 'SCL'}.contains(context.pins.boardPortFor('SCL'));
+      I2cWiring.isOnTheBus(context, sda: 'SDA', scl: 'SCL');
 
   /// The address this display listens on, read from its `I2C Address`
   /// property. Accepts the hex spelling people copy out of a sketch (`0x3C`)
   /// as well as a plain number, and falls back to
   /// [ssd1306DefaultAddress] for anything it cannot read — a typo should cost
   /// a wrong address at worst, not a part that silently never runs.
-  static int _i2cAddress(PartLogicContext context) {
-    final raw = context.properties[ComponentProps.i2cAddress];
-    final address = switch (raw) {
-      final num n => n.toInt(),
-      final String s => _parseAddress(s),
-      _ => null,
-    };
-    if (address == null || address < 0 || address > 0x7F) return ssd1306DefaultAddress;
-    return address;
-  }
-
-  static int? _parseAddress(String value) {
-    final text = value.trim().toLowerCase();
-    if (text.startsWith('0x')) return int.tryParse(text.substring(2), radix: 16);
-    return int.tryParse(text);
-  }
+  static int _i2cAddress(PartLogicContext context) =>
+      I2cWiring.parseAddress(context.properties[ComponentProps.i2cAddress]) ??
+      ssd1306DefaultAddress;
 
   /// A piezo buzzer: sounding, and at what pitch, from the frequency the
   /// emulator detects on its driving pin.

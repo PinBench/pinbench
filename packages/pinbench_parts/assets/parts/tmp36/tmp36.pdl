@@ -1,0 +1,33 @@
+# TMP36 analog temperature sensor (TO-92).
+#
+# Vout = 0.5 V + 10 mV/°C, so 750 mV at 25 °C: the offset is what lets it
+# read below freezing from a single supply. Modelled as a voltage source
+# between Vout and GND, so wire GND to the board's GND and Vout to an analog
+# pin. +Vs is there because the real part needs it; the model does not read
+# it.
+#
+# Legs left to right with the flat face towards you: +Vs, Vout, GND.
+
+PART "Temperature Sensor (TMP36)"
+ID tmp36
+CATEGORY sensors
+DESCRIPTION "Analog temperature sensor, 10 mV/°C with 500 mV offset"
+
+SIZE 7.62mm 10.16mm
+SVG "tmp36.svg"
+
+PINS
+  vs    4px   52px  power   "+Vs"
+  vout  20px  52px  output  "Vout"
+  gnd   36px  52px  ground  "GND"
+
+PROPERTIES
+  temperature  number  25  unit:"°C"  label:"Temperature"
+
+BEHAVIOR
+  # Rated from -40 °C to +125 °C; the output saturates outside that.
+  physics.voltage = 0.5 + clamp(prop.temperature, -40, 125) * 0.01
+
+PHYSICS voltageSource
+  n1 = vout
+  n2 = gnd
