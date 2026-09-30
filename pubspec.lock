@@ -125,8 +125,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "183c19a5e17e3722666b4d1ad197dca0cf997a30"
-      resolved-ref: "183c19a5e17e3722666b4d1ad197dca0cf997a30"
+      ref: "70f44156fbe8ae509313e1c0aace0b0efa079d01"
+      resolved-ref: "70f44156fbe8ae509313e1c0aace0b0efa079d01"
       url: "https://github.com/PinBench/avr8_dart.git"
     source: git
     version: "0.2.0"
