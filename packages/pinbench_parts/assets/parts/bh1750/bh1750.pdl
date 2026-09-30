@@ -1,0 +1,36 @@
+# BH1750 ambient light sensor on the GY-302 module.
+#
+# An I²C part: everything the sketch sees is two bytes of result, so the whole
+# behaviour is `LOGIC bh1750` serving them. The logic tracks the opcodes the
+# sketch sends (the measurement mode and time) in STATE, and answers 0 until a
+# measurement has been asked for, as a freshly powered chip does.
+#
+# ADDR low or unconnected puts it at 0x23; tied to 5V or 3.3V, at 0x5C. It is
+# only acknowledged when powered and wired to A4/A5.
+
+PART "Light Sensor (BH1750)"
+ID bh1750
+CATEGORY sensors
+DESCRIPTION "I²C ambient light sensor, 1–65535 lx"
+
+SIZE 12.7mm 19.05mm
+SVG "bh1750.svg"
+
+LOGIC bh1750
+
+PINS
+  vcc   4px   116px  power   "VCC"
+  gnd   20px  116px  ground  "GND"
+  scl   36px  116px  input   "SCL"
+  sda   52px  116px  passive "SDA"
+  addr  68px  116px  input   "ADDR"
+
+PROPERTIES
+  illuminance  number  250  unit:"lx"  label:"Light level"
+
+STATE
+  # The last measurement opcode the sketch sent; 0 until it sends one.
+  mode   integer  0
+  # Measurement time register. 69 is the chip's default; libraries change it
+  # to trade range for resolution.
+  mtreg  integer  69

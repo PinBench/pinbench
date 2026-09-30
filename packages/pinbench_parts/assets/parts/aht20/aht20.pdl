@@ -1,0 +1,26 @@
+# AHT20 temperature and humidity sensor.
+#
+# The I²C answer to "DHT11/22": the same two readings, but over a bus the
+# emulator already models, where a DHT's single-wire timing would need a part
+# that can drive a pin. Served by `LOGIC aht20` at its fixed address, 0x38:
+# a status byte, 20 bits each of humidity and temperature, and a CRC.
+
+PART "Temperature + Humidity (AHT20)"
+ID aht20
+CATEGORY sensors
+DESCRIPTION "I²C temperature and relative humidity sensor"
+
+SIZE 10.16mm 12.7mm
+SVG "aht20.svg"
+
+LOGIC aht20
+
+PINS
+  vcc  4px   68px  power   "VIN"
+  gnd  20px  68px  ground  "GND"
+  scl  36px  68px  input   "SCL"
+  sda  52px  68px  passive "SDA"
+
+PROPERTIES
+  temperature  number  25  unit:"°C"  label:"Temperature"
+  humidity     number  50  unit:"%"   label:"Relative humidity"

@@ -1,0 +1,41 @@
+# DS1307 real-time clock module.
+#
+# An I²C part served by `LOGIC ds1307`: seven BCD time registers, plus control
+# and 56 bytes of RAM that the bus stores and reads back on its own. The clock
+# counts simulated time, so it keeps pace with millis() and stops while the run
+# is paused.
+#
+# "Clock at start" picks between a module whose battery kept it set (it starts
+# at the computer's current time) and a fresh chip, halted at 2000-01-01 until
+# the sketch sets it — the case `if (!rtc.isrunning()) rtc.adjust(...)` is for.
+#
+# The DS1307 needs 5 V; wired to 3.3V it does not answer.
+
+PART "Real-Time Clock (DS1307)"
+ID ds1307
+CATEGORY sensors
+DESCRIPTION "I²C real-time clock with battery backup"
+
+SIZE 20.32mm 15.24mm
+SVG "ds1307.svg"
+
+LOGIC ds1307
+
+PINS
+  gnd  36px  84px  ground  "GND"
+  vcc  52px  84px  power   "VCC"
+  sda  68px  84px  passive "SDA"
+  scl  84px  84px  input   "SCL"
+
+PROPERTIES
+  startsAt  enum  now  options:"now,unset"  label:"Clock at start"
+
+STATE
+  booted       boolean  false
+  # Clock-halt bit (bit 7 of the seconds register).
+  halted       boolean  false
+  # The time, as seconds since 2000-01-01, when it was last set...
+  baseSeconds  decimal  0
+  # ...and the simulated millisecond it was set at. The time now is the one
+  # plus however far the other has moved on.
+  anchorMs     decimal  0

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 64" width="48" height="64">
+  <line x1="4" y1="34" x2="4" y2="64" stroke="#9aa0a6" stroke-width="3"/>
+  <line x1="20" y1="34" x2="20" y2="64" stroke="#9aa0a6" stroke-width="3"/>
+  <line x1="36" y1="34" x2="36" y2="64" stroke="#9aa0a6" stroke-width="3"/>
+  <path d="M1 36 L1 18 A19 16 0 0 1 39 18 L39 36 Z" fill="#1f2937" stroke="#111827" stroke-width="1.5"/>
+  <text x="20" y="30" font-family="monospace" font-size="7" fill="#e5e7eb" text-anchor="middle">LM35</text>
+</svg>

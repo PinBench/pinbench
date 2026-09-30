@@ -1,0 +1,27 @@
+# 9 V battery (PP3).
+#
+# Like the coin cell: an ideal source. It does not sag under load or run
+# down. Enough to power a circuit off-board, or to show what 9 V does to an
+# LED with no resistor.
+
+PART "Battery (9V)"
+ID battery_9v
+CATEGORY basic
+DESCRIPTION "9V PP3 battery"
+
+SIZE 48.26mm 25.4mm
+SVG "battery_9v.svg"
+
+PINS
+  plus   292px  52px   power   "+"
+  minus  292px  100px  ground  "-"
+
+PROPERTIES
+  voltage  number  9  unit:"V"  label:"Battery voltage"
+
+BEHAVIOR
+  physics.voltage = max(prop.voltage, 0)
+
+PHYSICS voltageSource
+  n1 = plus
+  n2 = minus

@@ -43,10 +43,18 @@ flutter:
     # Referenced as `packages/pinbench_parts/assets/...` by consumers, which is what
     # Flutter prefixes package assets with. `PartRegistry` scans the manifest
     # for that prefix to find `.pdl` definitions.
+    - assets/parts/aht20/
     - assets/parts/arduino/
+    - assets/parts/battery_9v/
+    - assets/parts/bh1750/
     - assets/parts/cr2032/
     - assets/parts/diode_1n4148/
+    - assets/parts/ds1307/
     - assets/parts/ldr/
+    - assets/parts/lm35/
+    - assets/parts/mpu6050/
     - assets/parts/pir_sensor/
     - assets/parts/slide_switch/
+    - assets/parts/soil_moisture/
     - assets/parts/thermistor/
+    - assets/parts/tmp36/
