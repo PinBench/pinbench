@@ -1,0 +1,30 @@
+# TIP120 Darlington in a TO-220 package.
+#
+# Two NPN transistors in one package, the first driving the second, so a few
+# milliamps from a pin switch amps — with about 1.4 V from base to emitter
+# rather than one junction's 0.7 V. The engine's defaults are the TIP120's,
+# internal 8 kOhm and 120 Ohm base resistors included.
+#
+# Drawn by the shared `to220_tip120` painter: vector paths generated from the
+# "TIP120" frame in the PinBench Parts Figma file by the Flutter Da Vinci
+# plugin. Only the drawing is Dart.
+
+PART "TIP120 Darlington"
+ID tip120
+CATEGORY basic
+DESCRIPTION "NPN Darlington power transistor, TO-220 — base, collector, emitter"
+
+# Tab up, legs B C E left to right, their tips one hole pitch apart on the
+# lattice.
+SIZE 72px 88px
+PAINTER to220_tip120
+
+PINS
+  base      20px  84px  passive  "B"
+  collector 36px  84px  passive  "C"
+  emitter   52px  84px  passive  "E"
+
+PHYSICS npnDarlington
+  c = collector
+  b = base
+  e = emitter

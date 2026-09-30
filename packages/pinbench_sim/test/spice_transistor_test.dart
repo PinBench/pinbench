@@ -26,7 +26,11 @@ void main() {
     return ComponentInstance(
       key: const ValueKey('q1'),
       position: const Offset(200, 0),
-      part: PartModel(name: definition.name, size: const Size(40, 72), definitionId: id),
+      part: PartModel(
+        name: definition.name,
+        size: Size(definition.visual.width, definition.visual.height),
+        definitionId: id,
+      ),
     );
   }
 
@@ -133,6 +137,59 @@ void main() {
     );
     expect(on, greaterThan(3));
     expect(off, lessThan(0.1));
+  });
+
+  test('a TIP120 switches hard from a few milliamps of base current', () {
+    final board = uno();
+    final q = transistor('tip120');
+    final load = resistor('load', '220');
+    final baseR = resistor('rb', '1000');
+    final wires = [
+      wire(board, '9', load, 'left'),
+      wire(load, 'right', q, 'collector'),
+      wire(q, 'collector', board, 'A0'),
+      wire(board, '8', baseR, 'left'),
+      wire(baseR, 'right', q, 'base'),
+      wire(q, 'emitter', board, 'GND_1'),
+    ];
+    final (off, on) = sweep([board, q, load, baseR], wires);
+    expect(off, greaterThan(4.5));
+    // A Darlington never saturates as far as one transistor: the output's
+    // collector cannot fall below the driver's base-emitter drop.
+    expect(on, inInclusiveRange(0.5, 1.2));
+  });
+
+  test('the power MOSFETs switch like their TO-92 counterparts', () {
+    final board = uno();
+    final n = transistor('power_nmos');
+    final nLoad = resistor('load', '220');
+    final (nOff, nOn) = sweep(
+      [board, n, nLoad],
+      [
+        wire(board, '9', nLoad, 'left'),
+        wire(nLoad, 'right', n, 'drain'),
+        wire(n, 'drain', board, 'A0'),
+        wire(board, '8', n, 'gate'),
+        wire(n, 'source', board, 'GND_1'),
+      ],
+    );
+    expect(nOff, greaterThan(4.5));
+    expect(nOn, lessThan(0.05), reason: 'a logic-level power part is milliohms on at 5 V');
+
+    final p = transistor('power_pmos');
+    final pLoad = resistor('load', '220');
+    final (pOn, pOff) = sweep(
+      [board, p, pLoad],
+      [
+        wire(board, '9', p, 'source'),
+        wire(board, '8', p, 'gate'),
+        wire(p, 'drain', pLoad, 'left'),
+        wire(pLoad, 'right', board, 'GND_1'),
+        wire(p, 'drain', board, 'A0'),
+      ],
+    );
+    expect(pOn, greaterThan(4));
+    expect(pOff, lessThan(0.1));
   });
 
   test('an unwired MOSFET gate is off, not an unsolvable floating node', () {

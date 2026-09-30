@@ -2,6 +2,7 @@ import '../painters/battery_9v_painter.dart';
 import '../painters/cr2032_painter.dart';
 import '../painters/diode_1n4148_painter.dart';
 import '../painters/ldr_painter.dart';
+import '../painters/to220_painter.dart';
 import '../painters/transistor_painter.dart';
 import 'base_component_painter.dart';
 
@@ -27,6 +28,13 @@ abstract final class PartPainterRegistry {
     for (final kind in TransistorKind.values)
       'transistor_${kind.name}': ({isOutline = false, properties}) =>
           TransistorPainter(kind, isOutline: isOutline, properties: properties),
+    for (final (name, kind) in const [
+      ('to220_power_nmos', To220Kind.powerNmos),
+      ('to220_power_pmos', To220Kind.powerPmos),
+      ('to220_tip120', To220Kind.tip120),
+    ])
+      name: ({isOutline = false, properties}) =>
+          To220Painter(kind, isOutline: isOutline, properties: properties),
   };
 
   /// The painter registered as [name], or null.

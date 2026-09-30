@@ -1,0 +1,32 @@
+# P-Channel Power MOSFET in a TO-220 package.
+#
+# The same `pmos` element as the TO-92 one, with numbers near an IRF9540N: a
+# -3 V threshold, well under an ohm on with its gate pulled 5 V below the
+# source.
+#
+# Drawn by the shared `to220_power_pmos` painter: vector paths generated from the
+# "Power PMOS" frame in the PinBench Parts Figma file by the Flutter Da Vinci
+# plugin. Only the drawing is Dart.
+
+PART "P-Channel Power MOSFET"
+ALIAS "IRF9540N"
+ID power_pmos
+CATEGORY basic
+DESCRIPTION "P-channel power MOSFET, TO-220 — gate, drain, source"
+
+# Tab up, legs G D S left to right, their tips one hole pitch apart on the
+# lattice.
+SIZE 72px 88px
+PAINTER to220_power_pmos
+
+PINS
+  gate      20px  84px  passive  "G"
+  drain     36px  84px  passive  "D"
+  source    52px  84px  passive  "S"
+
+PHYSICS pmos
+  d = drain
+  g = gate
+  s = source
+  vto = -3
+  kp = 1.2

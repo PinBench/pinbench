@@ -116,16 +116,25 @@ class SpiceEngine({
       'rb': 10,
       'rc': 2.5,
     },
+    // A TIP120's pair: each transistor's beta multiplies, and its 8 kΩ and
+    // 120 Ω base-emitter resistors are `r1` and `r2`.
+    SpiceComponentType.npnDarlington: {'is': 1e-13, 'bf': 50, 'br': 1, 'r1': 8000, 'r2': 120},
+    SpiceComponentType.pnpDarlington: {'is': 1e-13, 'bf': 50, 'br': 1, 'r1': 8000, 'r2': 120},
     SpiceComponentType.nmos: {'level': 1, 'vto': 2.1, 'kp': 0.2, 'lambda': 0.01},
     SpiceComponentType.pmos: {'level': 1, 'vto': -2.1, 'kp': 0.1, 'lambda': 0.01},
   };
 
-  /// A transistor's `.model` parameters: the defaults for its type, overridden
-  /// by any numeric `PHYSICS` parameter its part declares (`bf = 300`).
-  static String _modelParameters(SpiceModelDef spiceDef) => {
+  /// A transistor's parameters: the defaults for its type, overridden by any
+  /// numeric `PHYSICS` parameter its part declares (`bf = 300`).
+  static Map<String, num> _modelValues(SpiceModelDef spiceDef) => {
     ...?_modelDefaults[spiceDef.type],
     ...spiceDef.parameters,
-  }.entries.map((e) => '${e.key.toUpperCase()}=${e.value}').join(' ');
+  };
+
+  static String _modelCard(Map<String, num> values) =>
+      values.entries.map((e) => '${e.key.toUpperCase()}=${e.value}').join(' ');
+
+  static String _modelParameters(SpiceModelDef spiceDef) => _modelCard(_modelValues(spiceDef));
 
   static var _ngspiceInitialized = false;
   static var _circuitLoaded = false;
@@ -291,6 +300,32 @@ class SpiceEngine({
           circArray.add('V_qc_$keyStr n_${nodeFor('c')} n_qc_$keyStr 0');
           circArray.add('V_qb_$keyStr n_${nodeFor('b')} n_qb_$keyStr 0');
           circArray.add('Q_$keyStr n_qc_$keyStr n_qb_$keyStr n_${nodeFor('e')} $model');
+          _branches
+            ..add(
+              _ElementBranch.measured(a: portFor('c'), b: portFor('e'), vector: 'i(V_qc_$keyStr)'),
+            )
+            ..add(
+              _ElementBranch.measured(a: portFor('b'), b: portFor('e'), vector: 'i(V_qb_$keyStr)'),
+            );
+
+        case SpiceComponentType.npnDarlington:
+        case SpiceComponentType.pnpDarlington:
+          // Two transistors sharing a collector, the first driving the
+          // second's base, with the TIP120's resistor across each base-emitter
+          // junction. Sensed like a single transistor.
+          final model = 'QM_$keyStr';
+          final polarity = spiceDef.type == SpiceComponentType.npnDarlington ? 'NPN' : 'PNP';
+          final values = _modelValues(spiceDef);
+          final r1 = values.remove('r1');
+          final r2 = values.remove('r2');
+          final mid = 'n_qm_$keyStr';
+          circArray.add('.model $model $polarity(${_modelCard(values)})');
+          circArray.add('V_qc_$keyStr n_${nodeFor('c')} n_qc_$keyStr 0');
+          circArray.add('V_qb_$keyStr n_${nodeFor('b')} n_qb_$keyStr 0');
+          circArray.add('Q_${keyStr}_1 n_qc_$keyStr n_qb_$keyStr $mid $model');
+          circArray.add('Q_${keyStr}_2 n_qc_$keyStr $mid n_${nodeFor('e')} $model');
+          circArray.add('R_${keyStr}_1 n_qb_$keyStr $mid $r1');
+          circArray.add('R_${keyStr}_2 $mid n_${nodeFor('e')} $r2');
           _branches
             ..add(
               _ElementBranch.measured(a: portFor('c'), b: portFor('e'), vector: 'i(V_qc_$keyStr)'),
