@@ -191,6 +191,13 @@ class AVRBridge {
     }
   }
 
+  /// Runs the CPU for [cycles] clock cycles — simulated time, which the frame
+  /// loop derives from wall-clock time.
+  ///
+  /// Counted in *cycles*, not instructions: most AVR instructions take one
+  /// cycle but branches, calls and memory access take two to four, so a loop
+  /// over instructions ran typical sketches about 30% fast (`delay(1000)`
+  /// lasted 0.77 s). The web bridge counts the same way.
   static void tick(int cycles) {
     // Reset PWM duty accumulators for this frame.
     _dutyTotalSamples = 0;
@@ -198,7 +205,8 @@ class AVRBridge {
       _dutyHighSamples[p] = 0;
     }
 
-    for (var i = 0; i < cycles; i++) {
+    final limit = _cpu.cycles + cycles;
+    for (var i = 0; _cpu.cycles < limit; i++) {
       avrInstruction(_cpu);
 
       // Periodically sample digital pin levels to estimate PWM duty cycles.
