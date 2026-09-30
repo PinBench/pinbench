@@ -69,6 +69,24 @@ void main() {
       expect(generated, isNot(contains('hasError')));
     });
 
+    test("omits a .pdl part's declared STATE but keeps its properties", () async {
+      // The same false-dirty as above, for data-driven parts: every frame
+      // writes a part's STATE onto the canvas, and saving it would also hand
+      // the next run the last run's value to start from.
+      TestWidgetsFlutterBinding.ensureInitialized();
+      await PartRegistry.initializeAsync();
+      final ldr = ComponentInstance(
+        key: const ValueKey('ldr'),
+        position: Offset.zero,
+        part: PartModel(name: 'Photoresistor', size: const Size(80, 40), definitionId: 'ldr'),
+        properties: const {'illumination': 30, 'level': 0.3},
+      );
+
+      final generated = CircuitParser.generate([ldr], const []);
+      expect(generated, contains('illumination: 30'));
+      expect(generated, isNot(contains('level')));
+    });
+
     test('regenerating after a simulated run produces identical text (no false-dirty)', () {
       // End-to-end regression for the "circuit.cdl shows unsaved after
       // simulation ends" bug: parse a real template, apply it to canvas

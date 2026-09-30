@@ -72,7 +72,7 @@ abstract final class PartBehaviorFrameUpdater {
 
       final result = PdlBehaviorEvaluator.evaluate(
         definition,
-        node.properties,
+        _withoutDeclaredState(definition, node.properties),
         // The engine's own record of the last frame, not the node's property
         // map. Only one of the two `SimulationOutput`s writes updates back
         // onto the nodes — see [lastState] — so the node map is a starting
@@ -105,6 +105,27 @@ abstract final class PartBehaviorFrameUpdater {
       _applyPhysics(node, definition, result, spiceEngine, isSpiceActive, onDebugLog);
       _applyState(node, result, lastState, queueUpdate);
     }
+  }
+
+  /// [properties] without the keys [definition] declares as `STATE`.
+  ///
+  /// The canvas keeps the last run's final state in each node's property map
+  /// (a stopped display keeps its picture), and the evaluator seeds state from
+  /// that map. So without this a `.pdl` part started every run where the last
+  /// one ended — a PIR still holding, a sensor still configured — although
+  /// `STATE` is documented as recreated from its initial value every run.
+  /// `lastState` is the memory *within* a run; this is only about where a run
+  /// starts. A part with no definition has no declared state to strip: its
+  /// logic owns the whole map.
+  static Map<String, dynamic> _withoutDeclaredState(
+    PartDefinition? definition,
+    Map<String, dynamic> properties,
+  ) {
+    if (definition == null || definition.state.isEmpty) return properties;
+    return {
+      for (final entry in properties.entries)
+        if (!definition.state.containsKey(entry.key)) entry.key: entry.value,
+    };
   }
 
   /// Names already reported as missing, so an unknown `LOGIC` is logged once

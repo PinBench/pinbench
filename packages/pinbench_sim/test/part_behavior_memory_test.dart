@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pinbench_parts/logic/part_logic.dart';
 import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/part_model.dart';
+import 'package:pinbench_parts/part_registry.dart';
 import 'package:pinbench_sim/core/circuit_netlist.dart';
 import 'package:pinbench_sim/core/engine_pin_api.dart';
 import 'package:pinbench_sim/core/spice_engine.dart';
@@ -90,5 +91,23 @@ void main() {
     lastState.clear(); // what SimulationEngine.start does
     runFrame(node, lastState);
     expect(lastState[node.key]?['ticks'], 100);
+  });
+
+  test("a .pdl part's STATE starts from its declared value, not the last run's", () async {
+    // PDL.md promises STATE is "recreated from its initial value every time a
+    // simulation starts". The canvas still holds where the last run ended — here
+    // a PIR whose hold ran far past the end of that run — and the evaluator
+    // used to seed state from it, so the new run began already triggered.
+    await PartRegistry.initializeAsync();
+    final pir = ComponentInstance(
+      position: Offset.zero,
+      part: PartModel(name: 'PIR Motion Sensor', size: const Size(128, 96), definitionId: 'pir_sensor'),
+      properties: {'triggered': false, 'active': true, 'holdUntilMs': 1e9},
+    );
+    final lastState = <LocalKey, Map<String, Object?>>{};
+
+    runFrame(pir, lastState);
+
+    expect(lastState[pir.key]?['active'], isFalse);
   });
 }

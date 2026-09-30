@@ -5,6 +5,7 @@ import '../../models/component_instance.dart';
 import '../../models/part_model.dart';
 import '../../models/wire_model.dart';
 import '../../parser_utils.dart';
+import '../../part_registry.dart';
 import '../circuit_colors.dart';
 import 'cdl_property_keys.dart';
 
@@ -50,9 +51,18 @@ abstract final class CircuitModelWriter {
     // used verbatim as the properties-panel label and dropdown option); the
     // `.cdl` presents them lowercase (`color: red`) for a cleaner, consistent
     // look, and `CircuitParser.parse` maps them back. Unknown keys pass through.
+    //
+    // A `.pdl` part's declared `STATE` is the same kind of value — what a run
+    // measured, recreated every run — so it is skipped too. Saving a PIR's
+    // `holdUntilMs` or a sensor's register settings would dirty the file the
+    // same way, and hand the next run a stale value to start from.
+    final definitionId = node.part.definitionId;
+    final declaredState = definitionId == null
+        ? const <String>{}
+        : PartRegistry.getPart(definitionId)?.state.keys.toSet() ?? const <String>{};
     final properties = <String, String>{
       for (final entry in node.properties.entries)
-        if (!ComponentProps.runtimeFlags.contains(entry.key))
+        if (!ComponentProps.runtimeFlags.contains(entry.key) && !declaredState.contains(entry.key))
           CdlPropertyKeys.toCdl(entry.key): entry.key == ComponentProps.color
               ? entry.value.toString().toLowerCase()
               : _unitless(entry.value.toString()),
