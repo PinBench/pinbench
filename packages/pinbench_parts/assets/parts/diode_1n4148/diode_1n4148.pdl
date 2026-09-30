@@ -1,17 +1,20 @@
-# 1N4148 small-signal diode.
+# 1N4148 small-signal switching diode, in glass.
 #
 # No BEHAVIOR: a diode's non-linearity is the solver's job, not a rule's. It
 # is here as the reference part for the PHYSICS-only case — artwork, pins, and
-# a SPICE primitive.
+# a SPICE primitive, whose model numbers are the 1N4148's own: about 0.7 V at
+# 10 mA.
 #
-# Drawn by the `diode_1n4148` painter rather than an SVG: vector paths
-# generated from the "Diode 1N4148" frame in the PinBench Parts Figma file by
-# the Flutter Da Vinci plugin. Only the drawing is Dart.
+# Drawn by the `diode_1n4148` painter: vector paths generated from the
+# "Diode 1N4148 glass" frame in the PinBench Parts Figma file by the Flutter
+# Da Vinci plugin, on the same geometry as the rectifier and the Schottky.
 
-PART "Diode (1N4148)"
+PART "Switching Diode (1N4148)"
+# The name it shipped under, so circuits saved with it still load.
+ALIAS "Diode (1N4148)"
 ID diode_1n4148
 CATEGORY basic
-DESCRIPTION "Small-signal switching diode"
+DESCRIPTION "Small-signal switching diode, glass DO-35"
 
 # Standing on its leads, anode up: the tips are four hole pitches apart on
 # the lattice, the cathode band toward the bottom one.
@@ -25,3 +28,6 @@ PINS
 PHYSICS diode
   n1 = anode
   n2 = cathode
+  # SPICE model parameters: saturation current and emission coefficient.
+  is = 4.352e-9
+  n = 1.906

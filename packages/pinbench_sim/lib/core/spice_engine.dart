@@ -233,7 +233,11 @@ class SpiceEngine({
         case SpiceComponentType.diode:
           // A 0 V source in series is what makes the current measurable, which
           // is how an LED knows it is lit.
-          circArray.add('.model D_$keyStr D(Is=1e-14 N=1.5)');
+          // A part may give its own model numbers (`is`, `n`) — a 1N4148 and a
+          // 1N5819 differ by half a volt. Without them, the LED's.
+          circArray.add(
+            '.model D_$keyStr D(${_modelCard({'is': 1e-14, 'n': 1.5, ...spiceDef.parameters})})',
+          );
           circArray.add('D_$keyStr n_${nodeFor('n1')} n_int_$keyStr D_$keyStr');
           circArray.add('V_led_$keyStr n_int_$keyStr n_${nodeFor('n2')} 0');
           _ledKeys.add(node.key.toString());

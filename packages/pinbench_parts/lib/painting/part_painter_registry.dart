@@ -1,6 +1,6 @@
+import '../painters/axial_diode_painter.dart';
 import '../painters/battery_9v_painter.dart';
 import '../painters/cr2032_painter.dart';
-import '../painters/diode_1n4148_painter.dart';
 import '../painters/electrolytic_capacitor_painter.dart';
 import '../painters/ldr_painter.dart';
 import '../painters/rgb_led_painter.dart';
@@ -25,7 +25,13 @@ abstract final class PartPainterRegistry {
   static final Map<String, PartPainterBuilder> _painters = {
     'battery_9v': Battery9vPainter.new,
     'cr2032': Cr2032Painter.new,
-    'diode_1n4148': Diode1n4148Painter.new,
+    for (final (name, kind) in const [
+      ('diode_1n4007', DiodeKind.rectifier),
+      ('diode_1n4148', DiodeKind.switching),
+      ('diode_1n5819', DiodeKind.schottky),
+    ])
+      name: ({isOutline = false, properties}) =>
+          AxialDiodePainter(kind, isOutline: isOutline, properties: properties),
     'capacitor_electrolytic': ElectrolyticCapacitorPainter.new,
     'ldr': LdrPainter.new,
     'rgb_led': RgbLedPainter.new,
