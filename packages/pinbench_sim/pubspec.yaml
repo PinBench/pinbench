@@ -13,8 +13,8 @@ dependencies:
   # Not on pub.dev yet; pinned to the same commit as the app's pubspec.yaml.
   avr8_dart:
     git:
-      url: https://github.com/burhankhanzada/avr8_dart.git
-      ref: 00d14d21840886158291a54fb663201af2f33f3d
+      url: https://github.com/PinBench/avr8_dart.git
+      ref: db4870522a9b67f4b39fdd593fce19fadbe82474
   collection: ^1.19.1
   flutter:
     sdk: flutter

@@ -125,9 +125,9 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "00d14d21840886158291a54fb663201af2f33f3d"
-      resolved-ref: "00d14d21840886158291a54fb663201af2f33f3d"
-      url: "https://github.com/burhankhanzada/avr8_dart.git"
+      ref: db4870522a9b67f4b39fdd593fce19fadbe82474
+      resolved-ref: db4870522a9b67f4b39fdd593fce19fadbe82474
+      url: "https://github.com/PinBench/avr8_dart.git"
     source: git
     version: "0.2.0"
   boolean_selector:
