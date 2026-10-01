@@ -7,6 +7,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/wire_model.dart';
 import 'package:pinbench_parts/models/port_model.dart';
+import 'package:pinbench_parts/models/part_model.dart';
+import 'package:pinbench_parts/part_registry.dart';
 import 'package:pinbench_ui/ui/app_context_menu.dart';
 
 import '../../../core/telemetry/telemetry_providers.dart';
@@ -286,6 +288,46 @@ class CanvasController()
         UpdateNodeCommand(key, oldNode, newNode).execute(this);
       }
     }
+  }
+
+  /// Changes the part [key] is placed as to its configuration whose
+  /// choosing property is [value] — a transistor to another Type.
+  ///
+  /// Each wire on it moves to the pin doing the same job in the new
+  /// configuration (see `PartRegistry.pinCorrespondence`); one whose pin has
+  /// no counterpart is removed. One step to undo, wires and all.
+  void reconfigureNode(LocalKey key, String value) {
+    final oldNode = nodes.where((n) => n.key == key).firstOrNull;
+    final from = PartRegistry.getPart(oldNode?.part.definitionId ?? '');
+    final configuration = from?.configuration;
+    if (oldNode == null || from == null || configuration == null) return;
+    final to = PartRegistry.configurationFor(from, value);
+    if (to == null || to.id == from.id) return;
+
+    final pins = PartRegistry.pinCorrespondence(from, to);
+    PortLocation? moved(PortLocation end) {
+      if (end.nodeKey != key) return end;
+      final pin = pins[end.portId];
+      return pin == null ? null : PortLocation(nodeKey: key, portId: pin);
+    }
+
+    final oldWires = wires.where((w) => w.start.nodeKey == key || w.end.nodeKey == key).toList();
+    final newWires = [
+      for (final wire in oldWires)
+        if ((moved(wire.start), moved(wire.end)) case (final start?, final end?))
+          wire.copyWith(start: start, end: end),
+    ];
+    executeCommand(
+      ReplaceNodeCommand(
+        oldNode: oldNode,
+        newNode: oldNode.copyWith(
+          part: PartModel.fromDefinition(to),
+          properties: {...oldNode.properties, configuration.property: value},
+        ),
+        oldWires: oldWires,
+        newWires: newWires,
+      ),
+    );
   }
 
   void updateNode(

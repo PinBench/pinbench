@@ -58,17 +58,11 @@ flutter:
     - assets/parts/lm35/
     - assets/parts/mpu6050/
     - assets/parts/pir_sensor/
-    - assets/parts/power_nmos/
-    - assets/parts/power_pmos/
     - assets/parts/rgb_led/
     - assets/parts/seven_segment/
     - assets/parts/slide_switch/
     - assets/parts/slide_switch_spdt/
     - assets/parts/soil_moisture/
     - assets/parts/thermistor/
-    - assets/parts/tip120/
     - assets/parts/tmp36/
-    - assets/parts/transistor_nmos/
-    - assets/parts/transistor_npn/
-    - assets/parts/transistor_pmos/
-    - assets/parts/transistor_pnp/
+    - assets/parts/transistor/

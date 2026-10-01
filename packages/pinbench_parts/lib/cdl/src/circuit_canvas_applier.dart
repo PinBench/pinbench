@@ -5,6 +5,7 @@ import '../../models/component_instance.dart';
 import '../../models/part_model.dart';
 import '../../models/port_model.dart';
 import '../../models/wire_model.dart';
+import '../../part_registry.dart';
 import '../../parser_utils.dart';
 import '../circuit_colors.dart';
 
@@ -13,6 +14,19 @@ import '../circuit_colors.dart';
 /// `CircuitParser`; carries the regression-sensitive node-key-derivation
 /// logic verbatim — see the comment on [applyToCanvas] before changing it.
 abstract final class CircuitCanvasApplier {
+  /// [part] as the configuration its saved [properties] choose.
+  ///
+  /// A `.cdl` names a part by type — `Transistor` — and every configuration
+  /// of a part shares that name, so the token alone finds the default one;
+  /// the property its configurations are picked by says which it really is.
+  static PartModel _configured(PartModel part, Map<String, Object?>? properties) {
+    final definition = PartRegistry.getPart(part.definitionId ?? '');
+    final configuration = definition?.configuration;
+    if (definition == null || configuration == null) return part;
+    final chosen = PartRegistry.configurationFor(definition, properties?[configuration.property]);
+    return chosen == null || chosen.id == definition.id ? part : PartModel.fromDefinition(chosen);
+  }
+
   static ({List<ComponentInstance> nodes, List<WireModel> wires}) applyToCanvas(
     CircuitData data,
     List<PartModel> catalog,
@@ -30,11 +44,14 @@ abstract final class CircuitCanvasApplier {
         // `element.type` is the type token (`ArduinoUno` for "Arduino Uno");
         // resolve it back to a catalog part by comparing tokens. Aliases count,
         // so a file written under a part's old name still loads.
-        final partModel = catalog
-            .firstWhere(
-              (p) => [p.name, ...p.aliases].any((n) => ParserUtils.typeToken(n) == element.type),
-            )
-            .clone();
+        final partModel = _configured(
+          catalog
+              .firstWhere(
+                (p) => [p.name, ...p.aliases].any((n) => ParserUtils.typeToken(n) == element.type),
+              )
+              .clone(),
+          element.properties,
+        );
         // Derive the key DETERMINISTICALLY from the part id (which is unique
         // within a circuit) rather than minting a fresh UniqueKey() on every
         // parse. Node identity must survive a re-parse: the canvas<->code sync

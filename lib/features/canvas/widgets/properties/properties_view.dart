@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/part_model.dart';
+import 'package:pinbench_parts/part_registry.dart';
 import 'package:pinbench_ui/widgets/scrubbable_number_field.dart';
 import 'package:pinbench_ui/widgets/sidebar_scaffold.dart';
 import 'package:pinbench_ui/strings.dart';
@@ -60,6 +61,17 @@ class const PropertiesSidebarView({super.key}) extends ConsumerWidget {
 
   Widget _buildPropertiesList(CanvasController controller, ComponentInstance node, WidgetRef ref) {
     final comp = node.part;
+    final definition = PartRegistry.getPart(comp.definitionId ?? '');
+    // A `.pdl` part's editable properties are the ones it declares, each at
+    // its default until set; its map also carries the state a run writes,
+    // which is not the user's to edit. A built-in part's are every key but
+    // its runtime flags.
+    final properties = definition == null
+        ? node.properties.entries.where((e) => !ComponentProps.runtimeFlags.contains(e.key))
+        : [
+            for (final MapEntry(:key, value: declared) in definition.properties.entries)
+              MapEntry<String, dynamic>(key, node.properties[key] ?? declared.defaultValue),
+          ];
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.md),
@@ -116,13 +128,18 @@ class const PropertiesSidebarView({super.key}) extends ConsumerWidget {
             defaultValue: comp.size.height,
             onReset: () => controller.updateNode(node.key, clearCustomHeight: true),
           ),
-          if (node.properties.isNotEmpty) ...[
+          if (properties.isNotEmpty) ...[
             const AppDivider.section(),
-            // Runtime flags (isOn, isPressed, …) are simulation-owned, not
-            // user-editable, so they are filtered out of the editor.
-            ...node.properties.entries
-                .where((e) => !ComponentProps.runtimeFlags.contains(e.key))
-                .map((e) => PropertiesFieldBuilder.build(node, e, controller, ref)),
+            for (final property in properties)
+              PropertiesFieldBuilder.build(
+                node,
+                property,
+                controller,
+                ref,
+                options: definition?.properties[property.key]?.options ?? const [],
+                displayLabel: definition?.properties[property.key]?.label,
+                configures: definition?.configuration?.property == property.key,
+              ),
           ],
         ],
       ),

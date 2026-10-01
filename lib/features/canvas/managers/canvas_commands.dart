@@ -93,6 +93,48 @@ class UpdateNodeCommand(
   }
 }
 
+/// Swaps one node for a different part in its place — a transistor changed
+/// to another Type — together with the wires on it, as one step to undo.
+///
+/// [oldWires] are the wires that touched the node before; [newWires] are
+/// those that still do, moved to their new pins. A wire in the first and not
+/// the second had nowhere to go, and is removed until the swap is undone.
+class ReplaceNodeCommand({
+  required final ComponentInstance oldNode,
+  required final ComponentInstance newNode,
+  required final List<WireModel> oldWires,
+  required final List<WireModel> newWires,
+}) implements CanvasCommand {
+  @override
+  void execute(CanvasContext controller) => _apply(controller, oldNode, newNode, newWires);
+
+  @override
+  void undo(CanvasContext controller) => _apply(controller, newNode, oldNode, oldWires);
+
+  void _apply(
+    CanvasContext controller,
+    ComponentInstance from,
+    ComponentInstance to,
+    List<WireModel> wires,
+  ) {
+    final byId = {for (final wire in wires) wire.id: wire};
+    final touched = {
+      for (final wire in [...oldWires, ...newWires]) wire.id,
+    };
+    controller.updateState(
+      nodes: [for (final n in controller.nodes) n.key == from.key ? to : n],
+      // In place, so wires keep their paint order; any brought back by an
+      // undo go on top.
+      wires: [
+        for (final w in controller.wires)
+          if (!touched.contains(w.id)) w else ?byId.remove(w.id),
+        ...byId.values,
+      ],
+      selectedNodes: [for (final n in controller.selectedNodes) n.key == from.key ? to : n],
+    );
+  }
+}
+
 /// Adds a single wire.
 class AddWireCommand(final WireModel wire) implements CanvasCommand {
   @override

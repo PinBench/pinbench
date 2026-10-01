@@ -5,6 +5,7 @@ import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/part_model.dart';
 import 'package:pinbench_sim/models/simulation_state.dart';
 import 'package:pinbench_ui/widgets/color_select.dart';
+import 'package:pinbench_ui/ui/app_select.dart';
 import 'package:pinbench_ui/theme/tokens.dart';
 import 'package:pinbench_ui/ui/app_text_field.dart';
 import 'package:pinbench_ui/ui/app_slider.dart';
@@ -18,14 +19,32 @@ import '../../../simulation/providers/simulation_provider.dart';
 /// text field). Extracted from `PropertiesSidebarView._buildPropertiesList`
 /// so adding a new property type doesn't grow the view file.
 abstract final class PropertiesFieldBuilder {
+  /// A property a `.pdl` part declares as an enum comes with its [options],
+  /// and is shown under its [displayLabel]; [configures] says it picks which
+  /// configuration of the part this is.
   static Widget build(
     ComponentInstance node,
     MapEntry<String, dynamic> property,
     CanvasController controller,
-    WidgetRef ref,
-  ) {
+    WidgetRef ref, {
+    List<String> options = const [],
+    String? displayLabel,
+    bool configures = false,
+  }) {
     final label = property.key;
     final value = property.value.toString();
+    if (options.isNotEmpty) {
+      return _buildSelect(
+        node,
+        label,
+        displayLabel ?? label,
+        value,
+        options,
+        controller,
+        ref,
+        configures: configures,
+      );
+    }
     if (label == ComponentProps.color) {
       return _buildColorDropdown(node, label, value, controller);
     }
@@ -108,6 +127,45 @@ abstract final class PropertiesFieldBuilder {
           ),
         ),
       ],
+    ),
+  );
+
+  /// A `.pdl` enum property, as a dropdown of its options.
+  ///
+  /// The property a part's configurations are chosen by — a transistor's
+  /// Type — changes what the part *is*, not one of its values: it swaps the
+  /// placed part and moves its wires (see `CanvasController.reconfigureNode`),
+  /// and, mid-run, rebuilds the circuit around the new one.
+  static Widget _buildSelect(
+    ComponentInstance node,
+    String label,
+    String displayLabel,
+    String value,
+    List<String> options,
+    CanvasController controller,
+    WidgetRef ref, {
+    required bool configures,
+  }) => _buildFieldRow(
+    label: displayLabel,
+    child: SizedBox(
+      width: 180,
+      child: AppSelect<String>(
+        key: Key('${node.key}_$label'),
+        options: {for (final option in options) option: option},
+        value: value,
+        onChanged: (picked) {
+          if (picked == null || picked == value) return;
+          if (configures) {
+            controller.reconfigureNode(node.key, picked);
+            final simState = ref.read(simulationProvider);
+            if (simState == SimulationState.running || simState == SimulationState.paused) {
+              ref.read(simulationProvider.notifier).rebuildCircuit();
+            }
+          } else {
+            controller.updateNodeProperties(node.key, {...node.properties, label: picked});
+          }
+        },
+      ),
     ),
   );
 

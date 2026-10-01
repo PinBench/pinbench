@@ -1,3 +1,4 @@
+import 'package:pinbench_pdl/pinbench_pdl.dart';
 import 'package:flutter/widgets.dart';
 import 'package:pinbench_cdl/pinbench_cdl.dart';
 
@@ -57,15 +58,12 @@ abstract final class CircuitModelWriter {
     // `holdUntilMs` or a sensor's register settings would dirty the file the
     // same way, and hand the next run a stale value to start from.
     final definitionId = node.part.definitionId;
-    final declaredState = definitionId == null
-        ? const <String>{}
-        : PartRegistry.getPart(definitionId)?.state.keys.toSet() ?? const <String>{};
+    final definition = definitionId == null ? null : PartRegistry.getPart(definitionId);
+    final declaredState = definition?.state.keys.toSet() ?? const <String>{};
     final properties = <String, String>{
       for (final entry in node.properties.entries)
         if (!ComponentProps.runtimeFlags.contains(entry.key) && !declaredState.contains(entry.key))
-          CdlPropertyKeys.toCdl(entry.key): entry.key == ComponentProps.color
-              ? entry.value.toString().toLowerCase()
-              : _unitless(entry.value.toString()),
+          CdlPropertyKeys.toCdl(entry.key): _value(entry.key, entry.value.toString(), definition),
     };
 
     return PartData(
@@ -149,6 +147,20 @@ abstract final class CircuitModelWriter {
   /// The unit is presentation: the panel may show whatever the user typed, and
   /// `parseResistance` reads either form, so nothing downstream needs it
   /// written down.
+  /// [value] of property [key] as the `.cdl` writes it.
+  ///
+  /// A `.pdl` enum option is written as it is, quoted when it is more than a
+  /// word: one like `PNP (2N3906)` — a transistor's Type — would otherwise
+  /// lose its space to [_unitless], and its brackets would read back as a
+  /// point.
+  static String _value(String key, String value, PartDefinition? definition) {
+    if (key == ComponentProps.color) return value.toLowerCase();
+    if (definition?.properties[key]?.type == PdlPropertyType.enumeration) {
+      return RegExp(r'^[\w.+-]+$').hasMatch(value) ? value : '"$value"';
+    }
+    return _unitless(value);
+  }
+
   static String _unitless(String value) => value
       .replaceAll(RegExp('ohms?', caseSensitive: false), '')
       .replaceAll(RegExp('[ΩωΩ]'), '')

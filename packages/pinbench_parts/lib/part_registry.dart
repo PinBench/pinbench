@@ -62,16 +62,71 @@ class PartRegistry {
         assetDirectory: asset.substring(0, asset.lastIndexOf('/')),
       );
       if (result.diagnostics.isNotEmpty) diagnostics[asset] = result.diagnostics;
-      final def = result.definition;
-      if (def == null) continue;
-      if (_parts.containsKey(def.id)) {
-        diagnostics
-            .putIfAbsent(asset, () => [])
-            .add(PdlDiagnostic(0, 'duplicate part id "${def.id}" — the earlier one is kept'));
-        continue;
+      // One definition per configuration, for a part that has several.
+      for (final def in result.definitions) {
+        if (_parts.containsKey(def.id)) {
+          diagnostics
+              .putIfAbsent(asset, () => [])
+              .add(PdlDiagnostic(0, 'duplicate part id "${def.id}" — the earlier one is kept'));
+          continue;
+        }
+        _parts[def.id] = def;
       }
-      _parts[def.id] = def;
     }
+  }
+
+  /// The `.pdl` parts as the palette lists them: one entry per part, so a
+  /// part with configurations appears once, as its default one, found by the
+  /// names of all of them.
+  static List<PartModel> paletteParts() => [
+    for (final def in _parts.values)
+      if (def.configuration == null)
+        PartModel.fromDefinition(def)
+      else if (def.configuration!.isDefault)
+        PartModel.fromDefinition(
+          def,
+          aliases: {for (final c in configurationsOf(def)) ...c.aliases}.toList(),
+        ),
+  ];
+
+  /// Every configuration of [def]'s part, in the order its choosing
+  /// property lists them; just [def] for a part with one.
+  static List<PartDefinition> configurationsOf(PartDefinition def) {
+    final configuration = def.configuration;
+    if (configuration == null) return [def];
+    final options = def.properties[configuration.property]!.options;
+    return [
+      for (final option in options)
+        for (final sibling in _parts.values)
+          if (sibling.configuration case PartConfiguration(:final family, :final value)
+              when family == configuration.family && value == option)
+            sibling,
+    ];
+  }
+
+  /// The configuration of [def]'s part whose choosing property is [value],
+  /// or null.
+  static PartDefinition? configurationFor(PartDefinition def, Object? value) {
+    for (final sibling in configurationsOf(def)) {
+      if (sibling.configuration?.value == value) return sibling;
+    }
+    return null;
+  }
+
+  /// Where each of [from]'s pins goes when a placed part changes to [to]:
+  /// the pin with the same id if [to] has one, else the pin in the same place
+  /// in [to]'s PHYSICS mapping — so a collector becomes a drain, a base a
+  /// gate. A pin with neither is left out: its wires have nowhere to go.
+  static Map<String, String> pinCorrespondence(PartDefinition from, PartDefinition to) {
+    final fromRoles = from.spiceModel?.pinMapping.values.toList() ?? const <String>[];
+    final toRoles = to.spiceModel?.pinMapping.values.toList() ?? const <String>[];
+    return {
+      for (final pin in from.pins)
+        if (to.pin(pin.id) != null)
+          pin.id: pin.id
+        else if (fromRoles.indexOf(pin.id) case final i when i >= 0 && i < toRoles.length)
+          pin.id: toRoles[i],
+    };
   }
 
   static PartDefinition? getPart(String id) => _parts[id];

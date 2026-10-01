@@ -52,13 +52,17 @@ void main() {
   });
 
   group('PDL', () {
-    test('marks section keywords, shapes and strings', () {
-      final html = _html('PART "Resistor"\nSHAPES {\n  rect(0, 0, 10, 4)\n}', 'pdl');
+    test('marks directives, shapes and strings', () {
+      final html = _html(
+        'PART "Transistor"\nCONFIGURATION type "NPN"\nVISUALS\n  RECT 0px 0px 10px 4px',
+        'pdl',
+      );
 
       expect(html, contains('<span class="hljs-keyword">PART</span>'));
-      expect(html, contains('<span class="hljs-string">&quot;Resistor&quot;</span>'));
-      expect(html, contains('<span class="hljs-keyword">SHAPES</span>'));
-      expect(html, contains('<span class="hljs-type">rect</span>'));
+      expect(html, contains('<span class="hljs-string">&quot;Transistor&quot;</span>'));
+      expect(html, contains('<span class="hljs-keyword">CONFIGURATION</span>'));
+      expect(html, contains('<span class="hljs-keyword">VISUALS</span>'));
+      expect(html, contains('<span class="hljs-type">RECT</span>'));
     });
   });
 }

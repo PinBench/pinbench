@@ -111,6 +111,22 @@ class PartModel({
     'category': category.name,
   };
 
+  /// The model of a `.pdl` part, drawn by a `DSLComponentPainter`.
+  ///
+  /// [aliases] replaces the definition's own, for a palette entry that
+  /// stands for every configuration of a part and is found by any of their
+  /// names.
+  factory fromDefinition(PartDefinition def, {List<String>? aliases}) => PartModel(
+    name: def.name,
+    size: Size(def.visual.width, def.visual.height),
+    definitionId: def.id,
+    aliases: aliases ?? def.aliases,
+    category: PartCategory.fromName(def.category),
+    logic: def.logic,
+    painterBuilder: ({isOutline = false, properties}) =>
+        DSLComponentPainter(definition: def, isOutline: isOutline, properties: properties),
+  );
+
   factory fromJson(Map<String, dynamic> json) {
     final name = json['name'] as String;
     final definitionId = json['definitionId'] as String?;
@@ -125,17 +141,7 @@ class PartModel({
     // Then try PDL definitions
     if (definitionId != null) {
       final def = PartRegistry.getPart(definitionId);
-      if (def != null) {
-        return PartModel(
-          name: def.name,
-          size: Size(def.visual.width, def.visual.height),
-          definitionId: definitionId,
-          aliases: def.aliases,
-          logic: def.logic,
-          painterBuilder: ({isOutline = false, properties}) =>
-              DSLComponentPainter(definition: def, isOutline: isOutline, properties: properties),
-        );
-      }
+      if (def != null) return PartModel.fromDefinition(def);
     }
 
     // Fallback if missing
