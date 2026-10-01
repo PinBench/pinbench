@@ -42,6 +42,12 @@ abstract class SimulationRunnerBackend {
   /// which reads button state straight from the live canvas each frame.
   void forwardButtonStates(Map<String, bool> states);
 
+  /// Delivers properties the user changed mid-run to the engine.
+  void forwardPropertyEdits(Map<String, Map<String, dynamic>> byNode);
+
+  /// Delivers a part's own event — a remote's button press — to the engine.
+  void sendPartEvent(String nodeId, String event);
+
   /// Feeds one microphone reading into the running engine.
   void feedMicReading(double analogVoltage, {required bool isHigh});
 

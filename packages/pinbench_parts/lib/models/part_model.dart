@@ -171,6 +171,7 @@ abstract class PartNames {
   static const potentiometer = 'Potentiometer';
   static const servoMotor = 'Servo Motor';
   static const oledDisplay = 'OLED Display';
+  static const irRemote = 'IR Remote';
 }
 
 /// Canonical keys for `ComponentInstance.properties` (the per-component property
@@ -206,6 +207,10 @@ abstract class ComponentProps {
 
   /// Whether a push button is currently held down.
   static const isPressed = 'isPressed';
+
+  /// Which clickable region of a part is held down right now — a remote's
+  /// button, by the id its painter's [BaseComponentPainter.regionAt] gives.
+  static const pressedRegion = 'pressedRegion';
 
   /// Buzzer tone frequency in Hz.
   static const frequency = 'frequency';
@@ -253,6 +258,7 @@ abstract class ComponentProps {
   /// Includes legacy lowercase keys that may still be present in older `.cdl`
   /// templates (`color`, `drawGlow`) so they never render as editable fields.
   static const runtimeFlags = <String>{
+    pressedRegion,
     isOn,
     brightness,
     hasError,

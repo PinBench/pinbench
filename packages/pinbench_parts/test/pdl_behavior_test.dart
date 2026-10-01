@@ -268,9 +268,9 @@ PHYSICS resistor
       expect(sw.spiceModel!.pinMapping, {'a': 'a', 'b': 'b', 'c': 'common'});
     });
 
-    test('the IR receiver idles high: a pull-up from VCC to OUT', () async {
+    test('the IR receiver idles high on its pull-up from VCC to OUT', () async {
       final ir = await load('ir_receiver');
-      expect(ir.behavior, isEmpty, reason: 'no remote in the simulator, so nothing changes');
+      expect(ir.behavior, isEmpty, reason: 'the remote reaches OUT through the engine');
       expect(ir.spiceModel!.type, SpiceComponentType.resistor);
       expect(ir.spiceModel!.pinMapping, {'n1': 'vcc', 'n2': 'out'});
       expect(ir.spiceModel!.parameters['resistance'], 33000);

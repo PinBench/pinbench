@@ -63,6 +63,10 @@ class DSLComponentPainter({
   @override
   Rect? bodyRect(Size size) => _body?.bodyRect(size);
 
+  /// A painted body may have controls of its own.
+  @override
+  String? regionAt(Offset localPosition, Size size) => _body?.regionAt(localPosition, size);
+
   @override
   void paintComponent(Canvas canvas, Size size) {
     final context = _context;

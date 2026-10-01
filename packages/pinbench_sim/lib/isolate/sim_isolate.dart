@@ -106,6 +106,10 @@ class _SimWorker(final SendPort _toMain) {
           _mic.set(m.volts, isHigh: m.isHigh);
         case final ButtonStates b:
           _applyButtonStates(b.states);
+        case final PartEvent e:
+          _engine.handlePartEvent(e.nodeId, e.event);
+        case final PropertyEdits p:
+          _engine.applyPropertyEdits(p.byNode);
         case final RebuildCircuit r:
           _output.nodes = r.nodesJson.map(ComponentInstance.fromJson).toList();
           _output.wires = r.wiresJson.map(WireModel.fromJson).toList();

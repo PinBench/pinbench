@@ -1,10 +1,11 @@
 # IR receiver module (VS1838B), 38 kHz.
 #
 # A photodiode, an amplifier and a demodulator in one shielded package: aimed
-# at a remote, OUT pulses low with the bursts it sees. Simulated as what it is
-# with no remote in view — OUT held high by the module's internal pull-up of
-# about 33 kOhm to VCC, which is what a sketch reads before a button is pressed.
-# There is no infrared source in the simulator, so it never sees a burst.
+# at a remote, OUT pulses low with the bursts it sees. Electrically it is its
+# internal pull-up, about 33 kOhm from VCC to OUT, so OUT idles high; a press
+# on the IR Remote part plays that button's NEC code out of OUT, timed to the
+# cycle, into whichever Arduino pin it reaches — powered from 5 V or 3.3 V and
+# grounded, as a real one must be. IRremote decodes it.
 #
 # Drawn by the `ir_receiver` painter: vector paths generated from the
 # "IR Receiver" frame in the PinBench Parts Figma file by the Flutter Da Vinci

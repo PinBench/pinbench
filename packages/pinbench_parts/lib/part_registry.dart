@@ -16,6 +16,7 @@ import 'painters/ky037_mic_sensor_painter.dart';
 import 'painters/potentiometer_painter.dart';
 import 'painters/servo_motor_painter.dart';
 import 'painters/oled_display_painter.dart';
+import 'painters/ir_remote_painter.dart';
 
 /// The catalog of data-driven parts, loaded from the `.pdl` files under
 /// this package's `assets/parts/`. Built-in parts (the ones with a
@@ -252,5 +253,14 @@ final standardParts = <PartModel>[
     defaults: const {ComponentProps.i2cAddress: '0x3C', ComponentProps.pixelColor: 'White'},
     painterBuilder: ({isOutline = false, properties}) =>
         OledDisplayPainter(isOutline: isOutline, properties: properties),
+  ),
+  PartModel(
+    name: PartNames.irRemote,
+    size: IrRemotePainter.componentSize,
+    category: PartCategory.sensors,
+    // No pins and no physics: its buttons are pressed on the canvas, and the
+    // engine sends each press to the IR receivers — see `IrLink`.
+    painterBuilder: ({isOutline = false, properties}) =>
+        IrRemotePainter(isOutline: isOutline, properties: properties),
   ),
 ];

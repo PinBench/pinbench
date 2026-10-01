@@ -1,7 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+
+import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/part_model.dart';
 import 'package:pinbench_parts/models/port_model.dart';
+import 'package:pinbench_parts/part_registry.dart';
 
 import 'sim_io.dart';
 import 'simulation_output.dart';
@@ -114,6 +118,12 @@ class SimulationRunner({
     _onStop = onStop;
     _isSimulating = true;
     _isPaused = false;
+    _sentProperties
+      ..clear()
+      ..addAll({
+        for (final node in circuit.simulationNodes) nodeKeyToId(node.key): userProperties(node),
+      });
+    _pressedRegions.clear();
 
     await _backend.start(
       compiledHex,
@@ -180,13 +190,57 @@ class SimulationRunner({
   void onCanvasChanged() {
     if (!_isSimulating) return;
     final states = <String, bool>{};
+    final edits = <String, Map<String, dynamic>>{};
     for (final node in circuit.simulationNodes) {
+      _forwardRegionPress(node);
+      final id = nodeKeyToId(node.key);
+      final properties = userProperties(node);
+      if (!mapEquals(properties, _sentProperties[id])) {
+        _sentProperties[id] = properties;
+        edits[id] = properties;
+      }
       if (node.part.name != PartNames.pushButton) continue;
       states[nodeKeyToId(node.key)] =
           node.properties[ComponentProps.isPressed] == true ||
           node.properties[ComponentProps.isPressed] == 'true';
     }
     _backend.forwardButtonStates(states);
+    if (edits.isNotEmpty) _backend.forwardPropertyEdits(edits);
+  }
+
+  /// What the running engine was last told each part's own properties are.
+  final Map<String, Map<String, dynamic>> _sentProperties = {};
+
+  /// The properties of [node] a user sets — not what the simulation writes
+  /// back onto the canvas, which must not echo round to it as an edit: a
+  /// `.pdl` part's declared PROPERTIES, or a built-in part's every key but
+  /// its runtime flags.
+  @visibleForTesting
+  static Map<String, dynamic> userProperties(ComponentInstance node) {
+    final definitionId = node.part.definitionId;
+    final declared = definitionId == null
+        ? null
+        : PartRegistry.getPart(definitionId)?.properties.keys.toSet();
+    return {
+      for (final MapEntry(:key, :value) in node.properties.entries)
+        if (declared != null ? declared.contains(key) : !ComponentProps.runtimeFlags.contains(key))
+          key: value,
+    };
+  }
+
+  /// The region each part last had held down, so a press is sent once, when
+  /// it starts, rather than on every canvas change while it is held.
+  final Map<String, String?> _pressedRegions = {};
+
+  /// Sends a newly pressed region of [node] — a remote's button — to the
+  /// engine as a part event.
+  void _forwardRegionPress(ComponentInstance node) {
+    final id = nodeKeyToId(node.key);
+    final region = node.properties[ComponentProps.pressedRegion] as String?;
+    final previous = _pressedRegions[id];
+    if (region == previous) return;
+    _pressedRegions[id] = region;
+    if (region != null) _backend.sendPartEvent(id, region);
   }
 
   /// Tears down the backend entirely; call when the owning provider disposes.

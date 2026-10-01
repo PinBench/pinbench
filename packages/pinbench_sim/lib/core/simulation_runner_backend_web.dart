@@ -125,6 +125,13 @@ class SimulationRunnerBackendImpl({
   }
 
   @override
+  void sendPartEvent(String nodeId, String event) => _engine?.handlePartEvent(nodeId, event);
+
+  @override
+  void forwardPropertyEdits(Map<String, Map<String, dynamic>> byNode) =>
+      _engine?.applyPropertyEdits(byNode);
+
+  @override
   void feedMicReading(double analogVoltage, {required bool isHigh}) =>
       _mic.set(analogVoltage, isHigh: isHigh);
 
