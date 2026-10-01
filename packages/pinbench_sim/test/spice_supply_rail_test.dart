@@ -64,7 +64,7 @@ void main() {
 
     test('an LED and resistor across 5V light with no pin driven', () {
       final board = uno();
-      final r = resistor('r', '220');
+      final r = resistor('r');
       final diode = led();
       final bench = Bench(
         [board, r, diode],
