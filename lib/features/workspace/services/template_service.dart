@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pinbench_parts/models/component_instance.dart';
+import 'package:pinbench_parts/models/part_model.dart';
 import 'package:pinbench_parts/models/wire_model.dart';
 import 'package:pinbench_parts/cdl/circuit_parser.dart';
 
@@ -92,7 +93,14 @@ class TemplateService {
     return workspaceDir;
   }
 
-  Future<String> createBlankWorkspace() async {
+  Future<String> createBlankWorkspace() => _createUntitledWorkspace(const []);
+
+  /// A temporary workspace with [part] alone on the canvas and a blank sketch:
+  /// what a `/part/<name>` link opens, so a part's page can hand you the part.
+  Future<String> createWorkspaceWithPart(PartModel part) =>
+      _createUntitledWorkspace([ComponentInstance(position: Offset.zero, part: part)]);
+
+  Future<String> _createUntitledWorkspace(List<ComponentInstance> nodes) async {
     final base = await _fs.tempBasePath();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     const projectName = 'Untitled';
@@ -109,10 +117,9 @@ class TemplateService {
       'void loop() {\n  // put your main code here, to run repeatedly:\n}\n',
     );
 
-    // Create an empty circuit.cdl
     await _fs.writeString(
       p.join(workspaceDir, 'circuit.cdl'),
-      CircuitParser.generate(const [], const []),
+      CircuitParser.generate(nodes, const []),
     );
 
     return workspaceDir;
