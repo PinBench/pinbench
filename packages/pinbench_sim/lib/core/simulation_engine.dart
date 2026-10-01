@@ -297,14 +297,7 @@ class SimulationEngine({
       onDebugLog?.call('[Run] Warning: no board found on the canvas.');
     }
 
-    _board.onBuzzerFrequencyChanged = (freq) {
-      // Audio playback is the owner's responsibility (UI isolate) and is
-      // driven straight from the detector so a tone starts the moment it is
-      // heard. The on-canvas state is a part's own business: whichever part
-      // asked for detection reads this on its next frame.
-      onBuzzerFrequency?.call(freq);
-      _measurements.lastFrequency = freq;
-    };
+    _connectToneDetector();
 
     _loopDone = _runLoop(compiledHex, generation, onStop);
   }
@@ -790,7 +783,22 @@ class SimulationEngine({
     _indexNodes();
     _pickBoard();
     _buildCircuit();
+    _connectToneDetector();
 
     _board.loadHex(compiledHex, onSerialPrint: onSerialPrint);
+  }
+
+  /// Routes the board's tone detector to the parts and to the owner. Shared by
+  /// [start] and [prepareForFrameStepping]: without it a stepped run detects
+  /// every tone and tells no one, so a buzzer never sounds in a test.
+  void _connectToneDetector() {
+    _board.onBuzzerFrequencyChanged = (freq) {
+      // Audio playback is the owner's responsibility (UI isolate) and is
+      // driven straight from the detector so a tone starts the moment it is
+      // heard. The on-canvas state is a part's own business: whichever part
+      // asked for detection reads this on its next frame.
+      onBuzzerFrequency?.call(freq);
+      _measurements.lastFrequency = freq;
+    };
   }
 }

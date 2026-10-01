@@ -2,27 +2,21 @@
 // Edit components and wires here or on the canvas; both update together.
 Circuit {
     uno := ArduinoUno {
-        position: (-264, -168);
+        position: (-208, -176);
     }
-    servo := ServoMotor {
-        position: (128, -480);
+    buzzer := PiezoBuzzer {
+        position: (-32, -368);
+        flip: H;
     }
     Wire {
-        from: servo.vcc;
-        to: uno.5V;
+        from: uno.8;
+        to: buzzer.plus;
         color: red;
-        bends: [(212, 192), (-36, 192)];
     }
     Wire {
-        from: servo.signal;
-        to: uno.9;
-        color: orange;
-        bends: [(228, -176), (-36, -176)];
-    }
-    Wire {
-        from: servo.gnd;
-        to: uno.GND_2;
+        from: buzzer.minus;
+        to: uno.GND_1;
         color: black;
-        bends: [(196, 176), (-20, 176)];
+        bends: [(4, -204), (-60, -204)];
     }
 }
