@@ -4,12 +4,15 @@ import 'package:flutter/widgets.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pinbench_parts/models/part_model.dart';
 import 'package:pinbench_ui/strings.dart';
 import 'package:pinbench_ui/ui/app_toast.dart';
 
+import '../core/parts/part_registry_provider.dart';
 import '../core/telemetry/telemetry_providers.dart';
 import '../features/workspace/providers/workspace_files_provider.dart';
 import '../features/workspace/providers/workspace_loading_provider.dart';
+import '../features/workspace/services/part_link.dart';
 import '../features/workspace/services/share_link.dart';
 import '../features/workspace/services/template_service.dart';
 import '../layout/controllers/app_layout_controller.dart';
@@ -21,7 +24,8 @@ part 'router.g.dart';
 /// Routes shared by every window, on every platform.
 ///
 /// The app is a single-page IDE, so routing is intentionally thin: `/` is the
-/// welcome screen and `/t/<template>` deep-links a bundled example template.
+/// welcome screen, `/t/<template>` deep-links a bundled example template and
+/// `/part/<name>` opens an empty circuit with one part on it.
 /// On the web, navigating between them also drives the browser URL and
 /// back/forward history; native desktop (one [GoRouter] per
 /// `multiview_desktop` window, no URL bar) uses the same route definitions
@@ -56,6 +60,7 @@ GoRouter createAppRouter() => GoRouter(routes: $appRoutes);
   routes: [
     TypedGoRoute<HomeRoute>(path: '/'),
     TypedGoRoute<TemplateRoute>(path: '/t/:template'),
+    TypedGoRoute<PartRoute>(path: '/part/:part'),
     TypedGoRoute<ProjectRoute>(path: '/p/:projectId'),
   ],
 )
@@ -98,6 +103,17 @@ class const TemplateRoute({required final String template})
     with $TemplateRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) => _TemplateView(template: template);
+
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) =>
+      NoTransitionPage(child: build(context, state));
+}
+
+// `/part/<name>` — a fresh workspace with that part on the canvas. What the
+// website's part pages link to; see [partForLink] for which names it takes.
+class const PartRoute({required final String part}) extends GoRouteData with $PartRoute {
+  @override
+  Widget build(BuildContext context, GoRouterState state) => _PartView(part: part);
 
   @override
   Page<void> buildPage(BuildContext context, GoRouterState state) =>
@@ -200,6 +216,70 @@ Future<void> openTemplateWorkspace(ProviderContainer container, String template)
   } finally {
     container.read(workspaceLoadingProvider.notifier).end();
   }
+}
+
+/// `/part/<name>` — opens a temporary workspace holding the named part.
+class const _PartView({required final String part}) extends ConsumerStatefulWidget {
+  @override
+  ConsumerState<_PartView> createState() => _PartViewState();
+}
+
+class _PartViewState extends ConsumerState<_PartView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(analyticsProvider).logScreen('part');
+        // The container, not `ref`, for the same reason as [_TemplateView].
+        unawaited(
+          openPartWorkspace(
+            ProviderScope.containerOf(context, listen: false),
+            widget.part,
+            context: context,
+          ),
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => const HomePage();
+}
+
+/// Creates a temporary workspace with the part [name] names on its canvas,
+/// and dismisses the welcome screen. A name that is no part still opens a
+/// workspace, an empty one, and says why: the link was followed to build
+/// something, and a blank canvas is closer to that than the welcome screen.
+///
+/// Takes a [ProviderContainer] for the reason [openTemplateWorkspace] does;
+/// [context] is only for the toast, guarded by `context.mounted`.
+Future<void> openPartWorkspace(
+  ProviderContainer container,
+  String name, {
+  required BuildContext context,
+}) async {
+  container.read(workspaceLoadingProvider.notifier).begin();
+  PartModel? part;
+  try {
+    final catalog = await container.read(partRegistryProvider.future);
+    part = partForLink(catalog, name);
+    final templates = container.read(templateServiceProvider);
+    final path = part == null
+        ? await templates.createBlankWorkspace()
+        : await templates.createWorkspaceWithPart(part);
+    await container.read(workspaceFilesProvider.notifier).openWorkspace(path, isTemporary: true);
+    container.read(appLayoutControllerProvider).closeWelcome();
+  } finally {
+    container.read(workspaceLoadingProvider.notifier).end();
+  }
+  if (part != null || !context.mounted) return;
+  showAppToast(
+    context,
+    title: AppStrings.partLinkUnknownTitle,
+    message: AppStrings.partLinkUnknownMessage(name),
+    isError: true,
+  );
 }
 
 /// `/p/<projectId>` — downloads and opens the named cloud project.

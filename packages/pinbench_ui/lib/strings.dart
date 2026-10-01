@@ -53,6 +53,9 @@ class AppStrings._() {
   static const cloudProjectOpenFailedTitle = "Couldn't open this project";
   static const cloudProjectOpenFailedMessage =
       'Make sure you are signed in and have access to it, then try again.';
+  static const partLinkUnknownTitle = 'Part not found';
+  static String partLinkUnknownMessage(String name) =>
+      'No part is called "$name", so this opened an empty canvas instead.';
 
   // ── Share dialog ────────────────────────────────────────────────────────
   static const shareLinkSectionLabel = 'General access';
