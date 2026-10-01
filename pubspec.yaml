@@ -77,7 +77,7 @@ dependencies:
       # Pinned to a commit, not a branch: a moving ref lets `pub upgrade`
       # swap third-party code underneath us with no diff in this repo.
       # Bump deliberately. Was: branch main
-      ref: 1061e5f824186f73671495080fe6c37433b71a1c
+      ref: e17529d2dfac03624e20a618a60328636025991c
   # Only reads the running build's version for the update check. Held at 9.x:
   # every 10.x needs win32 ^6, and super_drag_and_drop 0.9.1 (the latest) still
   # caps it below 6 through device_info_plus. Recheck when that moves.

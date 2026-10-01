@@ -9,6 +9,7 @@ import '../painting/port_provider.dart';
 import '../models/part_model.dart';
 import '../models/port_model.dart';
 import '../painting/part_palette.dart';
+import '../models/part_properties.dart';
 
 /// Draws a 3-terminal rotary potentiometer: a round trimmer body (blue rim,
 /// dark dial face with tick marks and a pointer) with three legs exiting the
@@ -19,12 +20,7 @@ class PotentiometerPainter({final Map<String, dynamic>? properties, super.isOutl
     extends BaseComponentPainter
     with PortProvider {
   /// Wiper position clamped to 0.0–1.0 (defaults to mid-travel).
-  double get position {
-    final v = properties?[ComponentProps.potentiometerValue];
-    if (v is num) return v.toDouble().clamp(0.0, 1.0);
-    if (v is String) return (double.tryParse(v) ?? 0.5).clamp(0.0, 1.0);
-    return 0.5;
-  }
+  double get position => properties.level(ComponentProps.potentiometerValue, fallback: 0.5);
 
   // WH148 / B10K rotary pot, shaft excluded. The real body is 16 × 17 mm;
   // drawn slightly smaller so it does not dwarf the parts around it.

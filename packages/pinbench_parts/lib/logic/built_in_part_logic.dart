@@ -33,6 +33,7 @@ abstract final class BuiltInPartLogic {
     PartLogicRegistry.register('one_shot', oneShot);
     PartLogicRegistry.register('servo', servo);
     PartLogicRegistry.register('led', led);
+    PartLogicRegistry.register('led_array', ledArray);
     PartLogicRegistry.register('buzzer', buzzer);
     PartLogicRegistry.register('ssd1306', ssd1306);
     PartLogicRegistry.register('bh1750', I2cSensors.bh1750);
@@ -135,26 +136,60 @@ abstract final class BuiltInPartLogic {
     // Either leg may be the one wired to the board — a sketch can sink through
     // the cathode just as well as source through the anode.
     final pin = context.pins.connectedTo('anode') ?? context.pins.connectedTo('cathode');
-    final duty = !isOn ? 0.0 : (pin != null ? context.pins.duty(pin) : 1.0);
+    final (brightness, overdriven) = _die(context, amps, pin);
+    context.state[ComponentProps.isOn] = isOn;
+    context.state[ComponentProps.brightness] = brightness;
+    context.state[ComponentProps.hasError] = overdriven;
+  }
 
-    // Brightness tracks *average* current: how hard the LED is driven while
-    // conducting, times the fraction of the time it conducts.
-    //
-    // Duty alone used to decide this, which meant the series resistor changed
-    // nothing on screen — swapping 220 Ω for 100 Ω lit the LED identically, so
-    // the one mistake this simulator exists to catch was invisible. The engine
-    // drives SPICE to the full logic level whenever duty is non-zero, so
-    // `amps` is a stable peak rather than a PWM sample, and multiplying the
-    // two is safe.
+  /// How bright one LED die shows, and whether it is over-driven, from the
+  /// [amps] through it and the [pin] a sketch drives it from, if any.
+  ///
+  /// Brightness tracks *average* current: how hard the die is driven while
+  /// conducting, times the fraction of the time it conducts.
+  ///
+  /// Duty alone used to decide this, which meant the series resistor changed
+  /// nothing on screen — swapping 220 Ω for 100 Ω lit the LED identically, so
+  /// the one mistake this simulator exists to catch was invisible. The engine
+  /// drives SPICE to the full logic level whenever duty is non-zero, so
+  /// [amps] is a stable peak rather than a PWM sample, and multiplying the
+  /// two is safe. Over-driving is judged on the average too, so dimming with
+  /// PWM does not read as running it too hard.
+  static (double brightness, bool overdriven) _die(
+    PartLogicContext context,
+    double amps,
+    int? pin,
+  ) {
+    final duty = amps <= ledOnAmps ? 0.0 : (pin != null ? context.pins.duty(pin) : 1.0);
     final averageAmps = amps * duty;
     // Quantized so tiny sampling jitter does not spam canvas updates.
     final brightness = ((averageAmps / ledRatedAmps).clamp(0.0, 1.0) * 20).round() / 20;
+    return (brightness, averageAmps > ledRatedAmps);
+  }
 
-    context.state[ComponentProps.isOn] = isOn;
-    context.state[ComponentProps.brightness] = brightness;
-    // Judged on the average too, so dimming an LED with PWM does not read as
-    // over-driving it — only actually running it too hard does.
-    context.state[ComponentProps.hasError] = averageAmps > ledRatedAmps;
+  /// Any number of LEDs on one cathode — an RGB LED's colours, a 7-segment
+  /// display's segments — each lit from the current through its own die, as
+  /// [led] judges one.
+  ///
+  /// Reads the dies off the part's `PHYSICS ledArray` mapping, so a display
+  /// with any segment names needs no code: every role but a cathode (`k…`) is
+  /// a die, and its brightness, 0–1, is written under its pin's id.
+  static void ledArray(PartLogicContext context) {
+    final mapping = context.definition?.spiceModel?.pinMapping ?? const <String, String>{};
+    final cathode = mapping['k'];
+    var overdriven = false;
+    for (final MapEntry(key: role, value: pin) in mapping.entries) {
+      if (role.startsWith('k')) continue;
+      // Either end may be the pin a sketch drives: the die's own, or the
+      // shared cathode when it sinks through them all.
+      final drive =
+          context.pins.connectedTo(pin) ??
+          (cathode == null ? null : context.pins.connectedTo(cathode));
+      final (brightness, dieOverdriven) = _die(context, context.spice.pinCurrent(pin).abs(), drive);
+      context.state[pin] = brightness;
+      overdriven = overdriven || dieOverdriven;
+    }
+    context.state[ComponentProps.hasError] = overdriven;
   }
 
   /// A hobby servo: horn angle from the HIGH-pulse width on its signal line.

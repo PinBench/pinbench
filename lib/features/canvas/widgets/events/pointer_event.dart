@@ -121,7 +121,8 @@ class _CanvasPointerEventState extends State<CanvasPointerEvent> {
       final node = controller.nodes.firstWhereOrNull((n) => n.key == controller.interactingNodeKey);
       if (node != null) {
         final props = Map<String, dynamic>.from(node.properties)
-          ..[ComponentProps.isPressed] = false;
+          ..remove(ComponentProps.pressedRegion);
+        if (node.part.name == PartNames.pushButton) props[ComponentProps.isPressed] = false;
         controller.updateNodeProperties(node.key, props, recordHistory: false);
       }
       controller.interactingNodeKey = null;
@@ -275,12 +276,28 @@ class _CanvasPointerEventState extends State<CanvasPointerEvent> {
       }
     }
 
-    if (found != null && found.part.name == PartNames.pushButton) {
+    if (found == null) return;
+    if (_pressRegion(found, canvasPos)) return;
+    if (found.part.name == PartNames.pushButton) {
       controller.interactingNodeKey = found.key;
       final props = Map<String, dynamic>.from(found.properties);
       props[ComponentProps.isPressed] = true;
       controller.updateNodeProperties(found.key, props, recordHistory: false);
     }
+  }
+
+  /// Presses the clickable region of [node] under [canvasPos] — a remote's
+  /// button — if there is one there, and says whether it did. Released in
+  /// [onPointerUp].
+  bool _pressRegion(ComponentInstance node, Offset canvasPos) {
+    final painter = node.part.getPainter(properties: node.properties);
+    final region = painter?.regionAt(node.absoluteToLocal(canvasPos), node.baseSize);
+    if (region == null) return false;
+    controller.interactingNodeKey = node.key;
+    final props = Map<String, dynamic>.from(node.properties)
+      ..[ComponentProps.pressedRegion] = region;
+    controller.updateNodeProperties(node.key, props, recordHistory: false);
+    return true;
   }
 
   void _handleContinueWiring() {
@@ -332,6 +349,8 @@ class _CanvasPointerEventState extends State<CanvasPointerEvent> {
     // Check if clicked node is interactive
     if (controller.hoveredNode != null) {
       final node = controller.hoveredNode!;
+      // A control on the part — a remote's button — is pressed, not dragged.
+      if (_pressRegion(node, canvasPos)) return;
       if (node.part.name == PartNames.pushButton) {
         controller.interactingNodeKey = node.key;
         final props = Map<String, dynamic>.from(node.properties);

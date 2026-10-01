@@ -213,6 +213,51 @@ void main() {
     });
   });
 
+  group('the RGB LED, as an LED array', () {
+    late PartDefinition rgb;
+
+    setUpAll(() async {
+      const dir = 'packages/pinbench_parts/assets/parts/rgb_led';
+      rgb = PdlParser.parse(
+        await rootBundle.loadString('$dir/rgb_led.pdl'),
+        assetDirectory: dir,
+      ).definition!;
+    });
+
+    Map<String, Object?> frame(Map<String, double> amps) {
+      final state = <String, Object?>{};
+      PartLogicRegistry.find(rgb.logic!)!(
+        PartLogicContext(
+          definition: rgb,
+          state: state,
+          properties: const {},
+          physics: {},
+          elapsed: Duration.zero,
+          analog: (_) => 0,
+          pins: const _FakePins(),
+          spice: _FakeSpice(pins: amps),
+        ),
+      );
+      return state;
+    }
+
+    test('lights each colour from the current through its own die', () {
+      final state = frame({'red': 0.020, 'green': 0.010, 'blue': 0});
+      expect(state['red'], 1.0);
+      expect(state['green'], 0.5);
+      expect(state['blue'], 0.0);
+      expect(state[ComponentProps.hasError], isFalse);
+    });
+
+    test('a die below the on-threshold stays dark', () {
+      expect(frame({'red': BuiltInPartLogic.ledOnAmps / 2})['red'], 0.0);
+    });
+
+    test('over-driving any one colour is an error', () {
+      expect(frame({'blue': 0.040})[ComponentProps.hasError], isTrue);
+    });
+  });
+
   group('the servo, moved out of the engine', () {
     /// A board where the signal port reaches [pin] and reports [us].
     PartLogicContext servoContext({
@@ -599,11 +644,14 @@ void main() {
 
 /// No analog model — the parts under test here are driven by pins and
 /// properties.
-class const _FakeSpice({final double amps = 0}) implements PartSpiceApi {
+class const _FakeSpice({final double amps = 0, final Map<String, double> pins = const {}})
+    implements PartSpiceApi {
   @override
-  bool get isActive => amps != 0;
+  bool get isActive => amps != 0 || pins.isNotEmpty;
   @override
   double current() => amps;
+  @override
+  double pinCurrent(String pinId) => pins[pinId] ?? 0;
 }
 
 /// A board wired to one pin, reporting one pulse width.

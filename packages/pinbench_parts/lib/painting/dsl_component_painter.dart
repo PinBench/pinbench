@@ -7,14 +7,17 @@ import 'package:pinbench_pdl/pinbench_pdl.dart';
 
 import '../pdl_flutter.dart';
 import 'base_component_painter.dart';
+import 'part_painter_registry.dart';
+import 'part_text.dart';
 import 'pdl_svg_cache.dart';
 import 'port_provider.dart';
 import 'part_palette.dart';
 
 /// Draws a part that was described by a `.pdl` file rather than by Dart.
 ///
-/// Two layers, in order: the [PartDefinition.visual] SVG scaled to the part's
-/// footprint, then any vector `VISUALS` shapes over the top. That order is the
+/// Two layers, in order: the body — the [PartDefinition.visual] SVG scaled to
+/// the part's footprint, or the registered Dart painter its `PAINTER` line
+/// names — then any vector `VISUALS` shapes over the top. That order is the
 /// whole point of the format — a photograph-accurate body comes from artwork
 /// nobody had to write, and only the bits that *change* (a lit LED, a needle,
 /// a readout) cost a shape.
@@ -31,9 +34,10 @@ class DSLComponentPainter({
   super.isOutline = false,
 }) extends BaseComponentPainter with PortProvider {
   this
-    // Repaint when a piece of artwork finishes decoding: the first frame of a
-    // part is usually drawn before its SVG has arrived.
-    : super(repaint: PdlSvgCache.revision);
+    // Repaint when a piece of artwork finishes decoding, or a font loading:
+    // the first frame of a part is usually drawn before its SVG has arrived,
+    // and a painted body's text before its face has (see `PartText`).
+    : super(repaint: Listenable.merge([PdlSvgCache.revision, PartText.fontsChanged]));
 
   /// The context PDL expressions in this definition see.
   ///
@@ -46,10 +50,34 @@ class DSLComponentPainter({
     properties: {...definition.defaultProperties(), ...?properties},
   );
 
+  /// The painter a `PAINTER` line names, drawing the body in place of an SVG.
+  ///
+  /// Null for an SVG part, and for a name nothing registers: the shapes still
+  /// draw, and `pdl_bundled_parts_test.dart` fails on the missing name.
+  late final BaseComponentPainter? _body = switch (definition.visual.painter) {
+    final name? => PartPainterRegistry.find(
+      name,
+    )?.call(isOutline: isOutline, properties: properties),
+    null => null,
+  };
+
+  /// A painted body knows its own outline; an SVG part fills its bounds.
+  @override
+  Rect? bodyRect(Size size) => _body?.bodyRect(size);
+
+  /// A painted body may have controls of its own.
+  @override
+  String? regionAt(Offset localPosition, Size size) => _body?.regionAt(localPosition, size);
+
   @override
   void paintComponent(Canvas canvas, Size size) {
     final context = _context;
-    _paintArtwork(canvas, size);
+    final body = _body;
+    if (body != null) {
+      body.paintComponent(canvas, size);
+    } else {
+      _paintArtwork(canvas, size);
+    }
 
     for (final shape in definition.visual.shapes) {
       _paintShape(canvas, shape, context);

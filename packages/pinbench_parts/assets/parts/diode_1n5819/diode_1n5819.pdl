@@ -1,0 +1,29 @@
+# 1N5819 Schottky diode.
+#
+# A metal-semiconductor junction: it conducts at a few tenths of a volt where a
+# silicon diode needs about 0.7, which is why it guards supplies and catches
+# inductive kicks. PHYSICS only, with the 1N5819's model numbers.
+#
+# Drawn by the `diode_1n5819` painter: the rectifier's DO-41 paths from the
+# PinBench Parts Figma file, with a silver band.
+
+PART "Schottky Diode (1N5819)"
+ID diode_1n5819
+CATEGORY basic
+DESCRIPTION "1 A Schottky barrier diode, DO-41 — low forward drop"
+
+# Standing on its leads, anode up: the tips are four hole pitches apart on
+# the lattice, the cathode band toward the bottom one.
+SIZE 40px 72px
+PAINTER diode_1n5819
+
+PINS
+  anode    20px  4px   passive "A"
+  cathode  20px  68px  passive "K"
+
+PHYSICS diode
+  n1 = anode
+  n2 = cathode
+  # SPICE model parameters: saturation current and emission coefficient.
+  is = 31.7e-6
+  n = 1.373

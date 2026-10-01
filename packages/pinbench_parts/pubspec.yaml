@@ -47,14 +47,22 @@ flutter:
     - assets/parts/arduino/
     - assets/parts/battery_9v/
     - assets/parts/bh1750/
+    - assets/parts/capacitor_electrolytic/
     - assets/parts/cr2032/
+    - assets/parts/diode_1n4007/
     - assets/parts/diode_1n4148/
+    - assets/parts/diode_1n5819/
     - assets/parts/ds1307/
+    - assets/parts/ir_receiver/
     - assets/parts/ldr/
     - assets/parts/lm35/
     - assets/parts/mpu6050/
     - assets/parts/pir_sensor/
+    - assets/parts/rgb_led/
+    - assets/parts/seven_segment/
     - assets/parts/slide_switch/
+    - assets/parts/slide_switch_spdt/
     - assets/parts/soil_moisture/
     - assets/parts/thermistor/
     - assets/parts/tmp36/
+    - assets/parts/transistor/

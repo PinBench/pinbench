@@ -8,36 +8,23 @@ import '../painting/port_provider.dart';
 import '../models/part_model.dart';
 import '../models/port_model.dart';
 import '../painting/part_palette.dart';
+import '../models/part_properties.dart';
 
 /// Draws an LED, lit by `isOn` and dimmed by `brightness` (PWM duty), in the
 /// `Color` chosen in the property panel. Provides `anode`/`cathode` ports.
 class LEDPainter({final Map<String, dynamic>? properties, super.isOutline})
     extends BaseComponentPainter
     with PortProvider, PaintTreeComponent {
-  bool get isOn {
-    final value = properties?[ComponentProps.isOn];
-    if (value is bool) return value;
-    if (value is String) return value == 'true';
-    return false;
-  }
+  bool get isOn => properties.flag(ComponentProps.isOn);
 
   Color get color =>
       _getColorFromString(properties?[ComponentProps.color]?.toString()) ?? PartPalette.redAccent;
 
-  bool get hasError {
-    final value = properties?[ComponentProps.hasError];
-    if (value is bool) return value;
-    if (value is String) return value == 'true';
-    return false;
-  }
+  bool get hasError => properties.flag(ComponentProps.hasError);
 
   /// LED brightness (0.0–1.0) from the PWM duty cycle. Defaults to fully bright
   /// when the LED is on but no explicit brightness was set.
-  double get brightnessFraction {
-    final value = properties?[ComponentProps.brightness];
-    if (value is num) return value.toDouble().clamp(0.0, 1.0);
-    return 1.0;
-  }
+  double get brightnessFraction => properties.level(ComponentProps.brightness, fallback: 1);
 
   bool get drawGlow => true;
 

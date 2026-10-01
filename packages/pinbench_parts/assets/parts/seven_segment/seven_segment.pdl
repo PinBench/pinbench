@@ -1,0 +1,61 @@
+# 7-segment display, 0.56 inch, common cathode (5161AS pinout).
+#
+# Eight LEDs — segments a to g and the decimal point — on one cathode, which
+# comes out on two pins tied inside. PHYSICS builds a red die per segment and
+# the `led_array` logic lights each from the current through it. Like any LED,
+# every segment wants its own resistor; Arduino drives one per pin.
+#
+# Drawn by the `seven_segment` painter: vector paths generated from the
+# "7-Segment Display" frame in the PinBench Parts Figma file by the Flutter
+# Da Vinci plugin, a layer per segment, lit from the state below.
+
+PART "7-Segment Display"
+ALIAS "Seven Segment Display"
+ALIAS "5161AS"
+ID seven_segment
+CATEGORY displays
+DESCRIPTION "0.56-inch common-cathode 7-segment display with decimal point"
+
+# The pins come out under the body: two rows of five, one hole pitch apart and
+# six pitches between the rows, so it straddles a breadboard's centre channel.
+SIZE 104px 136px
+PAINTER seven_segment
+
+PINS
+  # top row, left to right
+  g     20px  20px   passive  "G"
+  f     36px  20px   passive  "F"
+  com1  52px  20px   passive  "COM"
+  a     68px  20px   passive  "A"
+  b     84px  20px   passive  "B"
+  # bottom row, left to right
+  e     20px  116px  passive  "E"
+  d     36px  116px  passive  "D"
+  com2  52px  116px  passive  "COM"
+  c     68px  116px  passive  "C"
+  dp    84px  116px  passive  "DP"
+
+STATE
+  # Each segment's brightness, 0-1, written by the logic, drawn by the painter.
+  a   decimal  0
+  b   decimal  0
+  c   decimal  0
+  d   decimal  0
+  e   decimal  0
+  f   decimal  0
+  g   decimal  0
+  dp  decimal  0
+
+LOGIC led_array
+
+PHYSICS ledArray
+  a = a
+  b = b
+  c = c
+  d = d
+  e = e
+  f = f
+  g = g
+  dp = dp
+  k = com1
+  k2 = com2

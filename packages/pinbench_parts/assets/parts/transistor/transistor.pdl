@@ -1,0 +1,177 @@
+# Transistor: one part in seven configurations, picked by its Type — the way
+# one LED is any colour and one resistor any value.
+#
+# What every configuration shares comes first; each CONFIGURATION block then
+# adds what makes it that transistor: its own ID (what a placed part saves),
+# package size, pins, drawing and model. Changing Type on the canvas swaps the
+# configuration and moves each wire to the pin in the same place in the new
+# PHYSICS mapping — collector to drain, base to gate, emitter to source.
+#
+# No BEHAVIOR: switching and amplifying are the solver's job, from the model
+# each PHYSICS names. A line like `bf = 300` under PHYSICS overrides one of
+# its parameters.
+#
+# Each drawing is a painter of vector paths generated from the PinBench Parts
+# Figma file by the Flutter Da Vinci plugin; only the drawing is Dart.
+
+PART "Transistor"
+ID transistor
+CATEGORY basic
+DESCRIPTION "Bipolar and MOSFET transistors, TO-92 and TO-220"
+
+PROPERTIES
+  type  enum  "NPN (2N3904)"  options:"NPN (2N3904),PNP (2N3906),N-MOSFET (2N7000),P-MOSFET (BS250),Darlington (TIP120),Power N-MOSFET (IRLZ44N),Power P-MOSFET (IRF9540N)"  label:"Type"
+
+
+# ---- TO-92: flat face forward, the legs' tips one hole pitch apart ----------
+
+CONFIGURATION type "NPN (2N3904)"
+ID transistor_npn
+ALIAS "NPN Transistor"
+ALIAS "2N3904"
+DESCRIPTION "Bipolar NPN transistor, TO-92 — collector, base, emitter"
+SIZE 40px 72px
+PAINTER transistor_npn
+
+PINS
+  collector 4px   68px  passive  "C"
+  base      20px  68px  passive  "B"
+  emitter   36px  68px  passive  "E"
+
+PHYSICS npn
+  c = collector
+  b = base
+  e = emitter
+
+
+CONFIGURATION type "PNP (2N3906)"
+ID transistor_pnp
+ALIAS "PNP Transistor"
+ALIAS "2N3906"
+DESCRIPTION "Bipolar PNP transistor, TO-92 — emitter, base, collector"
+SIZE 40px 72px
+PAINTER transistor_pnp
+
+PINS
+  emitter   4px   68px  passive  "E"
+  base      20px  68px  passive  "B"
+  collector 36px  68px  passive  "C"
+
+PHYSICS pnp
+  c = collector
+  b = base
+  e = emitter
+
+
+# A level-1 model near a 2N7000 (threshold 2.1 V); `vto` and `kp` under
+# PHYSICS override it. The body is tied to the source.
+CONFIGURATION type "N-MOSFET (2N7000)"
+ID transistor_nmos
+ALIAS "N-Channel MOSFET"
+ALIAS "NMOS"
+ALIAS "2N7000"
+DESCRIPTION "N-channel enhancement MOSFET, TO-92 — drain, gate, source"
+SIZE 40px 72px
+PAINTER transistor_nmos
+
+PINS
+  drain     4px   68px  passive  "D"
+  gate      20px  68px  passive  "G"
+  source    36px  68px  passive  "S"
+
+PHYSICS nmos
+  d = drain
+  g = gate
+  s = source
+
+
+# Near a BS250 (threshold -2.1 V).
+CONFIGURATION type "P-MOSFET (BS250)"
+ID transistor_pmos
+ALIAS "P-Channel MOSFET"
+ALIAS "PMOS"
+ALIAS "BS250"
+DESCRIPTION "P-channel enhancement MOSFET, TO-92 — source, gate, drain"
+SIZE 40px 72px
+PAINTER transistor_pmos
+
+PINS
+  source    4px   68px  passive  "S"
+  gate      20px  68px  passive  "G"
+  drain     36px  68px  passive  "D"
+
+PHYSICS pmos
+  d = drain
+  g = gate
+  s = source
+
+
+# ---- TO-220: tab up, the legs' tips one hole pitch apart --------------------
+
+# Two NPN transistors in one package, the first driving the second, so a few
+# milliamps from a pin switch amps — with about 1.4 V from base to emitter
+# rather than one junction's 0.7 V. The engine's defaults are the TIP120's,
+# internal 8 kOhm and 120 Ohm base resistors included.
+CONFIGURATION type "Darlington (TIP120)"
+ID tip120
+ALIAS "TIP120 Darlington"
+ALIAS "TIP120"
+DESCRIPTION "NPN Darlington power transistor, TO-220 — base, collector, emitter"
+SIZE 72px 88px
+PAINTER to220_tip120
+
+PINS
+  base      20px  84px  passive  "B"
+  collector 36px  84px  passive  "C"
+  emitter   52px  84px  passive  "E"
+
+PHYSICS npnDarlington
+  c = collector
+  b = base
+  e = emitter
+
+
+# The `nmos` element with power-part numbers: a 2 V threshold and a
+# transconductance near an IRLZ44N, tens of milliohms on at 5 V of gate drive.
+CONFIGURATION type "Power N-MOSFET (IRLZ44N)"
+ID power_nmos
+ALIAS "N-Channel Power MOSFET"
+ALIAS "IRLZ44N"
+DESCRIPTION "Logic-level N-channel power MOSFET, TO-220 — gate, drain, source"
+SIZE 72px 88px
+PAINTER to220_power_nmos
+
+PINS
+  gate      20px  84px  passive  "G"
+  drain     36px  84px  passive  "D"
+  source    52px  84px  passive  "S"
+
+PHYSICS nmos
+  d = drain
+  g = gate
+  s = source
+  vto = 2
+  kp = 15
+
+
+# Near an IRF9540N: a -3 V threshold, well under an ohm on with its gate
+# pulled 5 V below the source.
+CONFIGURATION type "Power P-MOSFET (IRF9540N)"
+ID power_pmos
+ALIAS "P-Channel Power MOSFET"
+ALIAS "IRF9540N"
+DESCRIPTION "P-channel power MOSFET, TO-220 — gate, drain, source"
+SIZE 72px 88px
+PAINTER to220_power_pmos
+
+PINS
+  gate      20px  84px  passive  "G"
+  drain     36px  84px  passive  "D"
+  source    52px  84px  passive  "S"
+
+PHYSICS pmos
+  d = drain
+  g = gate
+  s = source
+  vto = -3
+  kp = 1.2

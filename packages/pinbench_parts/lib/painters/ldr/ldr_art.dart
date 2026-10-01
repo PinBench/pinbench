@@ -1,0 +1,122 @@
+// Generated: vector paths exported from the PinBench Parts Figma file by
+// the Flutter Da Vinci plugin, one layer per colour, each shifted to where it
+// sits in the part's frame. Redraw the part there and regenerate this file
+// rather than editing the coordinates by hand.
+
+import 'dart:ui';
+
+import '../../painting/path_art.dart';
+
+/// The artwork `LdrPainter` draws.
+abstract final class LdrArt {
+  /// Tinned leads, running up behind the disc.
+  static final legs = PathArtPainter.layer(const Offset(18.375, 26), [
+    Path()
+      ..moveTo(0, 0)
+      ..lineTo(3.25, 0)
+      ..lineTo(3.25, 24.38)
+      ..cubicTo(3.25, 25.27, 2.52, 26, 1.63, 26)
+      ..cubicTo(0.73, 26, 0, 25.27, 0, 24.38)
+      ..lineTo(0, 0)
+      ..close(),
+    Path()
+      ..moveTo(16, 0)
+      ..lineTo(19.25, 0)
+      ..lineTo(19.25, 24.38)
+      ..cubicTo(19.25, 25.27, 18.52, 26, 17.63, 26)
+      ..cubicTo(16.73, 26, 16, 25.27, 16, 24.38)
+      ..lineTo(16, 0)
+      ..close(),
+  ]);
+
+  /// Ceramic face of the disc.
+  static final face = PathArtPainter.layer(const Offset(9.4, 0), [
+    Path()
+      ..moveTo(37.2, 16.15)
+      ..cubicTo(37.2, 25.07, 28.87, 32.3, 18.6, 32.3)
+      ..cubicTo(8.33, 32.3, 0, 25.07, 0, 16.15)
+      ..cubicTo(0, 7.23, 8.33, 0, 18.6, 0)
+      ..cubicTo(28.87, 0, 37.2, 7.23, 37.2, 16.15)
+      ..close(),
+  ]);
+
+  /// Rim and the cadmium-sulphide serpentine that gives an LDR its look.
+  static final track = PathArtPainter.layer(const Offset(9.4, 0), [
+    Path()
+      ..moveTo(34.75, 16.15)
+      ..cubicTo(34.75, 8.9, 27.86, 2.45, 18.6, 2.45)
+      ..cubicTo(9.34, 2.45, 2.45, 8.9, 2.45, 16.15)
+      ..cubicTo(2.45, 23.4, 9.34, 29.85, 18.6, 29.85)
+      ..lineTo(18.6, 32.3)
+      ..cubicTo(8.49, 32.3, 0.26, 25.29, 0.01, 16.57)
+      ..lineTo(0, 16.15)
+      ..cubicTo(0, 7.23, 8.33, 0, 18.6, 0)
+      ..cubicTo(28.87, 0, 37.2, 7.23, 37.2, 16.15)
+      ..lineTo(37.19, 16.57)
+      ..cubicTo(36.94, 25.29, 28.71, 32.3, 18.6, 32.3)
+      ..lineTo(18.6, 29.85)
+      ..cubicTo(27.86, 29.85, 34.75, 23.4, 34.75, 16.15)
+      ..close(),
+    Path()
+      ..moveTo(9.04, 24.19)
+      ..cubicTo(9.04, 22.44, 10.45, 21.03, 12.2, 21.03)
+      ..lineTo(25.6, 21.03)
+      ..cubicTo(26.07, 21.03, 26.46, 20.65, 26.46, 20.17)
+      ..cubicTo(26.46, 19.7, 26.08, 19.31, 25.6, 19.31)
+      ..lineTo(12.2, 19.31)
+      ..cubicTo(10.45, 19.31, 9.04, 17.89, 9.04, 16.15)
+      ..cubicTo(9.04, 14.4, 10.45, 12.99, 12.2, 12.99)
+      ..lineTo(25.6, 12.99)
+      ..cubicTo(26.07, 12.99, 26.46, 12.61, 26.46, 12.13)
+      ..cubicTo(26.46, 11.66, 26.08, 11.27, 25.6, 11.27)
+      ..lineTo(12.2, 11.27)
+      ..cubicTo(10.45, 11.27, 9.04, 9.85, 9.04, 8.11)
+      ..cubicTo(9.04, 6.36, 10.45, 4.95, 12.2, 4.95)
+      ..lineTo(24.45, 4.95)
+      ..lineTo(24.45, 2.6)
+      ..lineTo(26.75, 2.6)
+      ..lineTo(26.75, 6.1)
+      ..cubicTo(26.75, 6.74, 26.24, 7.25, 25.6, 7.25)
+      ..lineTo(12.2, 7.25)
+      ..cubicTo(11.72, 7.25, 11.34, 7.63, 11.34, 8.11)
+      ..cubicTo(11.34, 8.58, 11.72, 8.97, 12.2, 8.97)
+      ..lineTo(25.6, 8.97)
+      ..cubicTo(27.35, 8.97, 28.76, 10.39, 28.76, 12.13)
+      ..cubicTo(28.76, 13.88, 27.35, 15.29, 25.6, 15.29)
+      ..lineTo(12.2, 15.29)
+      ..cubicTo(11.72, 15.29, 11.34, 15.67, 11.34, 16.15)
+      ..cubicTo(11.34, 16.62, 11.72, 17.01, 12.2, 17.01)
+      ..lineTo(25.6, 17.01)
+      ..cubicTo(27.35, 17.01, 28.76, 18.43, 28.76, 20.17)
+      ..cubicTo(28.76, 21.92, 27.35, 23.33, 25.6, 23.33)
+      ..lineTo(12.2, 23.33)
+      ..cubicTo(11.72, 23.33, 11.34, 23.71, 11.34, 24.19)
+      ..cubicTo(11.34, 24.66, 11.72, 25.05, 12.2, 25.05)
+      ..lineTo(25.6, 25.05)
+      ..cubicTo(26.24, 25.05, 26.75, 25.56, 26.75, 26.2)
+      ..lineTo(26.75, 29.7)
+      ..lineTo(24.45, 29.7)
+      ..lineTo(24.45, 27.35)
+      ..lineTo(12.2, 27.35)
+      ..cubicTo(10.45, 27.35, 9.04, 25.94, 9.04, 24.19)
+      ..close(),
+  ]);
+
+  /// Contact dots either side of the serpentine.
+  static final contacts = PathArtPainter.layer(const Offset(14, 14.65), [
+    Path()
+      ..moveTo(3, 1.5)
+      ..cubicTo(3, 2.33, 2.33, 3, 1.5, 3)
+      ..cubicTo(0.67, 3, 0, 2.33, 0, 1.5)
+      ..cubicTo(0, 0.67, 0.67, 0, 1.5, 0)
+      ..cubicTo(2.33, 0, 3, 0.67, 3, 1.5)
+      ..close(),
+    Path()
+      ..moveTo(28, 1.5)
+      ..cubicTo(28, 2.33, 27.33, 3, 26.5, 3)
+      ..cubicTo(25.67, 3, 25, 2.33, 25, 1.5)
+      ..cubicTo(25, 0.67, 25.67, 0, 26.5, 0)
+      ..cubicTo(27.33, 0, 28, 0.67, 28, 1.5)
+      ..close(),
+  ]);
+}

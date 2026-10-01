@@ -1,0 +1,155 @@
+// Generated: vector paths exported from the PinBench Parts Figma file by
+// the Flutter Da Vinci plugin, one layer per colour, each shifted to where it
+// sits in the part's frame. Redraw the part there and regenerate this file
+// rather than editing the coordinates by hand.
+
+import 'dart:ui';
+
+import '../../painting/path_art.dart';
+
+/// The artwork `IrReceiverPainter` draws.
+abstract final class IrReceiverArt {
+  /// The three legs and their shoulders: OUT, GND, VCC.
+  static final legs = PathArtPainter.layer(const Offset(1.6, 38), [
+    Path()
+      ..moveTo(0.8, 0)
+      ..lineTo(4, 0)
+      ..lineTo(4, 28.4)
+      ..cubicTo(4, 29.28, 3.28, 30, 2.4, 30)
+      ..cubicTo(1.52, 30, 0.8, 29.28, 0.8, 28.4)
+      ..lineTo(0.8, 0)
+      ..close(),
+    Path()
+      ..moveTo(0, 0.6)
+      ..cubicTo(0, 0.27, 0.27, 0, 0.6, 0)
+      ..lineTo(4.2, 0)
+      ..cubicTo(4.53, 0, 4.8, 0.27, 4.8, 0.6)
+      ..lineTo(4.8, 4.4)
+      ..cubicTo(4.8, 4.73, 4.53, 5, 4.2, 5)
+      ..lineTo(0.6, 5)
+      ..cubicTo(0.27, 5, 0, 4.73, 0, 4.4)
+      ..lineTo(0, 0.6)
+      ..close(),
+    Path()
+      ..moveTo(16.8, 0)
+      ..lineTo(20, 0)
+      ..lineTo(20, 28.4)
+      ..cubicTo(20, 29.28, 19.28, 30, 18.4, 30)
+      ..cubicTo(17.52, 30, 16.8, 29.28, 16.8, 28.4)
+      ..lineTo(16.8, 0)
+      ..close(),
+    Path()
+      ..moveTo(16, 0.6)
+      ..cubicTo(16, 0.27, 16.27, 0, 16.6, 0)
+      ..lineTo(20.2, 0)
+      ..cubicTo(20.53, 0, 20.8, 0.27, 20.8, 0.6)
+      ..lineTo(20.8, 4.4)
+      ..cubicTo(20.8, 4.73, 20.53, 5, 20.2, 5)
+      ..lineTo(16.6, 5)
+      ..cubicTo(16.27, 5, 16, 4.73, 16, 4.4)
+      ..lineTo(16, 0.6)
+      ..close(),
+    Path()
+      ..moveTo(32.8, 0)
+      ..lineTo(36, 0)
+      ..lineTo(36, 28.4)
+      ..cubicTo(36, 29.28, 35.28, 30, 34.4, 30)
+      ..cubicTo(33.52, 30, 32.8, 29.28, 32.8, 28.4)
+      ..lineTo(32.8, 0)
+      ..close(),
+    Path()
+      ..moveTo(32, 0.6)
+      ..cubicTo(32, 0.27, 32.27, 0, 32.6, 0)
+      ..lineTo(36.2, 0)
+      ..cubicTo(36.53, 0, 36.8, 0.27, 36.8, 0.6)
+      ..lineTo(36.8, 4.4)
+      ..cubicTo(36.8, 4.73, 36.53, 5, 36.2, 5)
+      ..lineTo(32.6, 5)
+      ..cubicTo(32.27, 5, 32, 4.73, 32, 4.4)
+      ..lineTo(32, 0.6)
+      ..close(),
+  ]);
+
+  /// The tin shield.
+  static final shield = PathArtPainter.layer(const Offset(2, 4), [
+    Path()
+      ..moveTo(0, 1.5)
+      ..cubicTo(0, 0.67, 0.67, 0, 1.5, 0)
+      ..lineTo(34.5, 0)
+      ..cubicTo(35.33, 0, 36, 0.67, 36, 1.5)
+      ..lineTo(36, 34.5)
+      ..cubicTo(36, 35.33, 35.33, 36, 34.5, 36)
+      ..lineTo(1.5, 36)
+      ..cubicTo(0.67, 36, 0, 35.33, 0, 34.5)
+      ..lineTo(0, 1.5)
+      ..close(),
+  ]);
+
+  /// The shield's side tabs and the lip rolled across the lens.
+  static final shade = PathArtPainter.layer(const Offset(0, 25.5), [
+    Path()
+      ..moveTo(0, 1.1)
+      ..cubicTo(0, 0.77, 0.27, 0.5, 0.6, 0.5)
+      ..lineTo(2, 0.5)
+      ..cubicTo(2.33, 0.5, 2.6, 0.77, 2.6, 1.1)
+      ..lineTo(2.6, 6.9)
+      ..cubicTo(2.6, 7.23, 2.33, 7.5, 2, 7.5)
+      ..lineTo(0.6, 7.5)
+      ..cubicTo(0.27, 7.5, 0, 7.23, 0, 6.9)
+      ..lineTo(0, 1.1)
+      ..close(),
+    Path()
+      ..moveTo(37.4, 1.1)
+      ..cubicTo(37.4, 0.77, 37.67, 0.5, 38, 0.5)
+      ..lineTo(39.4, 0.5)
+      ..cubicTo(39.73, 0.5, 40, 0.77, 40, 1.1)
+      ..lineTo(40, 6.9)
+      ..cubicTo(40, 7.23, 39.73, 7.5, 39.4, 7.5)
+      ..lineTo(38, 7.5)
+      ..cubicTo(37.67, 7.5, 37.4, 7.23, 37.4, 6.9)
+      ..lineTo(37.4, 1.1)
+      ..close(),
+    Path()
+      ..moveTo(20, 0)
+      ..cubicTo(26.63, 0, 32, 1.57, 32, 3.5)
+      ..lineTo(32, 11.5)
+      ..lineTo(8, 11.5)
+      ..lineTo(8, 3.5)
+      ..cubicTo(8, 1.57, 13.37, 0, 20, 0)
+      ..close(),
+  ]);
+
+  /// The dark epoxy lens behind the window.
+  static final lens = PathArtPainter.layer(const Offset(8, 7), [
+    Path()
+      ..moveTo(12, 0)
+      ..cubicTo(18.63, 0, 24, 4.48, 24, 10)
+      ..lineTo(24, 23)
+      ..lineTo(0, 23)
+      ..lineTo(0, 10)
+      ..cubicTo(0, 4.48, 5.37, 0, 12, 0)
+      ..close(),
+  ]);
+
+  /// The cross strap over the lens.
+  static final straps = PathArtPainter.layer(const Offset(8.8998, 7.8998), [
+    Path()
+      ..moveTo(0.3, 0.34)
+      ..cubicTo(0.72, -0.1, 1.42, -0.12, 1.86, 0.3)
+      ..lineTo(21.86, 19.3)
+      ..cubicTo(22.3, 19.72, 22.32, 20.42, 21.9, 20.86)
+      ..cubicTo(21.48, 21.3, 20.78, 21.32, 20.34, 20.9)
+      ..lineTo(0.34, 1.9)
+      ..cubicTo(-0.1, 1.48, -0.12, 0.78, 0.3, 0.34)
+      ..close(),
+    Path()
+      ..moveTo(20.34, 0.3)
+      ..cubicTo(20.78, -0.12, 21.48, -0.1, 21.9, 0.34)
+      ..cubicTo(22.32, 0.78, 22.3, 1.48, 21.86, 1.9)
+      ..lineTo(1.86, 20.9)
+      ..cubicTo(1.42, 21.32, 0.72, 21.3, 0.3, 20.86)
+      ..cubicTo(-0.12, 20.42, -0.1, 19.72, 0.34, 19.3)
+      ..lineTo(20.34, 0.3)
+      ..close(),
+  ]);
+}

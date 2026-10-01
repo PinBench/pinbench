@@ -55,6 +55,14 @@ abstract class BaseComponentPainter({final bool isOutline = false, super.repaint
     return area;
   }
 
+  /// The clickable region of this part under [localPosition], or null.
+  ///
+  /// A part with controls of its own — a remote's buttons — names the one
+  /// under the pointer, and the canvas treats a press there as pressing it
+  /// rather than as picking the part up. Everywhere else, and for every part
+  /// with no controls, a press moves the part as usual.
+  String? regionAt(Offset localPosition, Size size) => null;
+
   /// How far around a leg still counts as the part. Half a cell: enough to
   /// grab a lead that's a couple of pixels wide, not so much that it swallows
   /// the neighbouring hole a full pitch away.

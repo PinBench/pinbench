@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:pinbench_parts/part_registry.dart';
+import 'package:pinbench_parts/pdl_flutter.dart';
 import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/wire_model.dart';
 import 'package:pinbench_parts/cdl/circuit_parser.dart';
@@ -249,6 +250,37 @@ Circuit {
       final names = applied.nodes.map((n) => n.part.name).toList();
       expect(names, contains(PartNames.arduinoUno));
       expect(names, contains(PartNames.led));
+    });
+
+    test('resolves an ALIAS, so a file written under an old name still loads', () async {
+      // The LDR shipped as "Photoresistor"; files saved then use that token.
+      TestWidgetsFlutterBinding.ensureInitialized();
+      await PartRegistry.initializeAsync();
+      final catalog = [
+        for (final def in PartRegistry.getAllParts())
+          PartModel(
+            name: def.name,
+            size: def.visual.size,
+            definitionId: def.id,
+            aliases: def.aliases,
+          ),
+      ];
+
+      final data = CircuitParser.parse('''
+Circuit {
+    ldr1 := Photoresistor {
+        position: (0, 0);
+        illumination: 80;
+    }
+}''');
+      final node = CircuitParser.applyToCanvas(data, catalog).nodes.single;
+      expect(node.part.definitionId, 'ldr');
+
+      expect(
+        CircuitParser.generate([node], const []),
+        allOf(contains('ldr1 := LDR {'), contains('illumination: 80;')),
+        reason: 'it is written back under its current name',
+      );
     });
 
     test('parses Wire from/to ports, color and bend tuples', () {

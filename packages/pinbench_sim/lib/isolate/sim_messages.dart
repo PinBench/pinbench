@@ -36,6 +36,15 @@ class MicReading(final double volts, {required final bool isHigh}) extends SimCo
 /// Current pressed-state of every push button, keyed by node-key string.
 class ButtonStates(final Map<String, bool> states) extends SimCommand;
 
+/// Properties the user changed on placed parts mid-run — a slide switch
+/// thrown, an LDR's light level — keyed by node-key string, each the part's
+/// user-set properties in full.
+class PropertyEdits(final Map<String, Map<String, dynamic>> byNode) extends SimCommand;
+
+/// Something a part's own control did mid-run — a remote's button pressed —
+/// for the node [nodeId] names.
+class PartEvent(final String nodeId, final String event) extends SimCommand;
+
 /// Rebuild the netlist + SPICE model from a fresh circuit snapshot (e.g. after
 /// a potentiometer is turned), without recompiling the sketch.
 class RebuildCircuit({

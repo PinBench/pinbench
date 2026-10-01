@@ -250,6 +250,32 @@ PHYSICS resistor
       expect(voltage({'voltage': -5}), 0, reason: 'a dead cell reads 0V, not a reversed one');
     });
 
+    test('the electrolytic takes microfarads and hands SPICE farads', () async {
+      final cap = await load('capacitor_electrolytic');
+      double farads(Map<String, dynamic> p) =>
+          PdlBehaviorEvaluator.physicsFor(cap, p)['capacitance']!;
+      expect(farads({}), closeTo(100e-6, 1e-12));
+      expect(farads({'capacitance': 470}), closeTo(470e-6, 1e-12));
+      expect(cap.spiceModel!.pinMapping, {'n1': 'positive', 'n2': 'negative'});
+    });
+
+    test('the SPDT switch throws toward whichever side its property names', () async {
+      final sw = await load('slide_switch_spdt');
+      double position(Map<String, dynamic> p) =>
+          PdlBehaviorEvaluator.physicsFor(sw, p)['position']!;
+      expect(position({}), 0, reason: 'it ships thrown to a');
+      expect(position({'position': 'B'}), 1);
+      expect(sw.spiceModel!.pinMapping, {'a': 'a', 'b': 'b', 'c': 'common'});
+    });
+
+    test('the IR receiver idles high on its pull-up from VCC to OUT', () async {
+      final ir = await load('ir_receiver');
+      expect(ir.behavior, isEmpty, reason: 'the remote reaches OUT through the engine');
+      expect(ir.spiceModel!.type, SpiceComponentType.resistor);
+      expect(ir.spiceModel!.pinMapping, {'n1': 'vcc', 'n2': 'out'});
+      expect(ir.spiceModel!.parameters['resistance'], 33000);
+    });
+
     test('the diode is PHYSICS-only — no rules to run', () async {
       final diode = await load('diode_1n4148');
       expect(diode.behavior, isEmpty);

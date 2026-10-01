@@ -156,6 +156,7 @@ class AVRBridge {
     _twi.eventHandler = _RecordingTwiHandler(_twi, _i2c);
 
     _freqDetector.reset();
+    _waveformEnds.clear();
     _loaded = true;
   }
 
@@ -323,6 +324,44 @@ class AVRBridge {
       _adc.channelValues[channel] = voltage;
     }
   }
+
+  /// The cycle each waveform-driven input pin's waveform ends on.
+  static final Map<int, int> _waveformEnds = {};
+
+  /// Plays [levels] into input [pin], each `(isHigh, microseconds)` holding
+  /// for its time, starting now — or [gapUs] after any waveform already
+  /// playing on the pin, so presses queue rather than garble one another.
+  ///
+  /// Every edge is a CPU clock event, so it lands on its exact cycle however
+  /// the frame loop slices time: a 562 µs IR mark is 9000 cycles here, where a
+  /// frame is a quarter of a million. Pin-change and external interrupts fire
+  /// on each edge as they would for a real signal. While it plays, the pin is
+  /// [isPinDriven], and the per-frame input update leaves it alone.
+  static void playWaveform(int pin, List<(bool, double)> levels, {double gapUs = 0}) {
+    if (!_loaded) return;
+    final cpu = _cpu;
+    final previous = _waveformEnds[pin];
+    final start = previous == null || previous <= cpu.cycles
+        ? cpu.cycles
+        : previous + 1 + (gapUs * _cyclesPerUs).round();
+    var at = start - cpu.cycles;
+    for (final (isHigh, us) in levels) {
+      cpu.addClockEvent(() => setDigitalPin(pin, isHigh: isHigh), at);
+      at += (us * _cyclesPerUs).round();
+    }
+    _waveformEnds[pin] = cpu.cycles + at;
+  }
+
+  /// Whether a [playWaveform] waveform is still driving input [pin].
+  static bool isPinDriven(int pin) {
+    final end = _waveformEnds[pin];
+    if (end == null) return false;
+    if (_loaded && _cpu.cycles < end) return true;
+    _waveformEnds.remove(pin);
+    return false;
+  }
+
+  static const _cyclesPerUs = 16; // 16 MHz clock
 
   static void setDigitalPin(int pin, {required bool isHigh}) {
     if (!_loaded) return;

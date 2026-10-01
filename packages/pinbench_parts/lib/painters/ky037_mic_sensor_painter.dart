@@ -11,18 +11,14 @@ import '../models/part_model.dart';
 import '../models/port_model.dart';
 import '../painting/painter_text_styles.dart';
 import '../painting/part_palette.dart';
+import '../models/part_properties.dart';
 
 /// Draws a KY-037 microphone sound sensor, with its digital-out LED reflecting
 /// `isDigitalHigh`. Exposes analog (`A0`) and digital (`D0`) output ports.
 class Ky037MicSensorPainter({final Map<String, dynamic>? properties, super.isOutline})
     extends BaseComponentPainter
     with PortProvider, PaintTreeComponent {
-  bool get isDigitalHigh {
-    final value = properties?[ComponentProps.isDigitalHigh];
-    if (value is bool) return value;
-    if (value is String) return value == 'true';
-    return false;
-  }
+  bool get isDigitalHigh => properties.flag(ComponentProps.isDigitalHigh);
 
   // KY-037 module: a real 36 × 15 mm board, drawn end-on with the mic capsule
   // at the top and the 4-pin header at the bottom — so the module's length

@@ -290,6 +290,8 @@ class const _NoSpice() implements PartSpiceApi {
   bool get isActive => false;
   @override
   double current() => 0;
+  @override
+  double pinCurrent(String pinId) => 0;
 }
 
 int _crc8(List<int> bytes) {

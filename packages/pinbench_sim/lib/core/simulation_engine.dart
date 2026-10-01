@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 
 import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/part_model.dart';
+import 'package:pinbench_parts/models/port_model.dart';
+import 'package:pinbench_parts/logic/ir_remote_keys.dart';
 import 'package:pinbench_parts/part_registry.dart';
 
 import 'sim_log.dart';
@@ -14,6 +16,7 @@ import 'updaters/analog_io_frame_updater.dart';
 import 'updaters/digital_io_frame_updater.dart';
 import 'engine_pin_api.dart';
 import 'updaters/part_behavior_frame_updater.dart';
+import 'updaters/ir_link.dart';
 import 'updaters/mic_frame_updater.dart';
 import 'simulation_output.dart';
 import 'spice_engine.dart';
@@ -303,6 +306,44 @@ class SimulationEngine({
   /// Serial.available). No-op when the simulation is not running.
   void sendSerialInput(String text) {
     if (_isSimulating) AVRBridge.queueSerialInput(text);
+  }
+
+  /// Applies properties the user changed mid-run to the engine's own copy of
+  /// each part, [byNode] keyed by node id.
+  ///
+  /// The engine holds copies — the isolate's, rehydrated at start, or on the
+  /// web the node objects as they were when the circuit was indexed, which the
+  /// canvas has since replaced — so an edit reaches it only this way. Merged
+  /// rather than replaced: what the simulation itself wrote stays.
+  void applyPropertyEdits(Map<String, Map<String, dynamic>> byNode) {
+    if (!_isSimulating) return;
+    for (final node in _nodesByKey.values) {
+      final edits = byNode[nodeKeyToId(node.key)];
+      if (edits != null) node.properties.addAll(edits);
+    }
+  }
+
+  /// Something a part's own control did — a remote's [event] button pressed —
+  /// for the part [nodeId] names. No-op when the simulation is not running.
+  void handlePartEvent(String nodeId, String event) {
+    if (!_isSimulating) return;
+    final node = _nodesByKey.values.where((n) => nodeKeyToId(n.key) == nodeId).firstOrNull;
+    if (node == null) return;
+    if (node.part.name == PartNames.irRemote) {
+      final command = IrRemoteKeys.commands[event];
+      if (command == null) return;
+      final pins = IrLink.transmit(
+        address: IrRemoteKeys.address,
+        command: command,
+        nodes: _nodesByKey.values.toList(),
+        netlist: _netlist,
+        unoNode: _unoNode,
+      );
+      onDebugLog?.call(
+        '[Debug] IR $event (0x${command.toRadixString(16).padLeft(2, '0')}) → '
+        '${pins.isEmpty ? 'no powered receiver' : 'pin ${pins.join(', ')}'}',
+      );
+    }
   }
 
   void pause() {

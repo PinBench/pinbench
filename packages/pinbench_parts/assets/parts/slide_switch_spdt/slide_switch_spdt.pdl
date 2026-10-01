@@ -1,0 +1,37 @@
+# SPDT slide switch (SS12D00).
+#
+# The middle pin connects to one side or the other: slide the lever toward
+# `a` and common meets a, toward `b` and it meets b. Built as two contacts from
+# common, one closed (milliohms) and one open (a gigaohm), which the
+# `position` rule throws together — so it switches mid-run without rebuilding
+# the circuit.
+#
+# Drawn by the `slide_switch_spdt` painter: vector paths generated from the
+# "Slide Switch SPDT" frame in the PinBench Parts Figma file by the Flutter
+# Da Vinci plugin, the lever moved to match the property.
+
+PART "Slide Switch (SPDT)"
+ALIAS "SS12D00"
+ID slide_switch_spdt
+CATEGORY basic
+DESCRIPTION "Single-pole double-throw slide switch — the middle pin meets either side"
+
+# Standing on its pins, one hole pitch apart: a, common, b.
+SIZE 72px 88px
+PAINTER slide_switch_spdt
+
+PINS
+  a       20px  84px  passive  "A"
+  common  36px  84px  passive  "C"
+  b       52px  84px  passive  "B"
+
+PROPERTIES
+  position  enum  A  options:"A,B"  label:"Lever toward"
+
+BEHAVIOR
+  physics.position = prop.position == "B" ? 1 : 0
+
+PHYSICS spdt
+  a = a
+  b = b
+  c = common

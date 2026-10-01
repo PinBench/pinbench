@@ -79,6 +79,12 @@ class PartModel({
   /// carrying it. Empty for every part that reads its own defaults from the
   /// painter, which is all of the older ones.
   final Map<String, dynamic> defaults = const {},
+
+  /// Other names the part goes by, from its `.pdl`'s `ALIAS` lines —
+  /// `Photoresistor` for the `LDR`. The palette search matches them, and so
+  /// does a `.cdl` type token, which keeps a file written under a part's old
+  /// name loading. The part is always *written* under [name].
+  final List<String> aliases = const [],
 }) {
   BaseComponentPainter? getPainter({bool isOutline = false, Map<String, dynamic>? properties}) =>
       painterBuilder?.call(isOutline: isOutline, properties: properties);
@@ -90,6 +96,7 @@ class PartModel({
     definitionId: definitionId,
     category: category,
     defaults: defaults,
+    aliases: aliases,
     // Every placed instance is a clone of a catalog entry, so dropping this
     // here would mean a part behaves in the palette and not on the canvas.
     logic: logic,
@@ -103,6 +110,22 @@ class PartModel({
     'definitionId': definitionId,
     'category': category.name,
   };
+
+  /// The model of a `.pdl` part, drawn by a `DSLComponentPainter`.
+  ///
+  /// [aliases] replaces the definition's own, for a palette entry that
+  /// stands for every configuration of a part and is found by any of their
+  /// names.
+  factory fromDefinition(PartDefinition def, {List<String>? aliases}) => PartModel(
+    name: def.name,
+    size: Size(def.visual.width, def.visual.height),
+    definitionId: def.id,
+    aliases: aliases ?? def.aliases,
+    category: PartCategory.fromName(def.category),
+    logic: def.logic,
+    painterBuilder: ({isOutline = false, properties}) =>
+        DSLComponentPainter(definition: def, isOutline: isOutline, properties: properties),
+  );
 
   factory fromJson(Map<String, dynamic> json) {
     final name = json['name'] as String;
@@ -118,16 +141,7 @@ class PartModel({
     // Then try PDL definitions
     if (definitionId != null) {
       final def = PartRegistry.getPart(definitionId);
-      if (def != null) {
-        return PartModel(
-          name: def.name,
-          size: Size(def.visual.width, def.visual.height),
-          definitionId: definitionId,
-          logic: def.logic,
-          painterBuilder: ({isOutline = false, properties}) =>
-              DSLComponentPainter(definition: def, isOutline: isOutline, properties: properties),
-        );
-      }
+      if (def != null) return PartModel.fromDefinition(def);
     }
 
     // Fallback if missing
@@ -163,6 +177,7 @@ abstract class PartNames {
   static const potentiometer = 'Potentiometer';
   static const servoMotor = 'Servo Motor';
   static const oledDisplay = 'OLED Display';
+  static const irRemote = 'IR Remote';
 }
 
 /// Canonical keys for `ComponentInstance.properties` (the per-component property
@@ -198,6 +213,10 @@ abstract class ComponentProps {
 
   /// Whether a push button is currently held down.
   static const isPressed = 'isPressed';
+
+  /// Which clickable region of a part is held down right now — a remote's
+  /// button, by the id its painter's [BaseComponentPainter.regionAt] gives.
+  static const pressedRegion = 'pressedRegion';
 
   /// Buzzer tone frequency in Hz.
   static const frequency = 'frequency';
@@ -245,6 +264,7 @@ abstract class ComponentProps {
   /// Includes legacy lowercase keys that may still be present in older `.cdl`
   /// templates (`color`, `drawGlow`) so they never render as editable fields.
   static const runtimeFlags = <String>{
+    pressedRegion,
     isOn,
     brightness,
     hasError,

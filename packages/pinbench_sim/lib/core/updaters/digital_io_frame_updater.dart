@@ -89,6 +89,9 @@ abstract final class DigitalIoFrameUpdater {
         // Do not force external voltage if the Arduino code configured this pin as
         // OUTPUT — it would fight the driver and cause high-frequency toggling.
         if (AVRBridge.isPinOutput(pin)) continue;
+        // Nor while a scheduled waveform — an IR code — is playing into it:
+        // its edges land mid-frame, and this would undo them every frame.
+        if (AVRBridge.isPinDriven(pin)) continue;
 
         AVRBridge.setDigitalPin(pin, isHigh: isMicConnected ? micIsDigitalHigh : !isGrounded);
       }

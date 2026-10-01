@@ -1,23 +1,28 @@
-# Photoresistor (LDR) — the reference data-driven part.
+# LDR (photoresistor) — the reference data-driven part.
 #
-# Everything here is data: the body is the SVG beside this file, and the
-# electrical behaviour is three lines of BEHAVIOR. No Dart.
+# Everything about how it behaves is data: pins, properties, and three lines
+# of BEHAVIOR. Only the drawing is Dart — the `ldr` painter, vector paths
+# generated from the "LDR" frame in the PinBench Parts Figma file by the
+# Flutter Da Vinci plugin — which is the pattern for a part whose look does
+# not change while it runs.
 
-PART "Photoresistor"
+PART "LDR"
+# The name this part shipped under, so circuits saved with it still load.
+ALIAS "Photoresistor"
 ID ldr
 CATEGORY sensors
 DESCRIPTION "Light-dependent resistor — resistance falls as light rises"
 
-# 12.7mm x 6.35mm, which is 5 x 2.5 hole pitches, so the leads land on the
-# lattice at both ends.
-SIZE 12.7mm 6.35mm
+# The disc standing on its two leads, which end on the lattice one hole pitch
+# apart — the ceramic capacitor's bounds.
+SIZE 56px 52px
 
-SVG "ldr.svg"
+PAINTER ldr
 
 PINS
-  # id  x       y      role     label
-  a     4px     20px   passive  "A"
-  b     68px    20px   passive  "B"
+  # id  x      y      role     label
+  a     20px   52px   passive  "A"
+  b     36px   52px   passive  "B"
 
 PROPERTIES
   darkResistance  number  1000000  unit:"Ω"  label:"Dark resistance"

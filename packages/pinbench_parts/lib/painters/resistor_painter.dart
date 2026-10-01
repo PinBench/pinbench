@@ -9,6 +9,7 @@ import 'parts/component_legs_node.dart';
 import '../painting/port_provider.dart';
 import '../models/part_model.dart';
 import '../models/port_model.dart';
+import '../models/part_properties.dart';
 
 /// Draws a resistor, with colour bands derived from its `Resistance` value
 /// (see `ResistorCalculator`). Provides `left`/`right` ports.
@@ -18,20 +19,9 @@ class ResistorPainter({final Map<String, dynamic>? properties, super.isOutline})
   String get resistanceString => (properties?[ComponentProps.resistance] ?? '220').toString();
   double get resistance => ResistorCalculator.parseResistanceValue(resistanceString) ?? 220.0;
 
-  double get tolerance {
-    final t = properties?['tolerance'];
-    if (t is double) return t;
-    if (t is String) return double.tryParse(t) ?? 5.0;
-    if (t is int) return t.toDouble();
-    return 5.0;
-  }
+  double get tolerance => properties.number('tolerance', fallback: 5);
 
-  int get bandCount {
-    final b = properties?['bandCount'];
-    if (b is int) return b;
-    if (b is String) return int.tryParse(b) ?? 4;
-    return 4;
-  }
+  int get bandCount => properties.number('bandCount', fallback: 4).toInt();
 
   static const double gridCellSize = GridSystem.cellSize;
   static const double gridCellCenter = GridSystem.cellCenter;

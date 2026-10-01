@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <line x1="4" y1="68" x2="26" y2="68" stroke="#9aa0a6" stroke-width="4"/>
-  <line x1="102" y1="68" x2="124" y2="68" stroke="#9aa0a6" stroke-width="4"/>
-  <circle cx="64" cy="68" r="40" fill="#2b2f33" stroke="#4a5157" stroke-width="3"/>
-  <circle cx="64" cy="68" r="31" fill="#c9ced3" stroke="#9aa0a6" stroke-width="2"/>
-  <text x="64" y="64" font-family="monospace" font-size="13" fill="#2b2f33" text-anchor="middle">CR2032</text>
-  <text x="64" y="80" font-family="monospace" font-size="15" fill="#2b2f33" text-anchor="middle">+</text>
-</svg>
