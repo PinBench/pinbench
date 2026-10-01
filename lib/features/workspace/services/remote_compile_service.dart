@@ -5,12 +5,14 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 
+import 'package:pinbench_parts/models/board_profile.dart';
+
 import '../data/workspace_fs.dart';
 import 'compiler_service.dart' show CompilerException;
 
 /// Web only: POSTs a sketch's source files to a remote `arduino-cli` compile
-/// service (the browser cannot run `arduino-cli` locally) and returns the
-/// Intel-HEX it produces. Throws [CompilerException] carrying the compiler
+/// service (the browser cannot run `arduino-cli` locally), built for the board
+/// on the canvas, and returns the Intel-HEX it produces. Throws [CompilerException] carrying the compiler
 /// output on failure (shown in the Problems pane / serial monitor).
 abstract final class RemoteCompileService {
   static const _sourceExtensions = {'.ino', '.h', '.hpp', '.c', '.cpp', '.s'};
@@ -27,7 +29,11 @@ abstract final class RemoteCompileService {
   // ignore: do_not_use_environment
   static const _apiToken = String.fromEnvironment('COMPILE_API_TOKEN');
 
-  static Future<String> compile(String directoryPath, String compileApiUrl) async {
+  static Future<String> compile(
+    String directoryPath,
+    String compileApiUrl, {
+    BoardProfile board = BoardProfile.arduinoUno,
+  }) async {
     final fs = WorkspaceFs();
     final sketch = p.basename(directoryPath);
     final files = <String, String>{};
@@ -53,7 +59,7 @@ abstract final class RemoteCompileService {
               'Content-Type': 'application/json',
               if (_apiToken.isNotEmpty) 'Authorization': 'Bearer $_apiToken',
             },
-            body: jsonEncode({'sketch': sketch, 'fqbn': 'arduino:avr:uno', 'files': files}),
+            body: jsonEncode({'sketch': sketch, 'fqbn': board.fqbn, 'files': files}),
           )
           .timeout(const Duration(seconds: 120));
     } catch (e) {

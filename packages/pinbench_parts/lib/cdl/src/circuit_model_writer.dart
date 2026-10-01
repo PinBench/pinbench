@@ -101,7 +101,7 @@ abstract final class CircuitModelWriter {
       String id;
       do {
         n++;
-        id = (prefix == 'uno' && n == 1) ? 'uno' : '$prefix$n';
+        id = (_boardPrefixes.contains(prefix) && n == 1) ? prefix : '$prefix$n';
       } while (!used.add(id));
       counts[prefix] = n;
       idMap[node.key] = id;
@@ -123,8 +123,13 @@ abstract final class CircuitModelWriter {
     return null;
   }
 
+  /// Boards are named plainly — `uno`, `pico` — the first time: a circuit
+  /// almost always has one, and `uno.13` reads better than `uno1.13`.
+  static const _boardPrefixes = {'uno', 'pico'};
+
   static String _prefixFor(String componentName) => switch (componentName) {
     PartNames.arduinoUno => 'uno',
+    PartNames.picoW => 'pico',
     PartNames.resistor => 'r',
     PartNames.led => 'led',
     PartNames.pushButton => 'button',

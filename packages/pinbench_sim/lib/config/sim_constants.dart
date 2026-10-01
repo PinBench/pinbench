@@ -1,5 +1,3 @@
-import 'avr_config.dart';
-
 /// Physical / rendering constants for the realtime simulation loop.
 ///
 /// Centralizes the magic numbers that were previously scattered through
@@ -10,14 +8,14 @@ abstract class SimConstants {
   // `package:pinbench_parts/logic/built_in_part_logic.dart` with the rule that is
   // its only reader.
 
-  /// Voltage (volts) representing a digital logic-high level.
+  /// Voltage (volts) representing a digital logic-high level on a 5 V part.
+  ///
+  /// A board's pins drive its own level instead — see
+  /// `BoardProfile.logicHighVolts`.
   static const logicHighVolts = 5.0;
 
   /// Voltage (volts) representing a digital logic-low level.
   static const logicLowVolts = 0.0;
-
-  /// Highest addressable digital pin (Arduino Uno has pins 0–13).
-  static const maxDigitalPin = AVRConfig.digitalPinCount - 1; // 13
 
   /// Below this (amps), a change in wire current is not worth reporting.
   ///

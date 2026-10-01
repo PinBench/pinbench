@@ -11,14 +11,10 @@ abstract final class I2cWiring {
   /// The board ports a module's supply pin counts as powered from.
   static const supplies = {'5V', '3.3V'};
 
-  /// Whether [sda] and [scl] reach the ATmega328P's TWI pads.
-  ///
-  /// `A4`/`A5` specifically, because the hardware I²C is wired to those two
-  /// pads and nothing else. The R3 header's separate `SDA`/`SCL` pins count
-  /// too: they are the same two pads brought out twice.
+  /// Whether [sda] and [scl] reach the board's hardware I²C pins, each the
+  /// right way round — see [PartPinApi.i2cLineFor] for which pins those are.
   static bool isOnTheBus(PartLogicContext context, {String sda = 'sda', String scl = 'scl'}) =>
-      const {'A4', 'SDA'}.contains(context.pins.boardPortFor(sda)) &&
-      const {'A5', 'SCL'}.contains(context.pins.boardPortFor(scl));
+      context.pins.i2cLineFor(sda) == I2cLine.sda && context.pins.i2cLineFor(scl) == I2cLine.scl;
 
   /// Whether [vcc] reaches one of [accepted] and [gnd] reaches a ground.
   static bool isPowered(

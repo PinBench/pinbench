@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pinbench_parts/logic/built_in_part_logic.dart';
 import 'package:pinbench_parts/logic/i2c_sensors.dart';
 import 'package:pinbench_parts/logic/part_logic.dart';
+import 'package:pinbench_parts/models/board_profile.dart';
 import 'package:pinbench_parts/part_registry.dart';
 
 /// The I²C sensors: `LOGIC` parts whose whole behaviour is a register bank.
@@ -273,6 +274,8 @@ class _RegisterBus implements PartI2cApi {
 class const _Wiring(final Map<String, String> ports) implements PartPinApi {
   @override
   String? boardPortFor(String portId) => ports[portId];
+  @override
+  I2cLine? i2cLineFor(String portId) => BoardProfile.arduinoUno.i2cLineAt(ports[portId] ?? '');
   @override
   int? connectedTo(String portId) => int.tryParse(ports[portId] ?? '');
   @override

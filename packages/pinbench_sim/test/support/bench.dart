@@ -5,6 +5,7 @@ import 'package:pinbench_parts/models/part_model.dart';
 import 'package:pinbench_parts/models/port_model.dart';
 import 'package:pinbench_parts/models/wire_model.dart';
 import 'package:pinbench_parts/part_registry.dart';
+import 'package:pinbench_sim/core/board/avr_board.dart';
 import 'package:pinbench_sim/core/circuit_netlist.dart';
 import 'package:pinbench_sim/core/engine_pin_api.dart';
 import 'package:pinbench_sim/core/spice_engine.dart';
@@ -80,7 +81,8 @@ class Bench(final List<ComponentInstance> nodes, final List<WireModel> wires) {
       lastState: state,
       elapsed: Duration.zero,
       netlist: netlist,
-      unoNode: nodes.first,
+      board: const AvrBoardEmulator(),
+      boardNode: nodes.first,
       measurements: EmulatorMeasurements(),
       queueUpdate: (_, _) {},
     );

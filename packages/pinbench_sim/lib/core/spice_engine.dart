@@ -2,12 +2,12 @@ import 'package:flutter/foundation.dart';
 
 import 'package:ngspice_dart/ngspice_dart.dart';
 import 'package:pinbench_parts/part_registry.dart';
+import 'package:pinbench_parts/models/board_profile.dart';
 import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_pdl/pinbench_pdl.dart';
 import 'package:pinbench_parts/models/port_model.dart';
 
 import 'sim_log.dart';
-import '../config/avr_config.dart';
 import 'circuit_netlist.dart';
 
 /// Builds and solves the analog (SPICE) model of the circuit each frame.
@@ -38,6 +38,9 @@ class SpiceEngine({
 
   final Map<String, double> _pinVoltages = {};
   final Set<String> _dirtyPins = {};
+
+  /// The board pins the circuit has a source for: those wired to something.
+  final Set<String> _boardPins = {};
   final List<String> _ledKeys = [];
 
   /// Every element's two terminals and how to read the current between them —
@@ -70,7 +73,7 @@ class SpiceEngine({
   final Map<String, String> _ledVecName = {};
 
   /// Whether the last [build] produced any element belonging to a *part*, as
-  /// opposed to the Uno's own pin sources.
+  /// opposed to the board's own pin sources.
   ///
   /// This is what decides whether the per-frame analog solve is worth running.
   /// It used to be "are there any LEDs on the canvas", which stopped being
@@ -94,7 +97,7 @@ class SpiceEngine({
   // vectors. These statics track global ngspice state across SpiceEngine
   // instances (a new instance is created for every simulation run).
   static final _elementLine = RegExp('^[VRDCIQM]_');
-  static final _unoElementLine = RegExp(r'^[VR]_uno_|^V_gnd\b');
+  static final _boardElementLine = RegExp(r'^[VR]_board_|^V_gnd\b');
 
   /// The `.model` a transistor is built with when its part says nothing: the
   /// DC parameters of a 2N3904 and 2N3906, and level-1 MOSFETs near a 2N7000
@@ -148,6 +151,7 @@ class SpiceEngine({
   void build(CircuitNetlist netlist, List<ComponentInstance> nodes) {
     _pinVoltages.clear();
     _dirtyPins.clear();
+    _boardPins.clear();
     _pdlElements.clear();
     _elementValues.clear();
     _dirtyElements.clear();
@@ -186,7 +190,7 @@ class SpiceEngine({
 
     final circArray = <String>['* PinBench Simulation'];
 
-    ComponentInstance? arduinoNode;
+    ComponentInstance? boardNode;
 
     for (final node in nodes) {
       final keyStr = node.key.toString().replaceAll(_sanitize, '_');
@@ -196,7 +200,7 @@ class SpiceEngine({
       // the parts around it. A declared flag rather than a name comparison, so
       // a second board would not mean editing this file.
       if (PartRegistry.isBoard(node.part)) {
-        arduinoNode = node;
+        boardNode = node;
         continue;
       }
 
@@ -383,27 +387,40 @@ class SpiceEngine({
       }
     }
 
-    if (arduinoNode != null) {
-      for (final pin in AVRConfig.spicePins) {
-        final n1 = _getNode(arduinoNode.key, pin);
+    if (boardNode != null) {
+      final board = BoardProfile.of(boardNode.part) ?? BoardProfile.arduinoUno;
+      _pinSourceOhms = board.pinSourceOhms;
+      for (final number in board.digitalPins) {
+        final pin = '$number';
+        // Only pins wired to something: an unwired pin's source drives nothing
+        // anyone reads, and a Pico has 26 of them to grow every solve by.
+        if (!isPortConnected(boardNode.key, pin)) continue;
+        final n1 = _getNode(boardNode.key, pin);
         const n2 = 0; // Ground
-        // A 40 ohm internal resistance (typical for an ATmega328P GPIO) keeps
-        // a directly-connected LED from producing infinite current and a
-        // convergence failure.
-        circArray.add('V_uno_$pin n_int_src_$pin n_$n2 0.0');
-        circArray.add('R_uno_$pin n_$n1 n_int_src_$pin 40.0');
+        // A pin is a source behind the driver's output resistance — the
+        // board's, an ATmega328P's 40 Ω or an RP2040's 100 Ω — which keeps a
+        // directly-connected LED from drawing an infinite current and failing
+        // to converge. The resistance is an element value, not a constant,
+        // because a pin the sketch leaves as an input drives nothing: the
+        // engine raises it to [_highImpedanceOhms] for those (see
+        // [setPinDrive]), so a button or divider on an input pin is not shorted
+        // to the source.
+        circArray.add('V_board_$pin n_int_src_$pin n_$n2 0.0');
+        circArray.add('R_board_$pin n_$n1 n_int_src_$pin $_pinSourceOhms');
         _pinVoltages[pin] = 0.0;
+        _boardPins.add(pin);
+        _elementValues['R_board_$pin'] = _pinSourceOhms;
         _dirtyPins.add(pin);
         // The pin's driver is a two-terminal element between ground and the
-        // pin: source, then the 40 Ω output resistance. Its branch current is
+        // pin: source, then its output resistance. Its branch current is
         // defined n_int_src → ground, so a pin *sourcing* current reads
         // negative — hence the flipped terminals here, which make a positive
         // reading mean "current leaves the pin into the circuit".
         _branches.add(
           _ElementBranch.measured(
             a: null,
-            b: PortLocation(nodeKey: arduinoNode.key, portId: pin),
-            vector: 'i(V_uno_$pin)',
+            b: PortLocation(nodeKey: boardNode.key, portId: pin),
+            vector: 'i(V_board_$pin)',
             scale: -1,
           ),
         );
@@ -422,12 +439,12 @@ class SpiceEngine({
     // at the start of each run, so this stays the authoritative current netlist.
     final log = onLog;
 
-    // Uno pin sources are `V_uno_<pin>` / `R_uno_<pin>`, plus a `V_gnd`; any
+    // Board pin sources are `V_board_<pin>` / `R_board_<pin>`, plus a `V_gnd`; any
     // other element line belongs to a placed part. Read off the assembled
     // netlist rather than counted in the branches above, so a new element type
     // cannot forget to register itself.
     _hasPartElements = circArray.any(
-      (line) => _elementLine.hasMatch(line) && !_unoElementLine.hasMatch(line),
+      (line) => _elementLine.hasMatch(line) && !_boardElementLine.hasMatch(line),
     );
 
     if (log != null) {
@@ -501,7 +518,11 @@ class SpiceEngine({
     return true;
   }
 
-  /// Returns true if the voltage changed.
+  /// Sets board [pin]'s source to [voltage]. Returns true if it changed.
+  ///
+  /// Recorded for any [pin], but only a pin the circuit was built with — a
+  /// board pin wired to something — reaches the solver: anything else would be
+  /// an `alter` of an element that does not exist.
   bool setPinVoltage(String pin, double voltage) {
     if (_pinVoltages[pin] == voltage) return false;
     _pinVoltages[pin] = voltage;
@@ -512,6 +533,23 @@ class SpiceEngine({
 
   double getPinVoltage(String pin) => _pinVoltages[pin] ?? 0.0;
 
+  /// The output resistance of the board the circuit was built with.
+  var _pinSourceOhms = BoardProfile.arduinoUno.pinSourceOhms;
+
+  /// What a pin left as an input looks like to the circuit: a gate, drawing
+  /// nothing worth drawing. Finite, so the node it hangs off still solves.
+  static const _highImpedanceOhms = 1e9;
+
+  /// Drives board [pin] the way the sketch has it: at [voltage] behind the
+  /// board's output resistance while [isOutput], and high-impedance while it
+  /// is an input. Returns true if anything changed.
+  bool setPinDrive(String pin, {required double voltage, required bool isOutput}) {
+    if (!_boardPins.contains(pin)) return false;
+    final ohms = isOutput ? _pinSourceOhms : _highImpedanceOhms;
+    final resistance = setElementValue('R_board_$pin', ohms);
+    return setPinVoltage(pin, voltage) || resistance;
+  }
+
   void solve() {
     _nodeVoltageCache.clear();
     // Only alter pins whose voltage actually changed — but always run op so
@@ -519,8 +557,8 @@ class SpiceEngine({
     // any voltage changed.
     for (final pin in _dirtyPins) {
       final voltage = _pinVoltages[pin];
-      if (voltage == null) continue;
-      final cmd = 'alter V_uno_$pin = $voltage';
+      if (voltage == null || !_boardPins.contains(pin)) continue;
+      final cmd = 'alter V_board_$pin = $voltage';
       final res = _ngspice.command(cmd);
       if (res != 0) {
         _log.error('SpiceEngine Command failed: $cmd (code $res)');

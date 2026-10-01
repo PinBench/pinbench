@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:pinbench_parts/part_registry.dart';
 import 'package:pinbench_parts/models/component_instance.dart';
+import 'package:pinbench_sim/core/board/avr_board.dart';
 import 'package:pinbench_sim/core/circuit_netlist.dart';
 import 'package:pinbench_sim/core/updaters/digital_io_frame_updater.dart';
 import 'package:pinbench_parts/models/part_model.dart';
@@ -12,9 +13,10 @@ import 'package:pinbench_parts/models/port_model.dart';
 /// `SimulationEngine._updateDigitalInputs`/`_buttonsDirty` in Phase 6 of
 /// docs/plans/radiant-mixing-pudding.md.
 ///
-/// Runs with `unoNode: null` so the Arduino-pin-driving loop (which calls the
-/// global `AVRBridge` — a `late static` singleton only initialized by
-/// `AVRBridge.loadHex`) is skipped entirely; this isolates and verifies the
+/// Runs with `boardNode: null` so the pin-driving loop (which drives the
+/// board's emulator — for an Uno the global `AVRBridge`, a `late static`
+/// singleton only initialized by `AVRBridge.loadHex`) is skipped entirely;
+/// this isolates and verifies the
 /// button-dirty-detection/netlist-rebuild behavior without touching that
 /// global native-adjacent state, which would otherwise leak across tests.
 PartModel _model(String name) => standardParts.firstWhere((c) => c.name == name);
@@ -37,7 +39,8 @@ void main() {
       simulationNodes: [unpressed],
       lastTopologyState: lastTopologyState,
       netlist: netlist,
-      unoNode: null,
+      board: const AvrBoardEmulator(),
+      boardNode: null,
       nodesByKey: {},
       micIsDigitalHigh: false,
     );
@@ -57,7 +60,8 @@ void main() {
       simulationNodes: [unpressed],
       lastTopologyState: lastTopologyState,
       netlist: netlist,
-      unoNode: null,
+      board: const AvrBoardEmulator(),
+      boardNode: null,
       nodesByKey: {},
       micIsDigitalHigh: false,
     );
@@ -70,7 +74,8 @@ void main() {
       simulationNodes: [pressed],
       lastTopologyState: lastTopologyState,
       netlist: netlist,
-      unoNode: null,
+      board: const AvrBoardEmulator(),
+      boardNode: null,
       nodesByKey: {},
       micIsDigitalHigh: false,
     );

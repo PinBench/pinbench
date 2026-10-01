@@ -8,6 +8,7 @@ final langCdl = buildSyntaxMode(
     'type': [
       // Component type tokens written before `{` in the element form.
       'ArduinoUno',
+      'RaspberryPiPicoW',
       'LED',
       'Resistor',
       'PushButton',

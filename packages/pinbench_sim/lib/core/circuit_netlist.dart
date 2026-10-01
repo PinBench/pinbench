@@ -61,7 +61,9 @@ class CircuitNetlist {
       final nodeA = nodes[i];
 
       // Large boards do not physically plug into other boards underneath them.
-      // (They must be connected via wires).
+      // (They must be connected via wires). Not every board: a Pico is made
+      // to straddle a breadboard's channel, and its pins land in the holes
+      // under them like any other part's legs.
       if (nodeA.part.name == PartNames.arduinoUno || nodeA.part.name.contains('Breadboard')) {
         continue;
       }

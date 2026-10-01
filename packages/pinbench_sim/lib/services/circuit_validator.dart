@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'package:pinbench_parts/logic/built_in_part_logic.dart';
+import 'package:pinbench_parts/models/board_profile.dart';
 import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/wire_model.dart';
 import 'package:pinbench_parts/models/part_model.dart';
@@ -15,10 +16,6 @@ class CircuitValidatorResult({
 });
 
 class CircuitValidator {
-  /// The ATmega328P's typical GPIO output resistance, in series with whatever
-  /// the pin drives. Matches the value `SpiceEngine` puts in the netlist.
-  static const _pinSourceOhms = 40.0;
-
   /// Our LED model's forward drop, taken at the *low* end of its range.
   ///
   /// The solver derives this from the diode equation, so it drifts with
@@ -70,6 +67,7 @@ class CircuitValidator {
     required CircuitNetlist analogNetlist,
     required List<ComponentInstance> nodes,
     required ComponentInstance led,
+    required BoardProfile board,
   }) {
     final resistors = {
       for (final n in nodes)
@@ -82,10 +80,10 @@ class CircuitValidator {
       if (node == null || !PartRegistry.isBoard(node.part)) return null;
       final id = loc.portId;
       if (id.startsWith('GND')) return null;
-      // A GPIO pin drives through the chip's own output resistance; a supply
-      // rail is stiff.
-      if (int.tryParse(id) != null) return (5.0, _pinSourceOhms);
-      if (id == '5V' || id == 'VIN') return (5.0, 0.0);
+      // A GPIO pin drives through the chip's own output resistance — the
+      // value `SpiceEngine` puts in the netlist — and a supply rail is stiff.
+      if (int.tryParse(id) != null) return (board.logicHighVolts, board.pinSourceOhms);
+      if (id == '5V' || id == 'VIN' || id == 'VSYS') return (5.0, 0.0);
       if (id == '3.3V') return (3.3, 0.0);
       return null;
     }
@@ -105,7 +103,7 @@ class CircuitValidator {
           final total = ohms + sourceOhms;
           if (volts <= _ledForwardVolts) continue;
           // A dead short would divide by zero; treat it as the pin's own limit.
-          best.add((volts - _ledForwardVolts) / (total <= 0 ? _pinSourceOhms : total));
+          best.add((volts - _ledForwardVolts) / (total <= 0 ? board.pinSourceOhms : total));
           continue;
         }
 
@@ -138,16 +136,25 @@ class CircuitValidator {
     // over-current estimate can see the resistance the bridged netlist hides.
     final analogNetlist = CircuitNetlist()..buildStatic(nodes, wires, bridgeResistors: false);
 
-    final arduinoNode = nodes.where((n) => n.part.name == PartNames.arduinoUno).firstOrNull;
+    final boardNode = nodes.where((n) => PartRegistry.isBoard(n.part)).firstOrNull;
+    final board =
+        (boardNode == null ? null : BoardProfile.of(boardNode.part)) ?? BoardProfile.arduinoUno;
+
+    /// Whether board port [id] drives or supplies anything.
+    bool isLive(String id) => !id.startsWith('GND') && !board.passivePorts.contains(id);
 
     String? errorMessage;
     final updatedProperties = <LocalKey, Map<String, dynamic>>{};
 
-    if (arduinoNode != null) {
-      // First, check for dangerous short circuits across the Arduino itself (e.g. Pin 13 to GND)
-      final gndPorts = ['GND_1', 'GND_2', 'GND_3'];
+    if (boardNode != null) {
+      // First, check for dangerous short circuits across the board itself (e.g.
+      // pin 13 to GND), from every ground it has that is wired to anything.
+      final gndPorts = [
+        for (final loc in analogNetlist.adj.keys)
+          if (loc.nodeKey == boardNode.key && loc.portId.startsWith('GND')) loc.portId,
+      ];
       for (final gndPort in gndPorts) {
-        final gndLoc = PortLocation(nodeKey: arduinoNode.key, portId: gndPort);
+        final gndLoc = PortLocation(nodeKey: boardNode.key, portId: gndPort);
         // Deliberately the *unbridged* view: a resistor is a component, not a
         // wire, so a pin reaching ground through one is a divider rather than
         // a short. Reading the bridged netlist here reported every voltage
@@ -155,14 +162,10 @@ class CircuitValidator {
         final connectedToGnd = analogNetlist.findConnectedPorts(gndLoc);
 
         for (final loc in connectedToGnd) {
-          if (loc.nodeKey == arduinoNode.key &&
-              (!loc.portId.startsWith('GND') &&
-                  loc.portId != 'NC' &&
-                  loc.portId != 'AREF' &&
-                  loc.portId != 'IOREF' &&
-                  loc.portId != 'RESET')) {
+          if (loc.nodeKey == boardNode.key && isLive(loc.portId)) {
             errorMessage =
-                '[Circuit Error] Short Circuit! Arduino pin ${loc.portId} is directly connected to Ground!';
+                '[Circuit Error] Short Circuit! ${board.describePort(loc.portId)} is directly '
+                'connected to Ground!';
             break;
           }
         }
@@ -178,16 +181,10 @@ class CircuitValidator {
           final cathodeConnected = netlist.findConnectedPorts(cathodeLoc);
 
           final anodeToGnd = anodeConnected.any(
-            (loc) => loc.nodeKey == arduinoNode.key && loc.portId.startsWith('GND'),
+            (loc) => loc.nodeKey == boardNode.key && loc.portId.startsWith('GND'),
           );
           final cathodeToPositive = cathodeConnected.any(
-            (loc) =>
-                loc.nodeKey == arduinoNode.key &&
-                (!loc.portId.startsWith('GND') &&
-                    loc.portId != 'NC' &&
-                    loc.portId != 'IOREF' &&
-                    loc.portId != 'RESET' &&
-                    loc.portId != 'AREF'),
+            (loc) => loc.nodeKey == boardNode.key && isLive(loc.portId),
           );
           final isShorted = anodeConnected.contains(cathodeLoc);
 
@@ -210,7 +207,12 @@ class CircuitValidator {
             // Nothing is wired wrongly — but the values might still be. This
             // is the check that catches a resistor too small to protect the
             // LED, while the circuit is being drawn rather than after a run.
-            final amps = _estimateLedAmps(analogNetlist: analogNetlist, nodes: nodes, led: node);
+            final amps = _estimateLedAmps(
+              analogNetlist: analogNetlist,
+              nodes: nodes,
+              led: node,
+              board: board,
+            );
 
             if (amps != null && amps > BuiltInPartLogic.ledRatedAmps) {
               updatedProperties[node.key] = {
@@ -219,7 +221,7 @@ class CircuitValidator {
                 ComponentProps.isOn: false,
               };
               final milliamps = amps * 1000;
-              final safeOhms = _recommendedSeriesOhms(5.0, _pinSourceOhms);
+              final safeOhms = _recommendedSeriesOhms(board.logicHighVolts, board.pinSourceOhms);
               errorMessage ??=
                   '[Circuit Error] LED over-current: about '
                   '${milliamps.toStringAsFixed(0)} mA, above its '

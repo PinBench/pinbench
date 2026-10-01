@@ -1,5 +1,6 @@
 import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/part_model.dart';
+import 'package:pinbench_parts/models/port_model.dart';
 import 'package:pinbench_parts/models/wire_model.dart';
 import 'package:pinbench_parts/part_registry.dart';
 import 'package:pinbench_sim/core/circuit_netlist.dart';
@@ -24,12 +25,10 @@ void main() {
       );
 
   /// The netlist lines emitted for [nodes].
-  List<String> netlistFor(List<ComponentInstance> nodes) {
+  List<String> netlistFor(List<ComponentInstance> nodes, [List<WireModel> wires = const []]) {
     final lines = <String>[];
-    SpiceEngine(onLog: lines.add).build(
-      CircuitNetlist()..buildStatic(nodes, const <WireModel>[], bridgeResistors: false),
-      nodes,
-    );
+    SpiceEngine(onLog: lines.add)
+        .build(CircuitNetlist()..buildStatic(nodes, wires, bridgeResistors: false), nodes);
     return lines.map((l) => l.trim()).toList();
   }
 
@@ -103,17 +102,41 @@ void main() {
     });
   });
 
-  test('the board is not an element — it supplies pin sources instead', () {
+  group('the board is not an element — it supplies pin sources instead', () {
     // The one node the builder singles out, and it is now a declared flag
     // rather than a name comparison.
-    final lines = netlistFor([place(PartNames.arduinoUno)]);
-    expect(lines.any((l) => l.startsWith('V_uno_')), isTrue);
-    expect(lines.any((l) => l.startsWith('R_uno_')), isTrue);
-    expect(
-      lines.where((l) => l.startsWith('R_') && !l.startsWith('R_uno_')),
-      isEmpty,
-      reason: 'the board itself contributes no part element',
-    );
+    List<String> withLedOn(String board, String pin) {
+      final boardNode = place(board, id: 'board');
+      final led = place(PartNames.led, id: 'led');
+      return netlistFor(
+        [boardNode, led],
+        [
+          WireModel(
+            id: 'w1',
+            start: PortLocation(nodeKey: boardNode.key, portId: pin),
+            end: PortLocation(nodeKey: led.key, portId: 'anode'),
+          ),
+        ],
+      );
+    }
+
+    test('a wired pin gets a source behind its output resistance; the rest none', () {
+      final lines = withLedOn(PartNames.arduinoUno, '13');
+      expect(lines, contains('V_board_13 n_int_src_13 n_0 0.0'));
+      expect(elementLine(lines, 'R_board_13'), endsWith(' 40.0'));
+      expect(lines.where((l) => l.startsWith('V_board_')), hasLength(1));
+      expect(
+        lines.where((l) => l.startsWith('R_') && !l.startsWith('R_board_')),
+        isEmpty,
+        reason: 'the board itself contributes no part element',
+      );
+    });
+
+    test("a Pico's pins drive through the RP2040's resistance", () {
+      final lines = withLedOn(PartNames.picoW, '15');
+      expect(lines, contains('V_board_15 n_int_src_15 n_0 0.0'));
+      expect(elementLine(lines, 'R_board_15'), endsWith(' 100.0'));
+    });
   });
 
   test('a part with no declared SPICE model contributes nothing', () {

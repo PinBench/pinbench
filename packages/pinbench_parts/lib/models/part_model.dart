@@ -166,6 +166,7 @@ class PartModel({
 /// must stay in sync with [standardParts] and the `.cdl` templates.
 abstract class PartNames {
   static const arduinoUno = 'Arduino Uno';
+  static const picoW = 'Raspberry Pi Pico W';
   static const led = 'LED';
   static const resistor = 'Resistor';
   static const pushButton = 'Push Button';

@@ -1,5 +1,7 @@
 import 'package:path/path.dart' as p;
 
+import 'package:pinbench_parts/models/board_profile.dart';
+
 import '../../../core/platform/platform_capabilities.dart';
 import '../data/workspace_fs.dart';
 import 'local_compile_service.dart';
@@ -31,13 +33,16 @@ class CompilerService {
 
   static String get pristineHashFileName => TemplateProvenanceService.pristineHashFileName;
 
-  static Future<String> compileWorkspace(String directoryPath) async {
+  static Future<String> compileWorkspace(
+    String directoryPath, {
+    BoardProfile board = BoardProfile.arduinoUno,
+  }) async {
     // The browser cannot run `arduino-cli`. When a remote compile service is
     // configured, send the (edited) sketch there; otherwise fall back to the
     // bundled precompiled template hex so the examples still run offline.
     if (!PlatformCapabilities.supportsLocalCompile) {
       if (_compileApiUrl.isNotEmpty) {
-        return RemoteCompileService.compile(directoryPath, _compileApiUrl);
+        return RemoteCompileService.compile(directoryPath, _compileApiUrl, board: board);
       }
       final dirName = p.basename(directoryPath);
       final hexPath = p.join(directoryPath, '$dirName.ino.hex');
@@ -68,16 +73,16 @@ class CompilerService {
       );
     }
 
-    return LocalCompileService.compileWorkspace(directoryPath);
+    return LocalCompileService.compileWorkspace(directoryPath, board: board);
   }
 
-  static Future<String> compile(String code) async {
+  static Future<String> compile(String code, {BoardProfile board = BoardProfile.arduinoUno}) async {
     if (!PlatformCapabilities.supportsLocalCompile) {
       throw CompilerException(
         'Compiling custom sketches is not available in the web preview. Open a '
         'bundled example template to run a simulation, or use the desktop app.',
       );
     }
-    return LocalCompileService.compile(code);
+    return LocalCompileService.compile(code, board: board);
   }
 }

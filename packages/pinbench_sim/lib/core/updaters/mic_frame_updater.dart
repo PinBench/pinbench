@@ -4,15 +4,16 @@ import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/part_model.dart';
 
 import '../../config/sim_constants.dart';
-import '../avr_interop.dart';
+import '../board/board_emulator.dart';
 import '../sim_io.dart';
 import '../spice_engine.dart';
 
 /// Per-frame microphone sensor update: injects the latest mic reading into
-/// the AVR ADC and the SPICE model, queuing a digital-state canvas update
+/// the board's ADC and the SPICE model, queuing a digital-state canvas update
 /// only when it changed. Extracted from `SimulationEngine._updateMicSensors`.
 abstract final class MicFrameUpdater {
   static void update({
+    required BoardEmulator board,
     required MicInput micInput,
     required List<ComponentInstance> micSensors,
     required SpiceEngine spiceEngine,
@@ -33,7 +34,7 @@ abstract final class MicFrameUpdater {
     final analogVolts = micInput.analogVoltage;
     final isHigh = micInput.isDigitalHigh;
 
-    AVRBridge.setAnalogVoltage(0, analogVolts);
+    board.setAnalogVoltage(0, analogVolts);
 
     for (final node in micSensors) {
       spiceEngine.setPinVoltage('${node.key}_A0', analogVolts);

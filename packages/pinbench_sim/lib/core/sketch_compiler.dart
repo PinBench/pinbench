@@ -1,4 +1,7 @@
-/// Turns a sketch into the Intel HEX image the emulator runs.
+import 'package:pinbench_parts/models/board_profile.dart';
+
+/// Turns a sketch into the Intel HEX image the emulator runs, built for
+/// [board] — the board on the canvas, which decides the toolchain.
 ///
 /// A port, so the engine does not have to know *how* a sketch is built. That
 /// answer is genuinely host-specific and platform-dependent: native builds run
@@ -15,4 +18,8 @@
 ///
 /// A function rather than an interface: there is no state to hold, and the one
 /// implementation (`workspaceSketchCompiler`) is a two-line delegation.
-typedef SketchCompiler = Future<String> Function({String? workspacePath, required String code});
+typedef SketchCompiler = Future<String> Function({
+  String? workspacePath,
+  required String code,
+  required BoardProfile board,
+});

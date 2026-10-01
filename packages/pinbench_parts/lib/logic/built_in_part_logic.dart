@@ -84,11 +84,10 @@ abstract final class BuiltInPartLogic {
   /// output. On a desk it would stay dark, and staying dark is the lesson —
   /// swapped SDA and SCL is the single commonest way a first display fails.
   ///
-  /// `A4` and `A5` specifically, because the ATmega328P's I²C hardware is
-  /// wired to those two pads and no others. A sketch bit-banging the protocol
-  /// on different pins is not emulated at all, here or in the peripheral. The
-  /// R3 header's separate `SDA`/`SCL` pins count too: they are the same two
-  /// pads brought out twice, so a display wired to them is on the same bus.
+  /// The board's hardware I²C pins specifically — `A4`/`A5` (or the R3
+  /// header's `SDA`/`SCL`, the same two pads) on an Uno, GP4/GP5 on a Pico. A
+  /// sketch bit-banging the protocol on other pins is not emulated at all,
+  /// here or in the peripheral.
   static bool _isOnTheBus(PartLogicContext context) =>
       I2cWiring.isOnTheBus(context, sda: 'SDA', scl: 'SCL');
 

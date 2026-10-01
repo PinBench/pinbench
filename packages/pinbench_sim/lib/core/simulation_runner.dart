@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import 'package:pinbench_parts/models/board_profile.dart';
 import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/part_model.dart';
 import 'package:pinbench_parts/models/port_model.dart';
@@ -85,6 +86,15 @@ class SimulationRunner({
   /// same in-flight spawn.
   Future<void> warmUp() => _backend.warmUp();
 
+  /// The board on the canvas, which the sketch is built for — or an Uno, as
+  /// a canvas with no board always ran.
+  BoardProfile get _board {
+    for (final node in circuit.simulationNodes) {
+      if (BoardProfile.of(node.part) case final board?) return board;
+    }
+    return BoardProfile.arduinoUno;
+  }
+
   Future<bool> start(
     String code, {
     String? workspacePath,
@@ -100,10 +110,10 @@ class SimulationRunner({
       onDebugLog?.call('[Build] Using precompiled .hex (compilation skipped).');
       compiledHex = precompiledHex;
     } else {
-      onSerialPrint?.call('Compiling sketch with arduino-cli...');
+      onSerialPrint?.call('Compiling sketch for the ${_board.partName} with arduino-cli...');
       onDebugLog?.call('[Build] Compiling sketch...');
       try {
-        compiledHex = await compiler(workspacePath: workspacePath, code: code);
+        compiledHex = await compiler(workspacePath: workspacePath, code: code, board: _board);
       } catch (e) {
         onSerialPrint?.call('Compilation Failed:\n$e\n');
         onDebugLog?.call('[Build] Compilation failed.');

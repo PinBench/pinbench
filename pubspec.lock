@@ -1465,6 +1465,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.9"
+  rp2040_dart:
+    dependency: transitive
+    description:
+      path: "."
+      ref: "8a1140bf60f92fb8c05ac9fb18211eaefa12cf84"
+      resolved-ref: "8a1140bf60f92fb8c05ac9fb18211eaefa12cf84"
+      url: "https://github.com/PinBench/rp2040_dart.git"
+    source: git
+    version: "0.1.0"
   share_plus:
     dependency: transitive
     description:
