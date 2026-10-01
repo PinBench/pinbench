@@ -425,6 +425,29 @@ class SpiceEngine({
           ),
         );
       }
+
+      // The supply rails, each a fixed source behind a fraction of an ohm —
+      // what lets a divider, a potentiometer or a sensor module powered from
+      // `5V` or `3.3V` actually see that voltage. They used to be plain nets,
+      // so anything wired to them solved at 0 V and only a pin driven high
+      // could stand in for a supply. The resistance is the regulator and the
+      // USB fuse, and it keeps a rail shorted straight to GND solvable: a huge
+      // current, which is the truth, rather than a singular matrix.
+      for (final MapEntry(key: port, value: volts) in board.supplies.entries) {
+        if (!isPortConnected(boardNode.key, port)) continue;
+        final name = 'rail_${port.replaceAll(_sanitize, '_')}';
+        final node = _getNode(boardNode.key, port);
+        circArray.add('V_board_$name n_int_$name n_0 $volts');
+        circArray.add('R_board_$name n_$node n_int_$name $_supplyOhms');
+        _branches.add(
+          _ElementBranch.measured(
+            a: null,
+            b: PortLocation(nodeKey: boardNode.key, portId: port),
+            vector: 'i(V_board_$name)',
+            scale: -1,
+          ),
+        );
+      }
     }
 
     // Connect node 0 to spice ground (0)
@@ -535,6 +558,9 @@ class SpiceEngine({
 
   /// The output resistance of the board the circuit was built with.
   var _pinSourceOhms = BoardProfile.arduinoUno.pinSourceOhms;
+
+  /// A supply rail's internal resistance: its regulator and, on USB, the fuse.
+  static const _supplyOhms = 0.5;
 
   /// What a pin left as an input looks like to the circuit: a gate, drawing
   /// nothing worth drawing. Finite, so the node it hangs off still solves.

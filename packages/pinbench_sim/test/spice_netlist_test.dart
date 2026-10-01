@@ -132,6 +132,13 @@ void main() {
       );
     });
 
+    test('a wired supply rail is a source at its voltage; an unwired one is absent', () {
+      final lines = withLedOn(PartNames.arduinoUno, '5V');
+      expect(lines, contains('V_board_rail_5V n_int_rail_5V n_0 5.0'));
+      expect(elementLine(lines, 'R_board_rail_5V'), endsWith(' 0.5'));
+      expect(lines.where((l) => l.startsWith('V_board_rail_')), hasLength(1));
+    });
+
     test("a Pico's pins drive through the RP2040's resistance", () {
       final lines = withLedOn(PartNames.picoW, '15');
       expect(lines, contains('V_board_15 n_int_src_15 n_0 0.0'));
