@@ -16,7 +16,7 @@ import 'painters/ky037_mic_sensor_painter.dart';
 import 'painters/potentiometer_painter.dart';
 import 'painters/servo_motor_painter.dart';
 import 'painters/oled_display_painter.dart';
-import 'painters/ir_remote_painter.dart';
+import 'painters/ir_remote/ir_remote_painter.dart';
 
 /// The catalog of data-driven parts, loaded from the `.pdl` files under
 /// this package's `assets/parts/`. Built-in parts (the ones with a

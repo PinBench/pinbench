@@ -1,14 +1,14 @@
-import '../painters/axial_diode_painter.dart';
-import '../painters/battery_9v_painter.dart';
-import '../painters/cr2032_painter.dart';
-import '../painters/electrolytic_capacitor_painter.dart';
-import '../painters/ir_receiver_painter.dart';
-import '../painters/ldr_painter.dart';
-import '../painters/rgb_led_painter.dart';
-import '../painters/seven_segment_painter.dart';
-import '../painters/slide_switch_spdt_painter.dart';
-import '../painters/to220_painter.dart';
-import '../painters/transistor_painter.dart';
+import '../painters/axial_diode/axial_diode_painter.dart';
+import '../painters/battery_9v/battery_9v_painter.dart';
+import '../painters/cr2032/cr2032_painter.dart';
+import '../painters/electrolytic_capacitor/electrolytic_capacitor_painter.dart';
+import '../painters/ir_receiver/ir_receiver_painter.dart';
+import '../painters/ldr/ldr_painter.dart';
+import '../painters/rgb_led/rgb_led_painter.dart';
+import '../painters/seven_segment/seven_segment_painter.dart';
+import '../painters/slide_switch_spdt/slide_switch_spdt_painter.dart';
+import '../painters/to220/to220_painter.dart';
+import '../painters/transistor/transistor_painter.dart';
 import 'base_component_painter.dart';
 
 /// Builds a part's painter for one placed instance.

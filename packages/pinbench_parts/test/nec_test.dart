@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pinbench_parts/logic/ir_remote_keys.dart';
 import 'package:pinbench_parts/logic/nec.dart';
-import 'package:pinbench_parts/painters/ir_remote_painter.dart';
+import 'package:pinbench_parts/painters/ir_remote/ir_remote_painter.dart';
 
 void main() {
   test('a frame is the leader, 32 bits and a stop mark, ending idle high', () {
@@ -55,5 +55,14 @@ void main() {
         if (id != null) expect(IrRemoteKeys.commands, contains(id));
       }
     }
+  });
+
+  test('pressing a button repaints the remote, and nothing else does', () {
+    // A built-in part: no DSL painter compares its properties for it.
+    IrRemotePainter remote([String? pressed]) =>
+        IrRemotePainter(properties: {'pressedRegion': ?pressed});
+    expect(remote('5').shouldRepaint(remote()), isTrue);
+    expect(remote().shouldRepaint(remote('5')), isTrue, reason: 'and releasing it');
+    expect(remote('5').shouldRepaint(remote('5')), isFalse);
   });
 }
