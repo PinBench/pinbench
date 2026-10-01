@@ -1,7 +1,7 @@
 name: pinbench_sim
 description: >-
-  The Arduino + SPICE simulation engine for PinBench: the AVR
-  emulator bridge, the analog solver, the netlist, and the per-frame loop that
+  The microcontroller + SPICE simulation engine for PinBench: the AVR and
+  RP2040 emulator bridges, the analog solver, the netlist, and the per-frame loop that
   drives placed parts. No canvas, no Riverpod, no host devices.
 version: 0.1.0
 publish_to: none
@@ -31,6 +31,12 @@ dependencies:
     git:
       url: https://github.com/PinBench/pdl.git
       ref: main
+  # The Raspberry Pi Pico's emulator, the RP2040 sibling of avr8_dart. Not on
+  # pub.dev yet, so pinned to a commit like it.
+  rp2040_dart:
+    git:
+      url: https://github.com/PinBench/rp2040_dart.git
+      ref: 8a1140bf60f92fb8c05ac9fb18211eaefa12cf84
 
 dev_dependencies:
   all_lints: ^0.1.2

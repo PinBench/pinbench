@@ -5,6 +5,7 @@ import 'package:pinbench_parts/logic/part_logic.dart';
 import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/part_model.dart';
 import 'package:pinbench_parts/part_registry.dart';
+import 'package:pinbench_sim/core/board/avr_board.dart';
 import 'package:pinbench_sim/core/circuit_netlist.dart';
 import 'package:pinbench_sim/core/engine_pin_api.dart';
 import 'package:pinbench_sim/core/spice_engine.dart';
@@ -40,7 +41,8 @@ void main() {
         lastState: lastState,
         elapsed: Duration.zero,
         netlist: CircuitNetlist(),
-        unoNode: null,
+        board: const AvrBoardEmulator(),
+        boardNode: null,
         measurements: EmulatorMeasurements(),
         queueUpdate: (_, _) {},
       );

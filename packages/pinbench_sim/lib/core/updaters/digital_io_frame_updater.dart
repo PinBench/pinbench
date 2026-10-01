@@ -4,14 +4,13 @@ import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/part_model.dart';
 import 'package:pinbench_parts/models/port_model.dart';
 
-import '../../config/sim_constants.dart';
-import '../avr_interop.dart';
+import '../board/board_emulator.dart';
 import '../circuit_netlist.dart';
 
 /// Per-frame digital-pin update: reads push-button state (rebuilding the
 /// netlist's dynamic adjacency only when a button actually changed),
-/// resolves whether each Arduino digital pin is grounded or driven by a mic
-/// sensor, and drives the AVR's digital input accordingly. Extracted from
+/// resolves whether each of the board's digital pins is grounded or driven by
+/// a mic sensor, and drives the chip's digital input accordingly. Extracted from
 /// `SimulationEngine._updateDigitalInputs`/`_buttonsDirty`/`_mapsEqual`.
 abstract final class DigitalIoFrameUpdater {
   /// The state of everything that can change the circuit's *connectivity*
@@ -54,7 +53,8 @@ abstract final class DigitalIoFrameUpdater {
     required List<ComponentInstance> simulationNodes,
     required Map<LocalKey, bool> lastTopologyState,
     required CircuitNetlist netlist,
-    required ComponentInstance? unoNode,
+    required BoardEmulator board,
+    required ComponentInstance? boardNode,
     required Map<LocalKey, ComponentInstance> nodesByKey,
     required bool micIsDigitalHigh,
   }) {
@@ -66,34 +66,34 @@ abstract final class DigitalIoFrameUpdater {
       netlist.updateDynamic(simulationNodes);
     }
 
-    if (unoNode != null) {
-      for (var pin = 0; pin <= SimConstants.maxDigitalPin; pin++) {
+    if (boardNode != null) {
+      for (final pin in board.profile.digitalPins) {
         final connectedPorts = netlist.findConnectedPorts(
-          PortLocation(nodeKey: unoNode.key, portId: '$pin'),
+          PortLocation(nodeKey: boardNode.key, portId: '$pin'),
         );
 
         var isGrounded = false;
         var isMicConnected = false;
 
         for (final port in connectedPorts) {
-          if (port.nodeKey == unoNode.key && port.portId.startsWith('GND')) {
+          if (port.nodeKey == boardNode.key && port.portId.startsWith('GND')) {
             isGrounded = true;
           } else {
-            final connectedNode = nodesByKey[port.nodeKey] ?? unoNode;
+            final connectedNode = nodesByKey[port.nodeKey] ?? boardNode;
             if (connectedNode.part.name == PartNames.ky037MicSensor && port.portId == 'D0') {
               isMicConnected = true;
             }
           }
         }
 
-        // Do not force external voltage if the Arduino code configured this pin as
+        // Do not force external voltage if the sketch configured this pin as
         // OUTPUT — it would fight the driver and cause high-frequency toggling.
-        if (AVRBridge.isPinOutput(pin)) continue;
+        if (board.isPinOutput(pin)) continue;
         // Nor while a scheduled waveform — an IR code — is playing into it:
         // its edges land mid-frame, and this would undo them every frame.
-        if (AVRBridge.isPinDriven(pin)) continue;
+        if (board.isPinDriven(pin)) continue;
 
-        AVRBridge.setDigitalPin(pin, isHigh: isMicConnected ? micIsDigitalHigh : !isGrounded);
+        board.setDigitalPin(pin, isHigh: isMicConnected ? micIsDigitalHigh : !isGrounded);
       }
     }
 

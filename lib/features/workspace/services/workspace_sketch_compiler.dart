@@ -1,3 +1,4 @@
+import 'package:pinbench_parts/models/board_profile.dart';
 import 'package:pinbench_sim/core/sketch_compiler.dart';
 
 import 'compiler_service.dart';
@@ -10,7 +11,10 @@ import 'compiler_service.dart';
 /// question, and `CompilerService` already answers it in the way each platform
 /// needs — a local `arduino-cli`, a remote compile service, or a template's
 /// precompiled hex.
-Future<String> workspaceSketchCompiler({String? workspacePath, required String code}) =>
-    workspacePath != null
-    ? CompilerService.compileWorkspace(workspacePath)
-    : CompilerService.compile(code);
+Future<String> workspaceSketchCompiler({
+  String? workspacePath,
+  required String code,
+  required BoardProfile board,
+}) => workspacePath != null
+    ? CompilerService.compileWorkspace(workspacePath, board: board)
+    : CompilerService.compile(code, board: board);

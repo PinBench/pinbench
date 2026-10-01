@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import 'package:pinbench_parts/models/board_profile.dart';
 import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/part_model.dart';
 import 'package:pinbench_parts/models/port_model.dart';
@@ -9,7 +10,7 @@ import 'package:pinbench_parts/logic/ir_remote_keys.dart';
 import 'package:pinbench_parts/part_registry.dart';
 
 import 'sim_log.dart';
-import 'avr_interop.dart';
+import 'board/board_emulator.dart';
 import 'circuit_netlist.dart';
 import 'sim_io.dart';
 import 'updaters/analog_io_frame_updater.dart';
@@ -124,10 +125,28 @@ class SimulationEngine({
   /// last-state maps, because the updater that computes it returns it.
   Map<LocalKey, bool> _lastTopologyState = {};
 
-  // Last seen on-board (pin 13) LED state, tracked across frames so a change can
-  // be pushed to the Arduino node. A field (rather than a [_runLoop] local) so
-  // that a single frame can be stepped in isolation via [runFrame].
-  var _lastPin13State = false;
+  // Last seen on-board LED (`LED_BUILTIN`) state, tracked across frames so a
+  // change can be pushed to the board node. A field (rather than a [_runLoop]
+  // local) so that a single frame can be stepped in isolation via [runFrame].
+  var _lastBuiltinLedState = false;
+
+  /// The chip running the sketch, picked for the board on the canvas when a
+  /// run starts. An Uno until then — and for a canvas with no board at all,
+  /// which is what a run without one always got.
+  var _board = BoardEmulator.forProfile(BoardProfile.arduinoUno);
+
+  BoardProfile get _profile => _board.profile;
+
+  /// The board [_boardNode] is, or the Uno for a canvas without one.
+  BoardProfile get _canvasProfile {
+    final node = _boardNode;
+    return (node == null ? null : BoardProfile.of(node.part)) ?? BoardProfile.arduinoUno;
+  }
+
+  /// A fresh emulator for the board on the canvas. Called as a run starts,
+  /// after [_indexNodes], and never on a mid-run rebuild: the program is
+  /// already loaded into the one there is.
+  void _pickBoard() => _board = BoardEmulator.forProfile(_canvasProfile);
 
   // Engine-owned "last emitted visual state" per node, keyed by node key. These
   // are the source of truth for change detection — NOT the canvas node's
@@ -158,7 +177,7 @@ class SimulationEngine({
   // `key`/`part`. They must NOT be used to read live `properties` —
   // see the last-state maps above.
   final Map<LocalKey, ComponentInstance> _nodesByKey = {};
-  ComponentInstance? _unoNode;
+  ComponentInstance? _boardNode;
   final List<ComponentInstance> _micSensors = [];
   final List<ComponentInstance> _buttons = [];
 
@@ -184,13 +203,13 @@ class SimulationEngine({
     _behaviourNodes.clear();
     _lastBehaviourState.clear();
     _measurements.clear();
-    _unoNode = null;
+    _boardNode = null;
     // Drop last-emitted visual state so a fresh run re-evaluates every node from
     // scratch instead of comparing against the previous run's final state.
     _lastMicHigh.clear();
     _lastAnalog.clear();
     _lastTopologyState = {};
-    _lastPin13State = false;
+    _lastBuiltinLedState = false;
     _runElapsedUs = 0;
     _partsPoweredOn = false;
     for (final node in _output.simulationNodes) {
@@ -208,8 +227,8 @@ class SimulationEngine({
       }
 
       final name = node.part.name;
-      if (name == PartNames.arduinoUno) {
-        _unoNode = node;
+      if (PartRegistry.isBoard(node.part)) {
+        _boardNode = node;
       } else if (name == PartNames.ky037MicSensor) {
         _micSensors.add(node);
       } else if (name == PartNames.pushButton) {
@@ -223,14 +242,17 @@ class SimulationEngine({
     _isSimulating = false;
     _isPaused = false;
     if (wasSimulating) onDebugLog?.call('[Run] Simulation stopped.');
-    AVRBridge.buzzerPin = null;
+    _board.buzzerPin = null;
     // Drop pulse-measurement requests: a part's logic re-registers whichever
     // pins it needs on the next run, so a stale set would have the emulator
     // measuring pins nothing is watching.
-    AVRBridge.servoPins = const [];
+    _board.servoPins = const [];
     final stopUpdates = <LocalKey, Map<String, dynamic>>{};
     for (final node in _output.simulationNodes) {
-      if (node.part.name == PartNames.led || node.part.name == PartNames.piezoBuzzer) {
+      if (PartRegistry.isBoard(node.part)) {
+        // The board's own LED goes out with the sketch.
+        stopUpdates[node.key] = {ComponentProps.isOn: false};
+      } else if (node.part.name == PartNames.led || node.part.name == PartNames.piezoBuzzer) {
         final props = Map<String, dynamic>.from(node.properties);
         props[ComponentProps.isOn] = false;
         props[ComponentProps.hasError] = false;
@@ -260,6 +282,7 @@ class SimulationEngine({
     _isSimulating = true;
     _isPaused = false;
     _indexNodes();
+    _pickBoard();
     _buildCircuit();
 
     final nodes = _output.simulationNodes;
@@ -270,11 +293,11 @@ class SimulationEngine({
       '(behaviour-driven: ${_behaviourNodes.length}, buttons: ${_buttons.length}, '
       'mic: ${_micSensors.length}).',
     );
-    if (_unoNode == null) {
-      onDebugLog?.call('[Run] Warning: no Arduino Uno found on the canvas.');
+    if (_boardNode == null) {
+      onDebugLog?.call('[Run] Warning: no board found on the canvas.');
     }
 
-    AVRBridge.onBuzzerFrequencyChanged = (freq) {
+    _board.onBuzzerFrequencyChanged = (freq) {
       // Audio playback is the owner's responsibility (UI isolate) and is
       // driven straight from the detector so a tone starts the moment it is
       // heard. The on-canvas state is a part's own business: whichever part
@@ -305,7 +328,7 @@ class SimulationEngine({
   /// Sends [text] to the running sketch's serial receiver (Serial.read /
   /// Serial.available). No-op when the simulation is not running.
   void sendSerialInput(String text) {
-    if (_isSimulating) AVRBridge.queueSerialInput(text);
+    if (_isSimulating) _board.queueSerialInput(text);
   }
 
   /// Applies properties the user changed mid-run to the engine's own copy of
@@ -337,7 +360,8 @@ class SimulationEngine({
         command: command,
         nodes: _nodesByKey.values.toList(),
         netlist: _netlist,
-        unoNode: _unoNode,
+        board: _board,
+        boardNode: _boardNode,
       );
       onDebugLog?.call(
         '[Debug] IR $event (0x${command.toRadixString(16).padLeft(2, '0')}) → '
@@ -389,7 +413,7 @@ class SimulationEngine({
     // would merge its legs and hide it from the current accounting entirely.
     _wireCurrents = onWireCurrents == null
         ? null
-        : WireCurrentSolver(spiceNetlist, wires, boardKey: _unoNode?.key);
+        : WireCurrentSolver(spiceNetlist, wires, boardKey: _boardNode?.key);
     _lastWireCurrents.clear();
 
     _recomputeSpiceActive();
@@ -398,11 +422,11 @@ class SimulationEngine({
   /// Captures the current simulation state for debugging.
   /// Only valid while [isSimulating] is true.
   SimulationSnapshot captureSnapshot() => SimulationSnapshot(
-    pinStates: {for (var p = 0; p < AVRConfig.digitalPinCount; p++) p: AVRBridge.getPinState(p)},
+    pinStates: {for (final p in _profile.digitalPins) p: _board.getPinState(p)},
     ledCurrents: {
       for (final key in _spiceEngine.measuredElementKeys) key: _spiceEngine.getLedCurrent(key),
     },
-    cpuCycles: AVRBridge.getCycles(),
+    cpuCycles: _board.getCycles(),
   );
 
   // ---------------------------------------------------------------------------
@@ -414,10 +438,10 @@ class SimulationEngine({
   /// sensors feed the analog model), so with none of those present the solve is
   /// pure overhead and is skipped. Must run after [_indexNodes] + SPICE build.
   void _recomputeSpiceActive() {
-    final uno = _unoNode;
+    final board = _boardNode;
     final hasAnalogInput =
-        uno != null &&
-        AVRConfig.analogInputPorts.any((p) => _spiceEngine.isPortConnected(uno.key, p));
+        board != null &&
+        _canvasProfile.analogInputPorts.any((p) => _spiceEngine.isPortConnected(board.key, p));
     // "Did the netlist produce any part element" rather than "are there LEDs":
     // the LED bucket is gone, and this is the question that was always being
     // asked through it.
@@ -479,6 +503,7 @@ class SimulationEngine({
   }
 
   void _updateMicSensors() => MicFrameUpdater.update(
+    board: _board,
     micInput: _micInput,
     micSensors: _micSensors,
     spiceEngine: _spiceEngine,
@@ -486,11 +511,13 @@ class SimulationEngine({
     queueUpdate: _queueNodeUpdate,
   );
 
-  /// Feeds solved circuit voltages at the Arduino's analog pins (A0–A5) into the
-  /// ADC so `analogRead()` reflects external voltages (dividers, sensors, pots).
-  /// Skips A0 when a mic sensor owns that channel. Must run after [SpiceEngine.solve].
+  /// Feeds solved circuit voltages at the board's analog pins (the Uno's A0–A5,
+  /// the Pico's GP26–28) into the ADC so `analogRead()` reflects external
+  /// voltages (dividers, sensors, pots). Skips channel 0 when a mic sensor owns
+  /// it. Must run after [SpiceEngine.solve].
   void _updateAnalogInputs() => AnalogIoFrameUpdater.update(
-    unoNode: _unoNode,
+    board: _board,
+    boardNode: _boardNode,
     micOwnsA0: _micSensors.isNotEmpty,
     spiceEngine: _spiceEngine,
     lastAnalog: _lastAnalog,
@@ -505,7 +532,8 @@ class SimulationEngine({
       simulationNodes: _output.simulationNodes,
       lastTopologyState: _lastTopologyState,
       netlist: _netlist,
-      unoNode: _unoNode,
+      board: _board,
+      boardNode: _boardNode,
       nodesByKey: _nodesByKey,
       micIsDigitalHigh: _micInput.isDigitalHigh,
     );
@@ -519,7 +547,8 @@ class SimulationEngine({
       lastState: _lastBehaviourState,
       elapsed: Duration(microseconds: _runElapsedUs),
       netlist: _netlist,
-      unoNode: _unoNode,
+      board: _board,
+      boardNode: _boardNode,
       measurements: _measurements,
       queueUpdate: _queueNodeUpdate,
       onDebugLog: onDebugLog,
@@ -527,7 +556,7 @@ class SimulationEngine({
     // Push any newly requested pulse measurements to the emulator. Deferred to
     // here rather than done per call so one reconfigure covers every part that
     // asked this frame.
-    _measurements.flush();
+    _measurements.flush(_board);
   }
 
   /// The real-time run loop for one simulation [generation]. Exits the moment
@@ -541,22 +570,27 @@ class SimulationEngine({
     // the emulator (the root cause of the blink-after-restart bug).
     assert(_activeLoops == 1, 'Two simulation run loops are active at once');
     try {
+      final profile = _profile;
       try {
-        AVRBridge.loadHex(compiledHex, onSerialPrint: onSerialPrint);
+        _board.loadHex(compiledHex, onSerialPrint: onSerialPrint);
+      } on FormatException catch (e) {
+        onSerialPrint?.call('Error loading HEX: ${e.message}');
+        _isSimulating = false;
+        return;
       } catch (e) {
         onSerialPrint?.call('Error loading HEX: $e');
         _isSimulating = false;
         return;
       }
 
-      onSerialPrint?.call('Running real AVR execution of sketch...');
+      onSerialPrint?.call('Running the sketch on the emulated ${profile.partName}...');
       onDebugLog?.call(
-        '[Run] Simulation started (AVR @ ${AVRConfig.clockFrequency ~/ 1000000} MHz).',
+        '[Run] Simulation started (${profile.partName} @ ${profile.clockHz ~/ 1000000} MHz).',
       );
 
       bool stillCurrent() => _isSimulating && generation == _runGeneration;
 
-      const usPerCycle = 1000000 / AVRConfig.clockFrequency;
+      final usPerCycle = 1000000 / profile.clockHz;
       // Cap the catch-up per frame so a throttled/backgrounded tab (whose timers
       // stall for seconds) can't trigger a multi-second cycle burst that freezes
       // the UI; the sim just resumes slightly behind wall-clock instead.
@@ -586,7 +620,7 @@ class SimulationEngine({
         if (deltaUs > maxStepUs) deltaUs = maxStepUs;
         if (deltaUs <= 0) deltaUs = AVRConfig.frameBudgetMs * 1000;
 
-        // Advance the AVR by the real time elapsed so millis()/delay() — and
+        // Advance the chip by the real time elapsed so millis()/delay() — and
         // therefore clap-interval timing and rhythm playback — track wall-clock.
         final cycles = (deltaUs / usPerCycle).round();
         _runElapsedUs += deltaUs;
@@ -623,7 +657,7 @@ class SimulationEngine({
   /// pace itself).
   ///
   /// Extracted from the run loop so the simulation can be stepped
-  /// deterministically — one fixed [AVRConfig.cyclesPerFrame] slice at a time,
+  /// deterministically — one fixed slice (a 60th of a second by default) at a time,
   /// independent of real-time pacing — from tests (see [prepareForFrameStepping]).
   @visibleForTesting
   int runFrame({int? cycles, bool solveSpice = true}) {
@@ -642,47 +676,53 @@ class SimulationEngine({
       if (_behaviourNodes.isNotEmpty) _updateBehaviourParts(circuitSolved: false);
     }
 
-    // 1. Update digital inputs (push buttons → netlist → AVR pins)
+    // 1. Update digital inputs (push buttons → netlist → board pins)
     _updateDigitalInputs();
 
-    // 2. Inject mic sensor state into AVR ADC and SPICE
+    // 2. Inject mic sensor state into the ADC and SPICE
     _updateMicSensors();
     final inputsDoneUs = sw.elapsedMicroseconds;
 
-    // 3. Tick the AVR emulator. The cycle count is normally the wall-clock time
+    // 3. Tick the emulator. The cycle count is normally the wall-clock time
     // elapsed since the last frame (see [_runLoop]) so the emulator tracks real
     // time even when the host can't sustain 60fps; tests pass a fixed slice.
-    AVRBridge.tick(cycles ?? AVRConfig.cyclesPerFrame);
+    final profile = _profile;
+    _board.tick(cycles ?? profile.clockHz ~/ AVRConfig.targetFps);
     final avrDoneUs = sw.elapsedMicroseconds;
 
     // 4. Read digital pin states and update SPICE voltage sources. A PWM pin is
     // high only part of the time; we drive SPICE to the full logic level whenever
     // its duty is non-zero so the LED conducts at full current, and let the
     // measured duty modulate the rendered brightness (see _updateAnalogLeds).
+    // A pin the sketch has not made an output is driven at all, so it goes
+    // high-impedance rather than holding its net at 0 V.
     // Skipped entirely when nothing observes the analog model this run.
     if (_isSpiceActive) {
-      for (final pin in AVRConfig.spicePins) {
-        final isActive = AVRBridge.getPinDuty(int.parse(pin)) > 0;
-        _spiceEngine.setPinVoltage(
-          pin,
-          isActive ? SimConstants.logicHighVolts : SimConstants.logicLowVolts,
+      for (final pin in profile.digitalPins) {
+        _spiceEngine.setPinDrive(
+          '$pin',
+          voltage: _board.getPinDuty(pin) > 0 ? profile.logicHighVolts : SimConstants.logicLowVolts,
+          isOutput: _board.isPinOutput(pin),
         );
       }
     }
 
-    // Log the built-in Arduino SMD LED (pin 13) state change for diagnostics.
-    // Not queued as a canvas update: no painter renders from it (the onboard
-    // "L" LED is currently static), and writing it to the node's properties
-    // used to leak into the saved `.cdl` as a stray `13: "..."` key — see the
-    // dirty-after-simulation bug this was part of.
-    final isPin13High = AVRBridge.isBuiltinLedOn;
-    if (isPin13High != _lastPin13State) {
-      final portBVal = AVRBridge.getPortBValue();
+    // The board's own LED (`LED_BUILTIN`). Drawn by boards whose painter
+    // follows it — the Pico's — and logged for diagnostics either way. Safe to
+    // write to the node: `isOn` is a runtime flag, which the `.cdl` writer
+    // leaves out (an older version of this wrote a `13: "..."` key, which
+    // leaked into the saved file and marked it dirty after every run).
+    final isLedOn = _board.isBuiltinLedOn;
+    if (isLedOn != _lastBuiltinLedState) {
       onDebugLog?.call(
-        '[Debug] Pin 13 changed to: $isPin13High'
-        ' (PORTB: $portBVal) (cycles: ${AVRBridge.getCycles()})',
+        '[Debug] Built-in LED (pin ${profile.builtinLedPin}) changed to: $isLedOn'
+        ' (cycles: ${_board.getCycles()})',
       );
-      _lastPin13State = isPin13High;
+      _lastBuiltinLedState = isLedOn;
+      final board = _boardNode;
+      if (board != null) {
+        _queueNodeUpdate(board.key, {ComponentProps.isOn: isLedOn});
+      }
     }
 
     // 6. Solve the analog circuit so getLedCurrent()/getPortVoltage() return a
@@ -745,11 +785,12 @@ class SimulationEngine({
     _isSimulating = true;
     _isPaused = false;
     _lastTopologyState = {};
-    _lastPin13State = false;
+    _lastBuiltinLedState = false;
     _runElapsedUs = 0;
     _indexNodes();
+    _pickBoard();
     _buildCircuit();
 
-    AVRBridge.loadHex(compiledHex, onSerialPrint: onSerialPrint);
+    _board.loadHex(compiledHex, onSerialPrint: onSerialPrint);
   }
 }

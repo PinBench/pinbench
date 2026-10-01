@@ -1,6 +1,7 @@
 import 'package:pinbench_pdl/pinbench_pdl.dart';
 import 'package:flutter/services.dart';
 import 'package:pinbench_parts/logic/part_logic.dart';
+import 'package:pinbench_parts/models/board_profile.dart';
 import 'package:pinbench_parts/logic/built_in_part_logic.dart';
 import 'package:pinbench_parts/logic/ssd1306.dart';
 import 'package:pinbench_parts/models/part_model.dart';
@@ -679,6 +680,8 @@ class _ScriptedPins({
   @override
   String? boardPortFor(String portId) => connectedTo(portId)?.toString();
   @override
+  I2cLine? i2cLineFor(String portId) => null;
+  @override
   double duty(int pin) => dutyValue;
   @override
   double pulseUs(int pin) {
@@ -705,6 +708,8 @@ class const _FakePins() implements PartPinApi {
   @override
   String? boardPortFor(String portId) => null;
   @override
+  I2cLine? i2cLineFor(String portId) => null;
+  @override
   double duty(int pin) => 0;
   @override
   double pulseUs(int pin) => 0;
@@ -716,6 +721,8 @@ class const _FakePins() implements PartPinApi {
 class const _FakeBoardPorts(final Map<String, String> wiring) implements PartPinApi {
   @override
   String? boardPortFor(String portId) => wiring[portId];
+  @override
+  I2cLine? i2cLineFor(String portId) => _uno.i2cLineAt(wiring[portId] ?? '');
   @override
   int? connectedTo(String portId) => int.tryParse(wiring[portId] ?? '');
   @override
@@ -756,3 +763,6 @@ SVG "s.svg"
 PINS
   p 4px 4px passive "P"
 ''').definition!;
+
+/// The board the wiring fakes stand for.
+const _uno = BoardProfile.arduinoUno;

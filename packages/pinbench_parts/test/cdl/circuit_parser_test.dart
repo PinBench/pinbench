@@ -252,6 +252,31 @@ Circuit {
       expect(names, contains(PartNames.led));
     });
 
+    test('a Pico W round-trips as `pico`, its GPIOs wired by number', () {
+      final pico = ComponentInstance(
+        position: Offset.zero,
+        part: standardParts.firstWhere((p) => p.name == PartNames.picoW),
+      );
+      final led = _node(PartNames.led, 'led', const Offset(400, 50));
+      final generated = CircuitParser.generate(
+        [pico, led],
+        [
+          WireModel(
+            id: 'w1',
+            start: PortLocation(nodeKey: pico.key, portId: '15'),
+            end: PortLocation(nodeKey: led.key, portId: 'anode'),
+          ),
+        ],
+      );
+      expect(generated, contains('pico := RaspberryPiPicoW {'));
+      expect(generated, contains('from: pico.15;'));
+
+      final applied = CircuitParser.applyToCanvas(CircuitParser.parse(generated), standardParts);
+      final board = applied.nodes.firstWhere((n) => n.part.name == PartNames.picoW);
+      expect(board.part.isBoard, isTrue);
+      expect(applied.wires.single.start, PortLocation(nodeKey: board.key, portId: '15'));
+    });
+
     test('resolves an ALIAS, so a file written under an old name still loads', () async {
       // The LDR shipped as "Photoresistor"; files saved then use that token.
       TestWidgetsFlutterBinding.ensureInitialized();

@@ -86,7 +86,8 @@ void main() {
     // be stoppable, without reaching the emulator.
     final harness = build(
       configure: (sketch) =>
-          sketch.compiler = ({workspacePath, required code}) => Completer<String>().future,
+          sketch.compiler = ({workspacePath, required code, required board}) =>
+              Completer<String>().future,
     );
 
     unawaited(harness.container.read(simulationProvider.notifier).toggle());
@@ -123,7 +124,7 @@ void main() {
         sketch.source = 'stale';
         // Standing in for the editor buffer reaching disk.
         sketch.onSave = () => sketch.source = 'void setup() {}';
-        sketch.compiler = ({workspacePath, required code}) async {
+        sketch.compiler = ({workspacePath, required code, required board}) async {
           compiledSource = code;
           throw const FormatException('stop here');
         };

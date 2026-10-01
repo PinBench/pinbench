@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 
 import 'painters/arduino_painter/arduino_painter.dart';
+import 'painters/pico_w/pico_w_painter.dart';
 import 'painters/breadboard_painter/breadboard_painter.dart';
 import 'painters/breadboard_painter/configs/breadboard_config.dart';
 
@@ -210,6 +211,14 @@ final standardParts = <PartModel>[
     category: PartCategory.microcontrollers,
     isBoard: true,
     painterBuilder: ({isOutline = false, properties}) => ArduinoPainter(isOutline: isOutline),
+  ),
+  PartModel(
+    name: PartNames.picoW,
+    size: PicoWPainter.componentSize,
+    category: PartCategory.microcontrollers,
+    isBoard: true,
+    painterBuilder: ({isOutline = false, properties}) =>
+        PicoWPainter(isOutline: isOutline, properties: properties),
   ),
   PartModel(
     name: PartNames.led,

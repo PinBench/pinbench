@@ -1,3 +1,7 @@
+import 'package:pinbench_parts/models/board_profile.dart';
+import 'package:pinbench_parts/models/component_instance.dart';
+import 'package:pinbench_parts/models/part_model.dart';
+import 'package:pinbench_parts/part_registry.dart';
 import 'package:pinbench_sim/core/simulation_runner.dart';
 import 'package:pinbench_sim/core/sketch_compiler.dart';
 import 'package:pinbench_sim/core/sim_io.dart';
@@ -18,11 +22,15 @@ import '../../support/simulation_bindings.dart';
 /// Every case here stops before the emulator starts — the compiler either
 /// throws or the run is rejected — so nothing spawns an isolate.
 void main() {
-  ({SimulationRunner runner, List<String?> problems}) build(SketchCompiler compiler) {
+  ({SimulationRunner runner, List<String?> problems}) build(
+    SketchCompiler compiler, {
+    List<ComponentInstance> nodes = const [],
+  }) {
     final problems = <String?>[];
     final runner = SimulationRunner(
-      // An empty circuit: nothing here gets as far as building a netlist.
-      circuit: FakeSimulationCanvas(),
+      // An empty circuit, or a board alone: nothing here gets as far as
+      // building a netlist.
+      circuit: FakeSimulationCanvas()..simulationNodes = nodes,
       compiler: compiler,
       tone: const _SilentTone(),
       microphone: const _NoMicrophone(),
@@ -37,7 +45,7 @@ void main() {
     // passing the editor buffer alone silently drops them.
     String? seenPath;
     String? seenCode;
-    final harness = build(({workspacePath, required code}) async {
+    final harness = build(({workspacePath, required code, required board}) async {
       seenPath = workspacePath;
       seenCode = code;
       throw const FormatException('stop here');
@@ -54,9 +62,40 @@ void main() {
     expect(started, isFalse);
   });
 
+  group('the sketch is built for the board on the canvas', () {
+    Future<BoardProfile?> boardFor(List<ComponentInstance> nodes) async {
+      BoardProfile? seen;
+      final harness = build(({workspacePath, required code, required board}) async {
+        seen = board;
+        throw const FormatException('stop here');
+      }, nodes: nodes);
+      await harness.runner.start('void setup(){}', onStop: () {});
+      return seen;
+    }
+
+    ComponentInstance placed(String name) => ComponentInstance(
+      position: Offset.zero,
+      part: standardParts.firstWhere((p) => p.name == name),
+    );
+
+    test('a Pico W', () async {
+      final board = await boardFor([placed(PartNames.picoW)]);
+      expect(board, BoardProfile.picoW);
+      expect(board?.fqbn, 'rp2040:rp2040:rpipico');
+    });
+
+    test('an Uno', () async {
+      expect(await boardFor([placed(PartNames.arduinoUno)]), BoardProfile.arduinoUno);
+    });
+
+    test('an Uno when there is no board, as always', () async {
+      expect(await boardFor(const []), BoardProfile.arduinoUno);
+    });
+  });
+
   test('with no workspace, the code buffer is compiled on its own', () async {
     String? seenPath = 'unset';
-    final harness = build(({workspacePath, required code}) async {
+    final harness = build(({workspacePath, required code, required board}) async {
       seenPath = workspacePath;
       throw const FormatException('stop here');
     });
@@ -66,7 +105,7 @@ void main() {
   });
 
   test('a compile failure refuses to start and surfaces the message verbatim', () async {
-    final harness = build(({workspacePath, required code}) async {
+    final harness = build(({workspacePath, required code, required board}) async {
       throw const FormatException('sketch.ino:4: expected ;');
     });
 

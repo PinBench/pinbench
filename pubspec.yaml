@@ -181,6 +181,7 @@ flutter:
     - assets/templates/current_limiting/
     - assets/templates/mic/
     - assets/templates/oled/
+    - assets/templates/pico_blink/
     - assets/templates/piezo_buzzer/
     - assets/templates/servo/
     - assets/templates/voltage_divider/

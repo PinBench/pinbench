@@ -6,6 +6,7 @@ import 'package:pinbench_parts/part_registry.dart';
 import 'package:pinbench_parts/logic/part_logic.dart';
 import 'package:pinbench_parts/logic/built_in_part_logic.dart';
 
+import '../board/board_emulator.dart';
 import '../circuit_netlist.dart';
 import '../engine_pin_api.dart';
 import '../spice_engine.dart';
@@ -55,7 +56,8 @@ abstract final class PartBehaviorFrameUpdater {
     required Map<LocalKey, Map<String, Object?>> lastState,
     required Duration elapsed,
     required CircuitNetlist netlist,
-    required ComponentInstance? unoNode,
+    required BoardEmulator board,
+    required ComponentInstance? boardNode,
     required EmulatorMeasurements measurements,
     required void Function(LocalKey key, Map<String, dynamic> props) queueUpdate,
     void Function(String)? onDebugLog,
@@ -96,7 +98,8 @@ abstract final class PartBehaviorFrameUpdater {
           spiceEngine: spiceEngine,
           isSpiceActive: isSpiceActive,
           netlist: netlist,
-          unoNode: unoNode,
+          board: board,
+          boardNode: boardNode,
           measurements: measurements,
           onDebugLog: onDebugLog,
         );
@@ -141,7 +144,8 @@ abstract final class PartBehaviorFrameUpdater {
     required SpiceEngine spiceEngine,
     required bool isSpiceActive,
     required CircuitNetlist netlist,
-    required ComponentInstance? unoNode,
+    required BoardEmulator board,
+    required ComponentInstance? boardNode,
     required EmulatorMeasurements measurements,
     void Function(String)? onDebugLog,
   }) {
@@ -170,11 +174,12 @@ abstract final class PartBehaviorFrameUpdater {
         pins: EnginePinApi(
           node: node,
           netlist: netlist,
-          unoNode: unoNode,
+          board: board,
+          boardNode: boardNode,
           measurements: measurements,
         ),
         spice: EngineSpiceApi(node: node, spiceEngine: spiceEngine, isActive: isSpiceActive),
-        i2c: const EngineI2cApi(),
+        i2c: EngineI2cApi(board),
       ),
     );
   }

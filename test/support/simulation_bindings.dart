@@ -31,8 +31,9 @@ final fakeSimulationBindings = () => [
 
 /// An empty circuit whose read-only flag and change signal a test can drive.
 class FakeSimulationCanvas extends ChangeNotifier implements SimulationCanvas {
+  /// Empty unless a test places something.
   @override
-  List<ComponentInstance> get simulationNodes => const [];
+  List<ComponentInstance> simulationNodes = const [];
 
   @override
   List<WireModel> get simulationWires => const [];
@@ -69,7 +70,7 @@ class FakeSimulationSketch extends ChangeNotifier implements SimulationSketch {
   String? precompiledHex;
 
   @override
-  SketchCompiler compiler = ({workspacePath, required code}) async =>
+  SketchCompiler compiler = ({workspacePath, required code, required board}) async =>
       throw StateError('no compiler in tests');
 
   var saveCount = 0;

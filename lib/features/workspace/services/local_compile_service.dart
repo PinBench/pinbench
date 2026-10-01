@@ -3,14 +3,21 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import 'package:pinbench_parts/models/board_profile.dart';
+import 'package:pinbench_sim/core/board/intel_hex.dart';
+
 import 'compiler_service.dart' show CompilerException;
 
 /// Compiles Arduino sketches to Intel-HEX by shelling out to `arduino-cli`
-/// (located on PATH or common install dirs). Native platforms only — the
-/// browser cannot run `arduino-cli` locally (see `RemoteCompileService` for
-/// the web path). Throws [CompilerException] on failure.
+/// (located on PATH or common install dirs), for whichever board is on the
+/// canvas. Native platforms only — the browser cannot run `arduino-cli`
+/// locally (see `RemoteCompileService` for the web path). Throws
+/// [CompilerException] on failure.
 abstract final class LocalCompileService {
-  static Future<String> compileWorkspace(String directoryPath) async {
+  static Future<String> compileWorkspace(
+    String directoryPath, {
+    BoardProfile board = BoardProfile.arduinoUno,
+  }) async {
     final outDir = Directory(p.join(directoryPath, 'build'));
     if (!outDir.existsSync()) {
       outDir.createSync(recursive: true);
@@ -21,43 +28,45 @@ abstract final class LocalCompileService {
       throw CompilerException('arduino-cli not found.');
     }
 
+    // arduino-cli names its outputs after the directory. A build for one board
+    // leaves files another board's build does not overwrite — an Uno's `.hex`
+    // beside a Pico's `.bin` — so last run's are cleared rather than risk
+    // running a program built for the board that was on the canvas before.
+    final dirName = p.basename(directoryPath);
+    for (final entry in outDir.listSync()) {
+      final name = p.basename(entry.path);
+      if (entry is File && (name.startsWith('$dirName.ino.') || name.startsWith('sketch.ino.'))) {
+        entry.deleteSync();
+      }
+    }
+
     final result = await Process.run(cliPath, [
       'compile',
       '--fqbn',
-      'arduino:avr:uno',
+      board.fqbn,
       '--output-dir',
       outDir.path,
       directoryPath,
     ]);
 
     if (result.exitCode != 0) {
-      throw CompilerException('Compilation failed:\n${result.stderr}\n${result.stdout}');
+      throw CompilerException(_failure(result, board));
     }
 
-    // arduino-cli names the output hex file after the directory name.
-    final dirName = p.basename(directoryPath);
-    var hexFile = File(p.join(outDir.path, '$dirName.ino.hex'));
-
-    // Fallbacks: a sketch named sketch.ino, then any .hex in the output dir.
-    if (!hexFile.existsSync()) {
-      hexFile = File(p.join(outDir.path, 'sketch.ino.hex'));
+    // Named after the directory; a sketch named sketch.ino is the fallback.
+    for (final base in ['$dirName.ino', 'sketch.ino']) {
+      final program = await _readProgram(outDir.path, base, board);
+      if (program != null) return program;
     }
 
-    if (!hexFile.existsSync()) {
-      final hexFiles = outDir.listSync().where((e) => e.path.endsWith('.hex')).toList();
-      if (hexFiles.isNotEmpty) {
-        hexFile = File(hexFiles.first.path);
-      } else {
-        throw CompilerException(
-          'Compilation succeeded but HEX file was not generated in ${outDir.path}.',
-        );
-      }
-    }
-
-    return hexFile.readAsString();
+    final hexFiles = outDir.listSync().where((e) => e.path.endsWith('.hex')).toList();
+    if (hexFiles.isNotEmpty) return File(hexFiles.first.path).readAsString();
+    throw CompilerException(
+      'Compilation succeeded but HEX file was not generated in ${outDir.path}.',
+    );
   }
 
-  static Future<String> compile(String code) async {
+  static Future<String> compile(String code, {BoardProfile board = BoardProfile.arduinoUno}) async {
     final tempDir = await getTemporaryDirectory();
     final buildDir = Directory(p.join(tempDir.path, 'arduino_build'));
     if (!buildDir.existsSync()) {
@@ -74,9 +83,11 @@ abstract final class LocalCompileService {
     await sketchFile.writeAsString(code);
 
     final outDir = Directory(p.join(buildDir.path, 'out'));
-    if (!outDir.existsSync()) {
-      outDir.createSync(recursive: true);
+    if (outDir.existsSync()) {
+      // A shared scratch folder: the last build may have been for another board.
+      outDir.deleteSync(recursive: true);
     }
+    outDir.createSync(recursive: true);
 
     try {
       final cliPath = await _findArduinoCli();
@@ -89,28 +100,58 @@ abstract final class LocalCompileService {
       final result = await Process.run(cliPath, [
         'compile',
         '--fqbn',
-        'arduino:avr:uno',
+        board.fqbn,
         '--output-dir',
         outDir.path,
         sketchDir.path,
       ]);
 
       if (result.exitCode != 0) {
-        throw CompilerException('Compilation failed:\n${result.stderr}\n${result.stdout}');
+        throw CompilerException(_failure(result, board));
       }
 
-      final hexFile = File(p.join(outDir.path, 'sketch.ino.hex'));
-      if (!hexFile.existsSync()) {
+      final program = await _readProgram(outDir.path, 'sketch.ino', board);
+      if (program == null) {
         throw CompilerException('Compilation succeeded but HEX file was not generated.');
       }
-
-      return await hexFile.readAsString();
+      return program;
     } finally {
       // Clean up the temporary sketch directory.
       if (sketchDir.existsSync()) {
         sketchDir.deleteSync(recursive: true);
       }
     }
+  }
+
+  /// The program `arduino-cli` wrote as `<base>.hex` or, for a board whose
+  /// toolchain writes a raw image instead, `<base>.bin` turned into Intel HEX
+  /// at [BoardProfile.binLoadAddress] — the one format the emulator takes.
+  static Future<String?> _readProgram(String outDir, String base, BoardProfile board) async {
+    final hex = File(p.join(outDir, '$base.hex'));
+    if (hex.existsSync()) return hex.readAsString();
+    final loadAddress = board.binLoadAddress;
+    final bin = File(p.join(outDir, '$base.bin'));
+    if (loadAddress != null && bin.existsSync()) {
+      return IntelHex.encode(await bin.readAsBytes(), baseAddress: loadAddress);
+    }
+    return null;
+  }
+
+  /// The compiler's output, and — when the board's core is what is missing —
+  /// how to install it, which is the one failure the output alone does not
+  /// explain to someone who has never added a board package.
+  static String _failure(ProcessResult result, BoardProfile board) {
+    final output = '${result.stderr}\n${result.stdout}';
+    final core = board.fqbn.split(':').take(2).join(':');
+    final missingCore = RegExp(
+      'platform not installed|unknown package|invalid FQBN',
+      caseSensitive: false,
+    ).hasMatch(output);
+    if (!missingCore || board.coreIndexUrl == null) return 'Compilation failed:\n$output';
+    return 'Compilation failed: the $core core for the ${board.partName} is not installed. '
+        'Install it with:\n'
+        '  arduino-cli core install $core --additional-urls ${board.coreIndexUrl}\n\n'
+        '$output';
   }
 
   static Future<String?> _findArduinoCli() async {

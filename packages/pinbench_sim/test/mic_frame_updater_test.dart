@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/part_model.dart';
 import 'package:pinbench_sim/core/avr_interop.dart';
+import 'package:pinbench_sim/core/board/avr_board.dart';
 import 'package:pinbench_sim/core/sim_io.dart';
 import 'package:pinbench_sim/core/spice_engine.dart';
 import 'package:pinbench_sim/core/updaters/mic_frame_updater.dart';
@@ -48,6 +49,7 @@ void main() {
     final updates = <LocalKey, Map<String, dynamic>>{};
 
     MicFrameUpdater.update(
+      board: const AvrBoardEmulator(),
       micInput: _LoudMic(),
       micSensors: [_mic('mic1')],
       spiceEngine: spice,
@@ -69,6 +71,7 @@ void main() {
     var queued = 0;
 
     MicFrameUpdater.update(
+      board: const AvrBoardEmulator(),
       micInput: _LoudMic(),
       micSensors: const [],
       spiceEngine: spice,

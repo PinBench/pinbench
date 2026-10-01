@@ -11,6 +11,7 @@ import 'package:pinbench_parts/models/port_model.dart';
 import 'package:pinbench_parts/models/wire_model.dart';
 import 'package:pinbench_parts/part_registry.dart';
 import 'package:pinbench_sim/core/avr_interop.dart';
+import 'package:pinbench_sim/core/board/avr_board.dart';
 import 'package:pinbench_sim/core/circuit_netlist.dart';
 import 'package:pinbench_sim/core/updaters/ir_link.dart';
 
@@ -130,7 +131,8 @@ void main() {
         command: 0x45,
         nodes: [board, ir],
         netlist: netlist,
-        unoNode: board,
+        board: const AvrBoardEmulator(),
+        boardNode: board,
       );
     }
 

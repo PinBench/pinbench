@@ -1,5 +1,9 @@
 import 'package:pinbench_pdl/pinbench_pdl.dart';
 
+import '../models/board_profile.dart';
+
+export '../models/board_profile.dart' show I2cLine;
+
 /// The escape hatch for `.pdl` parts that cannot be expressed declaratively:
 /// one frame of Dart behaviour for one placed component.
 ///
@@ -137,12 +141,19 @@ abstract interface class PartPinApi {
   ///
   /// [connectedTo] answers the same question in the form a *signal* wants (a
   /// pin number to measure), and cannot name anything else: the analog and
-  /// power headers are not numbered pins. A bus peripheral needs the other
-  /// form, because being on the I²C bus means being on `A4` and `A5`
-  /// specifically — the ATmega328P's TWI hardware is wired to those two pads
-  /// and nothing else. A display wired to the wrong pins should stay dark
-  /// here, exactly as it would on a desk.
+  /// power headers are not numbered pins. A peripheral that cares *which*
+  /// supply it is on reads this.
   String? boardPortFor(String portId);
+
+  /// The I²C line of the board's hardware bus that [portId] reaches, or null
+  /// when it reaches neither.
+  ///
+  /// Asked of the board rather than worked out from [boardPortFor], because
+  /// which pins carry the bus is the board's fact: `A4`/`A5` on an Uno, whose
+  /// ATmega328P has its TWI hardware on those two pads and nothing else, GP4/
+  /// GP5 on a Pico, where `Wire` puts I2C0 by default. A display wired to the
+  /// wrong pins should stay dark here, exactly as it would on a desk.
+  I2cLine? i2cLineFor(String portId);
 
   /// PWM duty on [pin], 0..1 — what `analogWrite` last set.
   double duty(int pin);

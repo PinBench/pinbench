@@ -4,14 +4,39 @@ import '../config/avr_config.dart';
 ///
 /// Tracks half-period deltas in CPU cycles, stabilizes over 4 consecutive
 /// toggles, and signals both frequency detection and tone-stop events.
+///
+/// Cycles of [clockHz], whatever board is running: every threshold below is a
+/// time, written in microseconds and turned into cycles once. They were
+/// written as 16 MHz cycle counts while the Uno was the only board, and a
+/// 125 MHz Pico would have read each one eight times too short.
 class FrequencyDetector {
-  static const _defaultTimeoutCycles = 160000;
+  new({this.clockHz = AVRConfig.clockFrequency})
+    : _minHalfPeriod = _cycles(25, clockHz),
+      _maxHalfPeriod = _cycles(25000, clockHz),
+      _pitchTolerance = _cycles(125, clockHz),
+      _defaultTimeoutCycles = _cycles(10000, clockHz),
+      _minTimeoutCycles = _cycles(250, clockHz),
+      _timeoutCycles = _cycles(10000, clockHz);
+
+  final int clockHz;
+
+  static int _cycles(double us, int clockHz) => (us * clockHz / 1e6).round();
+
+  /// Valid audible range: 20 Hz to 20 kHz, as half-periods.
+  final int _minHalfPeriod;
+  final int _maxHalfPeriod;
+
+  /// How far a half-period may move before it counts as a new pitch.
+  final int _pitchTolerance;
+
+  final int _defaultTimeoutCycles;
+  final int _minTimeoutCycles;
 
   var _lastToggleCycle = 0;
   var _prevDelta = 0;
   var _stableDelta = 0;
   var _stableCount = 0;
-  var _timeoutCycles = _defaultTimeoutCycles;
+  int _timeoutCycles;
   var _isTonePlaying = false;
 
   bool get isTonePlaying => _isTonePlaying;
@@ -31,9 +56,8 @@ class FrequencyDetector {
     if (_lastToggleCycle != 0) {
       final deltaCycles = currentCycle - _lastToggleCycle;
 
-      // Valid audible range: 20 Hz (400,000 cycles/half) to 20 kHz (400 cycles/half)
-      if (deltaCycles > 400 && deltaCycles < 400000) {
-        if (_stableDelta == 0 || (_stableDelta - deltaCycles).abs() > 2000) {
+      if (deltaCycles > _minHalfPeriod && deltaCycles < _maxHalfPeriod) {
+        if (_stableDelta == 0 || (_stableDelta - deltaCycles).abs() > _pitchTolerance) {
           _stableDelta = deltaCycles;
           _stableCount = 1;
         } else {
@@ -45,12 +69,12 @@ class FrequencyDetector {
 
         // Dynamically extend timeout to 4 full waveforms so even tiny 1ms gaps trigger stop.
         _timeoutCycles = _stableDelta * 4;
-        if (_timeoutCycles < 4000) _timeoutCycles = 4000;
+        if (_timeoutCycles < _minTimeoutCycles) _timeoutCycles = _minTimeoutCycles;
 
         if (_stableCount >= 4) {
-          if (!_isTonePlaying || (_prevDelta - _stableDelta).abs() > 2000) {
+          if (!_isTonePlaying || (_prevDelta - _stableDelta).abs() > _pitchTolerance) {
             _prevDelta = _stableDelta;
-            var freq = AVRConfig.clockFrequency / (2.0 * _stableDelta);
+            var freq = clockHz / (2.0 * _stableDelta);
 
             // AVR Timer2 CTC mode has a slight offset (e.g. 2011 Hz instead of 2000 Hz).
             // Snap values within 20 Hz of 2000 to exactly 2000 for acoustic accuracy.
@@ -65,8 +89,9 @@ class FrequencyDetector {
     _lastToggleCycle = currentCycle;
   }
 
-  /// Must be called every CPU cycle. Returns true and resets state when the
-  /// tone times out (pin has been silent for [_timeoutCycles] cycles).
+  /// Returns true and resets state when the tone times out (pin has been
+  /// silent for [_timeoutCycles] cycles). The AVR asks every cycle; anything
+  /// coarser stops the tone that much later.
   bool checkTimeout(int currentCycles) {
     if (_isTonePlaying &&
         _lastToggleCycle != 0 &&
