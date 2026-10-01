@@ -53,9 +53,9 @@ GoRouter createAppRouter() => GoRouter(routes: $appRoutes);
 /// copy of the entire IDE — a second `Layout`, `PlatView` and canvas — and
 /// threw the first away, to end up looking identical.
 ///
-/// The exception is an embedded project (`/p/<id>?embed=1`), which is a
-/// chrome-less view of a circuit rather than the IDE. That one *is* the page,
-/// so the shell steps out of its way.
+/// The exception is an embed (`/p/<id>?embed=1` or `/t/<template>?embed=1`),
+/// which is a chrome-less view of a circuit rather than the IDE. That one *is*
+/// the page, so the shell steps out of its way.
 @TypedShellRoute<WorkspaceShellRoute>(
   routes: [
     TypedGoRoute<HomeRoute>(path: '/'),
@@ -101,8 +101,13 @@ class const HomeRoute() extends GoRouteData with $HomeRoute {
 class const TemplateRoute({required final String template})
     extends GoRouteData
     with $TemplateRoute {
+  // `?embed=1` works here as on a project: the circuit and a Run button, for
+  // putting an example in an article. See [ProjectRoute].
   @override
-  Widget build(BuildContext context, GoRouterState state) => _TemplateView(template: template);
+  Widget build(BuildContext context, GoRouterState state) => _TemplateView(
+    template: template,
+    embed: ShareLinkOptions.fromQuery(state.uri.queryParameters).embed,
+  );
 
   @override
   Page<void> buildPage(BuildContext context, GoRouterState state) =>
@@ -165,7 +170,8 @@ class _HomeViewState extends ConsumerState<_HomeView> {
 }
 
 /// `/t/<template>` — opens the named template as a temporary workspace.
-class const _TemplateView({required final String template}) extends ConsumerStatefulWidget {
+class const _TemplateView({required final String template, final bool embed = false})
+    extends ConsumerStatefulWidget {
   @override
   ConsumerState<_TemplateView> createState() => _TemplateViewState();
 }
@@ -176,7 +182,7 @@ class _TemplateViewState extends ConsumerState<_TemplateView> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        ref.read(analyticsProvider).logScreen('template');
+        ref.read(analyticsProvider).logScreen(widget.embed ? 'template_embed' : 'template');
         // Use the container, not `ref`/`context` — openTemplateWorkspace closes
         // the welcome tab as part of its own work, which can unmount this very
         // widget (and invalidate `ref`) before the function returns. The
@@ -188,8 +194,10 @@ class _TemplateViewState extends ConsumerState<_TemplateView> {
     });
   }
 
+  // The embed *is* the page, as for a project: [WorkspaceShellRoute] has
+  // already stepped aside for it.
   @override
-  Widget build(BuildContext context) => const HomePage();
+  Widget build(BuildContext context) => widget.embed ? const EmbedPage() : const HomePage();
 }
 
 /// Creates a temporary workspace from [template] and dismisses the welcome
