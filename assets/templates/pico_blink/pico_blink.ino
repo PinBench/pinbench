@@ -1,5 +1,5 @@
-// Blink on a Raspberry Pi Pico W: an LED on GP16, and the board's own LED.
-const int LED = 16;
+// Blink on a Raspberry Pi Pico W: an LED on GP21, and the board's own LED.
+const int LED = 21;
 
 void setup() {
   pinMode(LED, OUTPUT);
