@@ -1028,8 +1028,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "1061e5f824186f73671495080fe6c37433b71a1c"
-      resolved-ref: "1061e5f824186f73671495080fe6c37433b71a1c"
+      ref: e17529d2dfac03624e20a618a60328636025991c
+      resolved-ref: e17529d2dfac03624e20a618a60328636025991c
       url: "https://github.com/PinBench/ngspice_dart.git"
     source: git
     version: "0.2.1"

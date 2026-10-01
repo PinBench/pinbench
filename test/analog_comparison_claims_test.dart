@@ -124,6 +124,27 @@ void main() {
     });
   });
 
+  test('a runtime resistance change reaches the solve', () {
+    // What a `physics.resistance` rule does — and what the LDR and thermistor
+    // depend on to respond to light and temperature. Listed on the page as a
+    // limitation until ngspice_dart learned to `alter` a resistor.
+    final circuit = _load('voltage_divider');
+    final uno = _byName(circuit.nodes, PartNames.arduinoUno);
+    final bottom = circuit.nodes.lastWhere((n) => n.part.name == PartNames.resistor);
+
+    circuit.spice.setPinVoltage('8', 5.0);
+    circuit.spice.solve();
+    expect(circuit.spice.getPortVoltage(uno.key, 'A0'), closeTo(2.5, 0.01));
+
+    final element = circuit.spice.pdlElementFor(bottom.key);
+    expect(element, isNotNull);
+    circuit.spice.setElementValue(element!, 30000.0);
+    circuit.spice.solve();
+
+    // Tripling the lower leg swings A0 to three quarters of the pin's 5 V.
+    expect(circuit.spice.getPortVoltage(uno.key, 'A0'), closeTo(3.75, 0.01));
+  });
+
   group('documented limits', () {
     // These guard the "what we do not model yet" section of the page. They
     // assert the *current* shortcoming on purpose: if one starts failing, the
@@ -135,33 +156,6 @@ void main() {
         PartRegistry.spiceFor(capacitor),
         isNull,
         reason: 'capacitor now has a SPICE model — update the analog comparison',
-      );
-    });
-
-    test('a runtime resistance change never reaches the solve', () {
-      // What a `physics.resistance` rule does — and what the LDR and thermistor
-      // depend on to respond to light and temperature.
-      final circuit = _load('voltage_divider');
-      final uno = _byName(circuit.nodes, PartNames.arduinoUno);
-      final bottom = circuit.nodes.lastWhere((n) => n.part.name == PartNames.resistor);
-
-      circuit.spice.setPinVoltage('8', 5.0);
-      circuit.spice.solve();
-      final before = circuit.spice.getPortVoltage(uno.key, 'A0');
-
-      final element = circuit.spice.pdlElementFor(bottom.key);
-      expect(element, isNotNull);
-      circuit.spice.setElementValue(element!, 30000.0);
-      circuit.spice.solve();
-
-      // Tripling the lower leg should swing A0 to ~3.75 V. It does not move at
-      // all: `alter <resistor>` is rejected by the solver. Asserting the
-      // *broken* behaviour on purpose — when this starts failing, the
-      // limitation is fixed and the analog comparison overstates it.
-      expect(
-        circuit.spice.getPortVoltage(uno.key, 'A0'),
-        closeTo(before, 1e-9),
-        reason: 'runtime resistance now works — update the analog comparison',
       );
     });
 
