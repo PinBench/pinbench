@@ -2,6 +2,7 @@ import '../painters/axial_diode_painter.dart';
 import '../painters/battery_9v_painter.dart';
 import '../painters/cr2032_painter.dart';
 import '../painters/electrolytic_capacitor_painter.dart';
+import '../painters/ir_receiver_painter.dart';
 import '../painters/ldr_painter.dart';
 import '../painters/rgb_led_painter.dart';
 import '../painters/seven_segment_painter.dart';
@@ -35,6 +36,7 @@ abstract final class PartPainterRegistry {
       name: ({isOutline = false, properties}) =>
           AxialDiodePainter(kind, isOutline: isOutline, properties: properties),
     'capacitor_electrolytic': ElectrolyticCapacitorPainter.new,
+    'ir_receiver': IrReceiverPainter.new,
     'ldr': LdrPainter.new,
     'rgb_led': RgbLedPainter.new,
     'seven_segment': SevenSegmentPainter.new,

@@ -1,0 +1,33 @@
+# IR receiver module (VS1838B), 38 kHz.
+#
+# A photodiode, an amplifier and a demodulator in one shielded package: aimed
+# at a remote, OUT pulses low with the bursts it sees. Simulated as what it is
+# with no remote in view — OUT held high by the module's internal pull-up of
+# about 33 kOhm to VCC, which is what a sketch reads before a button is pressed.
+# There is no infrared source in the simulator, so it never sees a burst.
+#
+# Drawn by the `ir_receiver` painter: vector paths generated from the
+# "IR Receiver" frame in the PinBench Parts Figma file by the Flutter Da Vinci
+# plugin.
+
+PART "IR Receiver (VS1838B)"
+ALIAS "VS1838B"
+ALIAS "Infrared Receiver"
+ID ir_receiver
+CATEGORY sensors
+DESCRIPTION "38 kHz IR remote receiver — OUT, GND, VCC"
+
+# Legs one hole pitch apart, OUT, GND, VCC from the left with the lens facing.
+SIZE 40px 72px
+PAINTER ir_receiver
+
+PINS
+  out  4px   68px  output  "OUT"
+  gnd  20px  68px  ground  "GND"
+  vcc  36px  68px  power   "VCC"
+
+PHYSICS resistor
+  # The internal pull-up from VCC to OUT.
+  n1 = vcc
+  n2 = out
+  resistance = 33000

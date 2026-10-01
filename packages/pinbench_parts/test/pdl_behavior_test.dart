@@ -268,6 +268,14 @@ PHYSICS resistor
       expect(sw.spiceModel!.pinMapping, {'a': 'a', 'b': 'b', 'c': 'common'});
     });
 
+    test('the IR receiver idles high: a pull-up from VCC to OUT', () async {
+      final ir = await load('ir_receiver');
+      expect(ir.behavior, isEmpty, reason: 'no remote in the simulator, so nothing changes');
+      expect(ir.spiceModel!.type, SpiceComponentType.resistor);
+      expect(ir.spiceModel!.pinMapping, {'n1': 'vcc', 'n2': 'out'});
+      expect(ir.spiceModel!.parameters['resistance'], 33000);
+    });
+
     test('the diode is PHYSICS-only — no rules to run', () async {
       final diode = await load('diode_1n4148');
       expect(diode.behavior, isEmpty);
