@@ -100,6 +100,42 @@ void main() {
     expect(output.history(pico.key, ComponentProps.isOn).last, isFalse);
   });
 
+  test("a divider from the Pico's 3.3 V rail reads through the ADC", () {
+    final pico = place(PartNames.picoW, 'pico');
+    final top = place(PartNames.resistor, 'top', properties: {ComponentProps.resistance: '10k'});
+    final bottom = place(
+      PartNames.resistor,
+      'bottom',
+      properties: {ComponentProps.resistance: '10k'},
+    );
+    final lines = <String>[];
+    final engine = SimulationEngine(
+      output: _RecordingOutput(
+        [pico, top, bottom],
+        [
+          // 3V3 OUT → 10k → GP26 (A0) → 10k → GND: no pin drives it at all.
+          wire(pico, '3.3V', top, 'left'),
+          wire(top, 'right', pico, '26'),
+          wire(pico, '26', bottom, 'left'),
+          wire(bottom, 'right', pico, 'GND_6'),
+        ],
+      ),
+      onSerialPrint: lines.add,
+    )..prepareForFrameStepping(hex);
+
+    for (var i = 0; i < 60 && !lines.contains('DONE'); i++) {
+      engine.runFrame(cycles: 125000000 ~/ 60);
+    }
+
+    final readings = [
+      for (final l in lines)
+        if (l.startsWith('a0=')) int.parse(l.substring(3).split(' ').first),
+    ];
+    // 1.65 V of 3.3, at arduino-pico's default 10 bits. The first reading
+    // comes before any frame has solved the circuit.
+    expect(readings.skip(1), everyElement(inInclusiveRange(505, 518)));
+  });
+
   test('a program built for the other board is refused, not run', () {
     final pico = place(PartNames.picoW, 'pico');
     final lines = <String>[];

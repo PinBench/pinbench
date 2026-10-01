@@ -49,6 +49,13 @@ class const BoardProfile({
   /// number.
   required final List<int> digitalPins,
 
+  /// The board's supply pins and the voltage each holds, on USB power.
+  ///
+  /// Stiff rails, not pins: the analog solve gives each one wired to anything
+  /// a source of its own, so a divider, potentiometer or sensor powered from
+  /// the board reads what it would on a desk.
+  required final Map<String, double> supplies,
+
   /// The ADC's inputs, as board ports, in channel order: entry 0 is channel 0.
   required final List<String> analogInputPorts,
 
@@ -81,6 +88,7 @@ class const BoardProfile({
     // Typical for an ATmega328P output.
     pinSourceOhms: 40,
     digitalPins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+    supplies: {'5V': 5.0, '3.3V': 3.3},
     analogInputPorts: ['A0', 'A1', 'A2', 'A3', 'A4', 'A5'],
     // The ATmega328P's TWI hardware is wired to A4/A5 and nothing else; the
     // R3 header's separate SDA/SCL pins are the same two pads brought out
@@ -117,6 +125,9 @@ class const BoardProfile({
       0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
       16, 17, 18, 19, 20, 21, 22, 26, 27, 28,
     ],
+    // VBUS is the USB 5 V; VSYS is VBUS after the board's Schottky diode,
+    // about 0.3 V down; 3V3 OUT is the buck regulator's output.
+    supplies: {'5V': 5.0, 'VSYS': 4.7, '3.3V': 3.3},
     // ADC0–2 are GP26–28; arduino-pico calls them A0–A2 and numbers them 26–28.
     analogInputPorts: ['26', '27', '28'],
     // `Wire`'s default pins in arduino-pico: I2C0 on GP4/GP5.
