@@ -220,7 +220,15 @@ void _liveViewTests() {
       expect(openedSketch(), 'void setup() {}');
 
       repo.emit([ino('void setup() { corrected(); }')]);
-      await pumpEventQueue();
+      // Not pumpEventQueue: applying the update writes real files, and that
+      // I/O finishes on the OS's schedule, not in a set number of event-loop
+      // turns. A slow CI runner lost that race — and the write then landed
+      // after tearDown had deleted the folder.
+      final deadline = DateTime.now().add(const Duration(seconds: 5));
+      while (openedSketch() != 'void setup() { corrected(); }' &&
+          DateTime.now().isBefore(deadline)) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
 
       expect(
         openedSketch(),
