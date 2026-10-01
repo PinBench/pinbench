@@ -128,6 +128,38 @@ void main() {
     runUntil('echo x');
   });
 
+  group('beyond the basics (fixtures/pico/../pico_extras)', () {
+    final extras = File('test/fixtures/pico_extras/pico_extras.hex').readAsStringSync();
+
+    setUp(() => board = PicoBoardEmulator()..loadHex(extras, onSerialPrint: lines.add));
+
+    test('Wire moved to GP8/GP9 is probed and written there', () {
+      // The modules' pull-ups hold both lines high.
+      board.setDigitalPin(8, isHigh: true);
+      board.setDigitalPin(9, isHigh: true);
+      board.listenI2c(0x3C);
+      runUntil('READY');
+      expect(lines, containsAllInOrder(['probe 0', 'i2c 0']));
+      expect(board.drainI2c(0x3C), [
+        [0x07],
+      ]);
+    });
+
+    test('the temperature sensor reads room temperature and GP29 reads VSYS / 3', () {
+      runUntil('READY');
+      expect(lines, contains('temp 27'));
+      // 4.7 V / 3 against 3.3 V, at 10 bits.
+      final vsys = int.parse(lines.firstWhere((l) => l.startsWith('vsys ')).substring(5));
+      expect(vsys, closeTo(486, 2));
+    });
+
+    test('typed Serial Monitor input reaches Serial1.read() too', () {
+      runUntil('READY');
+      board.queueSerialInput('q');
+      runUntil('got q');
+    });
+  });
+
   test('refuses an Uno program, and the Uno refuses a Pico program', () {
     final uno = File('test/fixtures/sensors/sensors.hex').readAsStringSync();
     expect(() => PicoBoardEmulator().loadHex(uno), throwsFormatException);
