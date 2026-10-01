@@ -26,6 +26,11 @@ mixin PathArtPainter on BaseComponentPainter {
   /// time would record the same art again on every paint.
   List<PathArtLayer> get layers;
 
+  /// Draws the words printed on the part — see `PartText` — over its art, in
+  /// [designSize] coordinates. They are part of the part at rest, so the drag
+  /// ghost shows them too.
+  void paintText(Canvas canvas) {}
+
   /// Draws what changes with the part's state over its art, in [designSize]
   /// coordinates. Not called for the drag ghost, which shows the part at rest.
   void paintOverlay(Canvas canvas) {}
@@ -67,9 +72,11 @@ mixin PathArtPainter on BaseComponentPainter {
       // Ghost preview while dragging, matching the SVG-drawn parts.
       canvas.saveLayer(null, Paint()..color = const Color(0x66FFFFFF));
       canvas.drawPicture(_pictures[art] ??= _record(art));
+      paintText(canvas);
       canvas.restore();
     } else {
       canvas.drawPicture(_pictures[art] ??= _record(art));
+      paintText(canvas);
       paintOverlay(canvas);
     }
     canvas.restore();

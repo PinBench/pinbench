@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../painting/base_component_painter.dart';
 import '../../painting/path_art.dart';
+import '../../painting/part_text.dart';
 import 'cr2032_art.dart';
 
 /// Draws a CR2032 coin cell in its holder, red (+) lead up, black (−) down —
@@ -41,6 +42,21 @@ class Cr2032Painter({final Map<String, dynamic>? properties, super.isOutline})
     (Cr2032Art.plusBoot, const Color(0xFFA12C25)),
     (Cr2032Art.plusCollar, const Color(0xFF711F1A)),
     (Cr2032Art.minusCollar, const Color(0xFF242424)),
-    (Cr2032Art.label, const Color(0xFFFFFFFF)),
+    (Cr2032Art.plus, _print),
+  ];
+
+  /// The legend on the cell face, under its plus sign.
+  @override
+  void paintText(Canvas canvas) {
+    for (final (line, y) in _legend) {
+      line.paint(canvas, Offset(68, y));
+    }
+  }
+
+  static const _print = Color(0xFFFFFFFF);
+  static const _legend = [
+    (PartText('COIN BATTERY', capHeight: 10, color: _print, maxWidth: 99), 100.6),
+    (PartText('CR 2032', capHeight: 10, color: _print), 119.4),
+    (PartText('3.0V', capHeight: 10, color: _print), 138.2),
   ];
 }

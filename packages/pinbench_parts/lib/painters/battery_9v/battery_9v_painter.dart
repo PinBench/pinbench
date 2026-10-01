@@ -1,8 +1,11 @@
+import 'dart:math';
+
 import 'package:flutter/widgets.dart';
 
 import '../../painting/base_component_painter.dart';
 import '../../painting/grid_system.dart';
 import '../../painting/path_art.dart';
+import '../../painting/part_text.dart';
 import 'battery_9v_art.dart';
 
 /// Draws a 9 V PP3 battery with its snap clip, leads exiting to the left — the
@@ -40,6 +43,11 @@ class Battery9vPainter({final Map<String, dynamic>? properties, super.isOutline}
     (Battery9vArt.terminalShadow, const Color(0xFF818181)),
     (Battery9vArt.terminalFace, const Color(0xFFB1B1B1)),
     (Battery9vArt.redLead, const Color(0xFFA5161F)),
-    (Battery9vArt.label, const Color(0xFFD8D8D8)),
   ];
+
+  /// The "9V" legend on the wrap, reading bottom to top.
+  @override
+  void paintText(Canvas canvas) => _legend.paint(canvas, const Offset(203.7, 79.9), angle: -pi / 2);
+
+  static const _legend = PartText('9V', capHeight: 30.4, color: Color(0xFFD8D8D8));
 }

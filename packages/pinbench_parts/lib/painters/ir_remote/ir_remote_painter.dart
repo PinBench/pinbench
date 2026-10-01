@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import '../../models/part_model.dart';
 import '../../models/port_model.dart';
 import '../../painting/base_component_painter.dart';
+import '../../painting/part_text.dart';
 import '../../painting/path_art.dart';
 import '../../painting/port_provider.dart';
 import 'ir_remote_art.dart';
@@ -23,6 +24,9 @@ import 'ir_remote_art.dart';
 class IrRemotePainter({final Map<String, dynamic>? properties, super.isOutline})
     extends BaseComponentPainter
     with PathArtPainter, PortProvider {
+  // Redrawn when its labels' font arrives; see `PartText`.
+  this : super(repaint: PartText.fontsChanged);
+
   // The real remote's size: 39 by 86 mm.
   static const width = 248.0;
   static const height = 544.0;
@@ -78,6 +82,22 @@ class IrRemotePainter({final Map<String, dynamic>? properties, super.isOutline})
     (IrRemoteArt.red, const Color(0xFFE52421)),
     (IrRemoteArt.white, const Color(0xFFFFFFFF)),
   ];
+
+  /// The labels on the keys that have words rather than icons.
+  @override
+  void paintText(Canvas canvas) {
+    for (final (id, column, row) in _buttons) {
+      _labels[id]?.paint(canvas, _centre(column, row));
+    }
+  }
+
+  static const _ink = Color(0xFF1F1F1F);
+  static final _labels = <String, PartText>{
+    for (final digit in '0123456789'.split('')) digit: PartText(digit, capHeight: 19, color: _ink),
+    'c': const PartText('C', capHeight: 19, color: _ink),
+    'test': const PartText('TEST', capHeight: 11, color: _ink, maxWidth: 40),
+    'menu': const PartText('MENU', capHeight: 11, color: Color(0xFFE52421), maxWidth: 40),
+  };
 
   String? get _pressed => properties?[ComponentProps.pressedRegion] as String?;
 

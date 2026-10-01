@@ -8,6 +8,7 @@ import 'package:pinbench_pdl/pinbench_pdl.dart';
 import '../pdl_flutter.dart';
 import 'base_component_painter.dart';
 import 'part_painter_registry.dart';
+import 'part_text.dart';
 import 'pdl_svg_cache.dart';
 import 'port_provider.dart';
 import 'part_palette.dart';
@@ -33,9 +34,10 @@ class DSLComponentPainter({
   super.isOutline = false,
 }) extends BaseComponentPainter with PortProvider {
   this
-    // Repaint when a piece of artwork finishes decoding: the first frame of a
-    // part is usually drawn before its SVG has arrived.
-    : super(repaint: PdlSvgCache.revision);
+    // Repaint when a piece of artwork finishes decoding, or a font loading:
+    // the first frame of a part is usually drawn before its SVG has arrived,
+    // and a painted body's text before its face has (see `PartText`).
+    : super(repaint: Listenable.merge([PdlSvgCache.revision, PartText.fontsChanged]));
 
   /// The context PDL expressions in this definition see.
   ///
