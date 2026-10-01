@@ -4,6 +4,7 @@ import '../painters/cr2032_painter.dart';
 import '../painters/electrolytic_capacitor_painter.dart';
 import '../painters/ldr_painter.dart';
 import '../painters/rgb_led_painter.dart';
+import '../painters/seven_segment_painter.dart';
 import '../painters/slide_switch_spdt_painter.dart';
 import '../painters/to220_painter.dart';
 import '../painters/transistor_painter.dart';
@@ -36,6 +37,7 @@ abstract final class PartPainterRegistry {
     'capacitor_electrolytic': ElectrolyticCapacitorPainter.new,
     'ldr': LdrPainter.new,
     'rgb_led': RgbLedPainter.new,
+    'seven_segment': SevenSegmentPainter.new,
     'slide_switch_spdt': SlideSwitchSpdtPainter.new,
     for (final kind in TransistorKind.values)
       'transistor_${kind.name}': ({isOutline = false, properties}) =>

@@ -34,6 +34,7 @@ abstract final class BuiltInPartLogic {
     PartLogicRegistry.register('servo', servo);
     PartLogicRegistry.register('led', led);
     PartLogicRegistry.register('rgb_led', rgbLed);
+    PartLogicRegistry.register('led_array', ledArray);
     PartLogicRegistry.register('buzzer', buzzer);
     PartLogicRegistry.register('ssd1306', ssd1306);
     PartLogicRegistry.register('bh1750', I2cSensors.bh1750);
@@ -173,6 +174,30 @@ abstract final class BuiltInPartLogic {
       final duty = amps <= ledOnAmps ? 0.0 : (pin != null ? context.pins.duty(pin) : 1.0);
       final averageAmps = amps * duty;
       context.state[colour] = ((averageAmps / ledRatedAmps).clamp(0.0, 1.0) * 20).round() / 20;
+      overdriven = overdriven || averageAmps > ledRatedAmps;
+    }
+    context.state[ComponentProps.hasError] = overdriven;
+  }
+
+  /// Any number of LEDs on one cathode — a 7-segment display's segments —
+  /// each lit from the current through its own die, as [led] judges one.
+  ///
+  /// Reads the dies off the part's `PHYSICS ledArray` mapping, so a display
+  /// with any segment names needs no code: every role but a cathode (`k…`) is
+  /// a die, and its brightness, 0–1, is written under its pin's id.
+  static void ledArray(PartLogicContext context) {
+    final mapping = context.definition?.spiceModel?.pinMapping ?? const <String, String>{};
+    final cathode = mapping['k'];
+    var overdriven = false;
+    for (final MapEntry(key: role, value: pin) in mapping.entries) {
+      if (role.startsWith('k')) continue;
+      final amps = context.spice.pinCurrent(pin).abs();
+      final drive =
+          context.pins.connectedTo(pin) ??
+          (cathode == null ? null : context.pins.connectedTo(cathode));
+      final duty = amps <= ledOnAmps ? 0.0 : (drive != null ? context.pins.duty(drive) : 1.0);
+      final averageAmps = amps * duty;
+      context.state[pin] = ((averageAmps / ledRatedAmps).clamp(0.0, 1.0) * 20).round() / 20;
       overdriven = overdriven || averageAmps > ledRatedAmps;
     }
     context.state[ComponentProps.hasError] = overdriven;

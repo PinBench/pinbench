@@ -352,6 +352,38 @@ class SpiceEngine({
             );
           }
 
+        case SpiceComponentType.ledArray:
+          // A die per mapped role, all on the cathode `k`, each sensed like the
+          // LED; another `k…` role is a second cathode pin, tied inside.
+          final model = 'DL_$keyStr';
+          circArray.add(
+            '.model $model D(${_modelCard({'is': 1e-18, 'n': 2, ...spiceDef.parameters})})',
+          );
+          for (final role in spiceDef.pinMapping.keys) {
+            if (role == 'k') continue;
+            if (role.startsWith('k')) {
+              final tie = 'R_${keyStr}_$role';
+              circArray.add('$tie n_${nodeFor(role)} n_${nodeFor('k')} $_switchClosedOhms');
+              _branches.add(
+                _ElementBranch.ohmic(
+                  a: portFor(role),
+                  b: portFor('k'),
+                  nodeA: nodeFor(role),
+                  nodeB: nodeFor('k'),
+                  element: tie,
+                  ohms: _switchClosedOhms,
+                ),
+              );
+              continue;
+            }
+            final die = '${role}_$keyStr';
+            circArray.add('D_$die n_${nodeFor(role)} n_int_$die $model');
+            circArray.add('V_led_$die n_int_$die n_${nodeFor('k')} 0');
+            _branches.add(
+              _ElementBranch.measured(a: portFor(role), b: portFor('k'), vector: 'i(V_led_$die)'),
+            );
+          }
+
         case SpiceComponentType.spdt:
           // The common pole to each throw, one closed and one open. The pair is
           // one PDL element to `alter`: see [setSwitchPosition].
