@@ -1,54 +1,27 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:pinbench_parts/models/component_instance.dart';
-import 'package:pinbench_parts/models/part_model.dart';
-import 'package:pinbench_parts/models/port_model.dart';
-import 'package:pinbench_parts/models/wire_model.dart';
 import 'package:pinbench_parts/part_registry.dart';
-import 'package:pinbench_sim/core/circuit_netlist.dart';
-import 'package:pinbench_sim/core/spice_engine.dart';
 
-/// The three axial diodes solved for real, each forward-biased through 1 kΩ
-/// from an Uno pin: their model numbers are what tell them apart.
+import 'support/bench.dart';
+
+/// The three diodes' models: the forward drop each makes at a few milliamps.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(PartRegistry.initializeAsync);
 
   double forwardDrop(String id) {
-    final uno = ComponentInstance(
-      key: const ValueKey('uno'),
-      position: Offset.zero,
-      part: PartModel(name: PartNames.arduinoUno, size: const Size(40, 40)),
-    );
-    final diode = ComponentInstance(
-      key: const ValueKey('d1'),
-      position: const Offset(200, 0),
-      part: PartModel(name: id, size: const Size(40, 72), definitionId: id),
-    );
-    final resistor = ComponentInstance(
-      key: const ValueKey('r1'),
-      position: const Offset(400, 0),
-      part: PartModel(name: PartNames.resistor, size: const Size(40, 40)),
-      properties: {ComponentProps.resistance: '1000'},
-    );
-    WireModel wire(ComponentInstance a, String ap, ComponentInstance b, String bp) => WireModel(
-      id: '${a.key}:$ap-${b.key}:$bp',
-      start: PortLocation(nodeKey: a.key, portId: ap),
-      end: PortLocation(nodeKey: b.key, portId: bp),
-    );
-    final nodes = [uno, diode, resistor];
-    final wires = [
-      wire(uno, '9', resistor, 'left'),
-      wire(resistor, 'right', diode, 'anode'),
-      wire(diode, 'cathode', uno, 'GND_1'),
-    ];
-    final netlist = CircuitNetlist()..buildStatic(nodes, wires, bridgeResistors: false);
-    final spice = SpiceEngine()..build(netlist, nodes);
-    spice
-      ..setPinVoltage('9', 5)
-      ..solve();
-    return spice.getPortVoltage(diode.key, 'anode');
+    final board = uno();
+    final diode = pdlPart(id);
+    final r = resistor('r1', '1000');
+    final bench = Bench(
+      [board, diode, r],
+      [
+        wire(board, '9', r, 'left'),
+        wire(r, 'right', diode, 'anode'),
+        wire(diode, 'cathode', board, 'GND_1'),
+      ],
+    )..drive({'9': 5});
+    return bench.voltage(diode, 'anode');
   }
 
   test('silicon diodes drop about 0.7 V at a few milliamps', () {

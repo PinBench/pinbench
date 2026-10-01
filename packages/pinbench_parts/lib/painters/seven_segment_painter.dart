@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../painting/base_component_painter.dart';
 import '../painting/path_art.dart';
+import '../models/part_properties.dart';
 
 /// Draws a 0.56-inch common-cathode 7-segment display, each segment lit as
 /// brightly as the current through it — the body of `seven_segment.pdl`, which
@@ -54,11 +55,7 @@ class SevenSegmentPainter({final Map<String, dynamic>? properties, super.isOutli
   ];
 
   /// A segment's brightness, 0–1, as the `led_array` logic last wrote it.
-  double _level(String segment) => switch (properties?[segment]) {
-    final num n => n.toDouble().clamp(0, 1),
-    final String s => (double.tryParse(s) ?? 0).clamp(0, 1),
-    _ => 0,
-  };
+  double _level(String segment) => properties.level(segment);
 
   @override
   void paintComponent(Canvas canvas, Size size) {

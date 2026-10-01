@@ -8,18 +8,14 @@ import '../painting/port_provider.dart';
 import '../models/part_model.dart';
 import '../models/port_model.dart';
 import '../painting/part_palette.dart';
+import '../models/part_properties.dart';
 
 /// Draws a momentary push button, pressed-down when `isPressed`. Provides its
 /// four legs (`leg1`–`leg4`).
 class PushButtonPainter({final Map<String, dynamic>? properties, super.isOutline})
     extends BaseComponentPainter
     with PortProvider, PaintTreeComponent {
-  bool get isPressed {
-    final value = properties?[ComponentProps.isPressed];
-    if (value is bool) return value;
-    if (value is String) return value == 'true';
-    return false;
-  }
+  bool get isPressed => properties.flag(ComponentProps.isPressed);
 
   // Standard 6 × 6 mm tactile switch body.
   static const bodySizeMm = 6.0;

@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 
 import '../painting/base_component_painter.dart';
 import '../painting/path_art.dart';
+import '../models/part_properties.dart';
 
 /// Draws a 5 mm common-cathode RGB LED standing on its four leads, its lens
 /// lit in whatever mix of colours is flowing — the body of `rgb_led.pdl`, which
@@ -40,12 +41,8 @@ class RgbLedPainter({final Map<String, dynamic>? properties, super.isOutline})
     (_outline, const Color(0xCC888888)),
   ];
 
-  /// A colour's brightness, 0–1, as the `rgb_led` logic last wrote it.
-  double _level(String colour) => switch (properties?[colour]) {
-    final num n => n.toDouble().clamp(0, 1),
-    final String s => (double.tryParse(s) ?? 0).clamp(0, 1),
-    _ => 0,
-  };
+  /// A colour's brightness, 0–1, as the `led_array` logic last wrote it.
+  double _level(String colour) => properties.level(colour);
 
   @override
   void paintComponent(Canvas canvas, Size size) {

@@ -9,18 +9,14 @@ import '../painting/port_provider.dart';
 import '../models/part_model.dart';
 import '../models/port_model.dart';
 import '../painting/part_palette.dart';
+import '../models/part_properties.dart';
 
 /// Draws a piezo buzzer, animated while sounding (`isOn`) at the detected
 /// `frequency`. Provides `plus`/`minus` ports.
 class PiezoBuzzerPainter({final Map<String, dynamic>? properties, super.isOutline})
     extends BaseComponentPainter
     with PortProvider, PaintTreeComponent {
-  bool get isOn {
-    final value = properties?[ComponentProps.isOn];
-    if (value is bool) return value;
-    if (value is String) return value == 'true';
-    return false;
-  }
+  bool get isOn => properties.flag(ComponentProps.isOn);
 
   double? get frequency {
     final value = properties?[ComponentProps.frequency];

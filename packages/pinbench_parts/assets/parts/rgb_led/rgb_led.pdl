@@ -33,7 +33,7 @@ STATE
   green  decimal  0
   blue   decimal  0
 
-LOGIC rgb_led
+LOGIC led_array
 
 PHYSICS rgbLed
   r = red

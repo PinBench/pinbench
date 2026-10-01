@@ -213,12 +213,22 @@ void main() {
     });
   });
 
-  group('the RGB LED', () {
+  group('the RGB LED, as an LED array', () {
+    late PartDefinition rgb;
+
+    setUpAll(() async {
+      const dir = 'packages/pinbench_parts/assets/parts/rgb_led';
+      rgb = PdlParser.parse(
+        await rootBundle.loadString('$dir/rgb_led.pdl'),
+        assetDirectory: dir,
+      ).definition!;
+    });
+
     Map<String, Object?> frame(Map<String, double> amps) {
       final state = <String, Object?>{};
-      BuiltInPartLogic.rgbLed(
+      PartLogicRegistry.find(rgb.logic!)!(
         PartLogicContext(
-          definition: null,
+          definition: rgb,
           state: state,
           properties: const {},
           physics: {},

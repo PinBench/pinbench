@@ -47,7 +47,13 @@ class SpiceEngine({
   /// Reused by [portInjections]/[_nodeVoltage] so a 60 Hz frame loop allocates
   /// nothing to report currents.
   final Map<PortLocation, double> _injections = {};
+
+  /// Node voltages read since the last [solve], which clears it.
   final Map<int, double> _nodeVoltageCache = {};
+
+  /// [_branches] by the port at each end, with the sign that end's current
+  /// takes: what [portCurrent] reads. Built on first use, cleared by [build].
+  final Map<PortLocation, List<(_ElementBranch, int)>> _branchesByPort = {};
 
   /// SPICE element name for each PDL-defined node that has one, so a
   /// `physics.*` behaviour rule can address the element it built.
@@ -149,6 +155,7 @@ class SpiceEngine({
     _ledVecName.clear();
     _portToNode.clear();
     _branches.clear();
+    _branchesByPort.clear();
 
     var nextNodeId = 1;
     final visitedPorts = <PortLocation>{};
@@ -204,6 +211,36 @@ class SpiceEngine({
       PortLocation portFor(String role) =>
           PortLocation(nodeKey: node.key, portId: spiceDef.pinMapping[role] ?? role);
 
+      // A resistor between two roles, its current read off the voltage across it.
+      void resistor(String element, String a, String b, double ohms) {
+        circArray.add('$element n_${nodeFor(a)} n_${nodeFor(b)} $ohms');
+        _branches.add(
+          _ElementBranch.ohmic(
+            a: portFor(a),
+            b: portFor(b),
+            nodeA: nodeFor(a),
+            nodeB: nodeFor(b),
+            element: element,
+            ohms: ohms,
+          ),
+        );
+      }
+
+      // A current from role [a] to role [b], measured by SPICE as [vector].
+      void measured(String a, String b, String vector) =>
+          _branches.add(_ElementBranch.measured(a: portFor(a), b: portFor(b), vector: vector));
+
+      // A diode from [anode] to [cathode], with a 0 V source in series: that is
+      // what makes its current measurable, which is how an LED knows it is lit.
+      // The source's branch current runs n_int → cathode, exactly the diode's
+      // forward current. Returns the vector it is read from.
+      String die(String name, String anode, String cathode, String model) {
+        circArray.add('D_$name n_${nodeFor(anode)} n_int_$name $model');
+        circArray.add('V_led_$name n_int_$name n_${nodeFor(cathode)} 0');
+        measured(anode, cathode, 'i(V_led_$name)');
+        return 'i(V_led_$name)';
+      }
+
       // A `.pdl` part's `physics.*` rule beats its static value, so the element
       // starts where the part's own behaviour says rather than being corrected
       // one frame later — a flicker with no obvious cause.
@@ -218,43 +255,22 @@ class SpiceEngine({
           final ohms =
               physics['resistance'] ?? spiceDef.valueFor(node.properties, 'resistance') ?? 220.0;
           _pdlElements[node.key] = 'R_$keyStr';
-          circArray.add('R_$keyStr n_${nodeFor('n1')} n_${nodeFor('n2')} $ohms');
-          _branches.add(
-            _ElementBranch.ohmic(
-              a: portFor('n1'),
-              b: portFor('n2'),
-              nodeA: nodeFor('n1'),
-              nodeB: nodeFor('n2'),
-              element: 'R_$keyStr',
-              ohms: ohms,
-            ),
-          );
+          resistor('R_$keyStr', 'n1', 'n2', ohms);
 
         case SpiceComponentType.diode:
-          // A 0 V source in series is what makes the current measurable, which
-          // is how an LED knows it is lit.
           // A part may give its own model numbers (`is`, `n`) — a 1N4148 and a
           // 1N5819 differ by half a volt. Without them, the LED's.
           circArray.add(
             '.model D_$keyStr D(${_modelCard({'is': 1e-14, 'n': 1.5, ...spiceDef.parameters})})',
           );
-          circArray.add('D_$keyStr n_${nodeFor('n1')} n_int_$keyStr D_$keyStr');
-          circArray.add('V_led_$keyStr n_int_$keyStr n_${nodeFor('n2')} 0');
           _ledKeys.add(node.key.toString());
-          _ledVecName[node.key.toString()] = 'i(V_led_$keyStr)';
-          // The sense source's branch current is defined n_int → n2, which is
-          // exactly the diode's forward current: anode → cathode.
-          _branches.add(
-            _ElementBranch.measured(a: portFor('n1'), b: portFor('n2'), vector: 'i(V_led_$keyStr)'),
-          );
+          _ledVecName[node.key.toString()] = die(keyStr, 'n1', 'n2', 'D_$keyStr');
 
         case SpiceComponentType.voltageSource:
           final volts = physics['voltage'] ?? spiceDef.valueFor(node.properties, 'voltage') ?? 5.0;
           _pdlElements[node.key] = 'V_$keyStr';
           circArray.add('V_$keyStr n_${nodeFor('n1')} n_${nodeFor('n2')} $volts');
-          _branches.add(
-            _ElementBranch.measured(a: portFor('n1'), b: portFor('n2'), vector: 'i(V_$keyStr)'),
-          );
+          measured('n1', 'n2', 'i(V_$keyStr)');
 
         case SpiceComponentType.capacitor:
           final farads =
@@ -270,29 +286,8 @@ class SpiceEngine({
           final position = (spiceDef.valueFor(node.properties, 'position') ?? 0.5).clamp(0.0, 1.0);
           final top = ((1 - position) * total).clamp(1.0, total);
           final bottom = (position * total).clamp(1.0, total);
-          circArray.add('R_${keyStr}_a n_${nodeFor('term1')} n_${nodeFor('wiper')} $top');
-          circArray.add('R_${keyStr}_b n_${nodeFor('wiper')} n_${nodeFor('term2')} $bottom');
-          _branches
-            ..add(
-              _ElementBranch.ohmic(
-                a: portFor('term1'),
-                b: portFor('wiper'),
-                nodeA: nodeFor('term1'),
-                nodeB: nodeFor('wiper'),
-                element: 'R_${keyStr}_a',
-                ohms: top,
-              ),
-            )
-            ..add(
-              _ElementBranch.ohmic(
-                a: portFor('wiper'),
-                b: portFor('term2'),
-                nodeA: nodeFor('wiper'),
-                nodeB: nodeFor('term2'),
-                element: 'R_${keyStr}_b',
-                ohms: bottom,
-              ),
-            );
+          resistor('R_${keyStr}_a', 'term1', 'wiper', top);
+          resistor('R_${keyStr}_b', 'wiper', 'term2', bottom);
 
         case SpiceComponentType.npn:
         case SpiceComponentType.pnp:
@@ -304,13 +299,8 @@ class SpiceEngine({
           circArray.add('V_qc_$keyStr n_${nodeFor('c')} n_qc_$keyStr 0');
           circArray.add('V_qb_$keyStr n_${nodeFor('b')} n_qb_$keyStr 0');
           circArray.add('Q_$keyStr n_qc_$keyStr n_qb_$keyStr n_${nodeFor('e')} $model');
-          _branches
-            ..add(
-              _ElementBranch.measured(a: portFor('c'), b: portFor('e'), vector: 'i(V_qc_$keyStr)'),
-            )
-            ..add(
-              _ElementBranch.measured(a: portFor('b'), b: portFor('e'), vector: 'i(V_qb_$keyStr)'),
-            );
+          measured('c', 'e', 'i(V_qc_$keyStr)');
+          measured('b', 'e', 'i(V_qb_$keyStr)');
 
         case SpiceComponentType.npnDarlington:
         case SpiceComponentType.pnpDarlington:
@@ -330,13 +320,8 @@ class SpiceEngine({
           circArray.add('Q_${keyStr}_2 n_qc_$keyStr $mid n_${nodeFor('e')} $model');
           circArray.add('R_${keyStr}_1 n_qb_$keyStr $mid $r1');
           circArray.add('R_${keyStr}_2 $mid n_${nodeFor('e')} $r2');
-          _branches
-            ..add(
-              _ElementBranch.measured(a: portFor('c'), b: portFor('e'), vector: 'i(V_qc_$keyStr)'),
-            )
-            ..add(
-              _ElementBranch.measured(a: portFor('b'), b: portFor('e'), vector: 'i(V_qb_$keyStr)'),
-            );
+          measured('c', 'e', 'i(V_qc_$keyStr)');
+          measured('b', 'e', 'i(V_qb_$keyStr)');
 
         case SpiceComponentType.rgbLed:
           // Three dies on one cathode, each with the LED's 0 V sense source.
@@ -344,12 +329,7 @@ class SpiceEngine({
           circArray.add('.model DR_$keyStr D(Is=1e-18 N=2)');
           circArray.add('.model DGB_$keyStr D(Is=1e-22 N=2.5)');
           for (final (role, model) in [('r', 'DR'), ('g', 'DGB'), ('b', 'DGB')]) {
-            final die = '${role}_$keyStr';
-            circArray.add('D_$die n_${nodeFor(role)} n_int_$die ${model}_$keyStr');
-            circArray.add('V_led_$die n_int_$die n_${nodeFor('k')} 0');
-            _branches.add(
-              _ElementBranch.measured(a: portFor(role), b: portFor('k'), vector: 'i(V_led_$die)'),
-            );
+            die('${role}_$keyStr', role, 'k', '${model}_$keyStr');
           }
 
         case SpiceComponentType.ledArray:
@@ -362,26 +342,10 @@ class SpiceEngine({
           for (final role in spiceDef.pinMapping.keys) {
             if (role == 'k') continue;
             if (role.startsWith('k')) {
-              final tie = 'R_${keyStr}_$role';
-              circArray.add('$tie n_${nodeFor(role)} n_${nodeFor('k')} $_switchClosedOhms');
-              _branches.add(
-                _ElementBranch.ohmic(
-                  a: portFor(role),
-                  b: portFor('k'),
-                  nodeA: nodeFor(role),
-                  nodeB: nodeFor('k'),
-                  element: tie,
-                  ohms: _switchClosedOhms,
-                ),
-              );
-              continue;
+              resistor('R_${keyStr}_$role', role, 'k', _switchClosedOhms);
+            } else {
+              die('${role}_$keyStr', role, 'k', model);
             }
-            final die = '${role}_$keyStr';
-            circArray.add('D_$die n_${nodeFor(role)} n_int_$die $model');
-            circArray.add('V_led_$die n_int_$die n_${nodeFor('k')} 0');
-            _branches.add(
-              _ElementBranch.measured(a: portFor(role), b: portFor('k'), vector: 'i(V_led_$die)'),
-            );
           }
 
         case SpiceComponentType.spdt:
@@ -394,17 +358,7 @@ class SpiceEngine({
           for (final (role, closed) in [('a', !toB), ('b', toB)]) {
             final ohms = closed ? _switchClosedOhms : _switchOpenOhms;
             _elementValues['${element}_$role'] = ohms;
-            circArray.add('${element}_$role n_${nodeFor('c')} n_${nodeFor(role)} $ohms');
-            _branches.add(
-              _ElementBranch.ohmic(
-                a: portFor('c'),
-                b: portFor(role),
-                nodeA: nodeFor('c'),
-                nodeB: nodeFor(role),
-                element: '${element}_$role',
-                ohms: ohms,
-              ),
-            );
+            resistor('${element}_$role', 'c', role, ohms);
           }
 
         case SpiceComponentType.nmos:
@@ -421,9 +375,7 @@ class SpiceEngine({
           // solver cannot place. 1 GΩ to the source holds it off instead,
           // drawing nothing a real gate would not.
           circArray.add('R_mg_$keyStr n_${nodeFor('g')} n_${nodeFor('s')} 1e9');
-          _branches.add(
-            _ElementBranch.measured(a: portFor('d'), b: portFor('s'), vector: 'i(V_md_$keyStr)'),
-          );
+          measured('d', 's', 'i(V_md_$keyStr)');
 
         case SpiceComponentType.currentSource:
         case SpiceComponentType.none:
@@ -561,6 +513,7 @@ class SpiceEngine({
   double getPinVoltage(String pin) => _pinVoltages[pin] ?? 0.0;
 
   void solve() {
+    _nodeVoltageCache.clear();
     // Only alter pins whose voltage actually changed — but always run op so
     // that getVector returns fresh data every frame regardless of whether
     // any voltage changed.
@@ -618,7 +571,6 @@ class SpiceEngine({
   Map<PortLocation, double> portInjections() {
     _injections.clear();
     if (_branches.isEmpty) return _injections;
-    _nodeVoltageCache.clear();
 
     for (final branch in _branches) {
       final current = _branchCurrent(branch);
@@ -636,15 +588,20 @@ class SpiceEngine({
   /// elements that terminal feeds, each read the way [portInjections] reads
   /// it. What a multi-element part's logic uses to tell its elements apart.
   double portCurrent(Key nodeKey, String portId) {
-    _nodeVoltageCache.clear();
+    // Indexed on first use after a build: a 7-segment display asks for eight
+    // ports a frame, and each used to scan every branch in the circuit.
+    if (_branchesByPort.isEmpty) {
+      for (final branch in _branches) {
+        if (branch.a case final a?) (_branchesByPort[a] ??= []).add((branch, 1));
+        if (branch.b case final b?) (_branchesByPort[b] ??= []).add((branch, -1));
+      }
+    }
     var total = 0.0;
-    for (final branch in _branches) {
-      final into = branch.a?.nodeKey == nodeKey && branch.a?.portId == portId;
-      final outOf = branch.b?.nodeKey == nodeKey && branch.b?.portId == portId;
-      if (!into && !outOf) continue;
+    for (final (branch, sign)
+        in _branchesByPort[PortLocation(nodeKey: nodeKey, portId: portId)] ??
+            const <(_ElementBranch, int)>[]) {
       final current = _branchCurrent(branch);
-      if (!current.isFinite) continue;
-      total += into ? current : -current;
+      if (current.isFinite) total += sign * current;
     }
     return total;
   }
