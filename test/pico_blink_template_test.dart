@@ -1,5 +1,5 @@
 // The Pico Blink template, run the way a user runs it: its `.cdl` applied to
-// a canvas, its bundled .hex on the RP2040 emulator, and the LED on GP16 and
+// a canvas, its bundled .hex on the RP2040 emulator, and the LED on GP21 and
 // the board's own LED checked through what the engine writes back.
 //
 // Uses the bundled .hex rather than invoking arduino-cli, so it needs no
@@ -38,7 +38,7 @@ class _RecordingOutput(
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('the template blinks the LED on GP16 and the on-board LED', () {
+  test('the template blinks the LED on GP21 and the on-board LED', () {
     final parsed = CircuitParser.applyToCanvas(
       CircuitParser.parse(File('assets/templates/pico_blink/circuit.cdl').readAsStringSync()),
       standardParts,

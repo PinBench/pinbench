@@ -5,16 +5,16 @@ Circuit {
         position: (-208, -176);
     }
     r_series := Resistor {
-        position: (96, -256);
+        position: (0, -256);
         rotation: 270;
         resistance: 220;
     }
     led_red := LED {
-        position: (80, -328);
+        position: (-16, -328);
         color: red;
     }
     Wire {
-        from: pico.16;
+        from: pico.21;
         to: r_series.left;
         color: red;
     }
@@ -25,7 +25,7 @@ Circuit {
     }
     Wire {
         from: led_red.cathode;
-        to: pico.GND_5;
+        to: pico.GND_6;
         color: black;
     }
 }
