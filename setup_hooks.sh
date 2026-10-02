@@ -39,5 +39,11 @@ case ":$PATH:" in
     *) echo "    note: ~/.pub-cache/bin is not on your PATH (the hooks don't need it, but pub will warn)" ;;
 esac
 
+# Packages resolve their siblings from the checkouts, as the app and CI do, so
+# a package's tests run against the submodule commits rather than a git
+# branch. Leaves any pubspec_overrides.yaml you already have alone.
+echo "==> Linking packages to their siblings..."
+tools/link_packages.sh
+
 echo "✅ Git hooks are active. Commit runs formatting; push runs analyze + tests."
 echo "   Bypass either with --no-verify when you have a reason."
