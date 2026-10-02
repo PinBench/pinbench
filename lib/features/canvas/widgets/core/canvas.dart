@@ -8,10 +8,12 @@ import 'package:pinbench_ui/theme/app_colors.dart';
 import 'package:pinbench_ui/theme/theme.dart';
 
 import '../../controller/canvas_controller.dart';
+import '../../utils/canvas_geometry.dart';
 import '../painters/box_selection_painter.dart';
 import 'canvas_context_menu.dart';
 import 'canvas_layout_delegate.dart';
 import 'canvas_node_widget.dart';
+import 'port_hover_label.dart';
 import 'canvas_shortcuts.dart';
 import '../painters/grid_painter.dart';
 import '../painters/guidelines_painter.dart';
@@ -77,6 +79,17 @@ class _CanvasState extends ConsumerState<Canvas> with SingleTickerProviderStateM
     }
 
     _ensureActions(controller);
+
+    // The hovered pin, by name and position, for the label over it. Looked
+    // up here, when hover changes rebuild the canvas, rather than in the
+    // label, which follows every pan and zoom frame.
+    final hoveredPort = controller.hoveredPort;
+    final hoveredPortName = hoveredPort == null
+        ? null
+        : CanvasGeometry.getPortName(hoveredPort, controller.nodes);
+    final hoveredPortPosition = hoveredPort == null
+        ? null
+        : CanvasGeometry.getPortPosition(hoveredPort, controller.nodes);
 
     // Outer layout: just a Stack so the first frame's constraints reach us.
     return Stack(
@@ -220,6 +233,12 @@ class _CanvasState extends ConsumerState<Canvas> with SingleTickerProviderStateM
                                   ],
                                 ),
                               ),
+                              if (hoveredPortName != null && hoveredPortPosition != null)
+                                PortHoverLabel(
+                                  name: hoveredPortName,
+                                  canvasPosition: hoveredPortPosition,
+                                  viewer: controller.viewerController,
+                                ),
                             ],
                           ),
                         ),
