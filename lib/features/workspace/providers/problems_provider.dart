@@ -15,6 +15,10 @@ enum ProblemSource() {
   circuit,
   compiler,
   parser,
+
+  /// Found while the circuit runs, from what the solver computes — a supply
+  /// rail delivering more than it is rated for — rather than from the wiring.
+  simulation,
 }
 
 /// A single diagnostic shown in the Problems pane.

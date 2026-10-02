@@ -67,6 +67,7 @@ class _SimWorker(final SendPort _toMain) {
       onDebugLog: (t) => _send(DebugLog(t)),
       onBuzzerFrequency: (hz) => _send(BuzzerFreq(hz)),
       onWireCurrents: (c) => _send(WireCurrents(c)),
+      onCircuitWarnings: (w) => _send(CircuitWarnings(w)),
       onFrameStats: (s) => _send(
         FrameStatsEvent(
           avgFps: s.avgFps,

@@ -68,6 +68,10 @@ class FrameUpdates(final Map<String, Map<String, dynamic>> updates) extends SimE
 /// [FrameUpdates] these need no re-mapping on the far side.
 class WireCurrents(final Map<String, double> currents) extends SimEvent;
 
+/// The circuit's live warnings, one message each — a supply rail past its
+/// rating — or empty once none apply. Sent only when the set changes.
+class CircuitWarnings(final List<String> warnings) extends SimEvent;
+
 class SerialPrint(final String text) extends SimEvent;
 
 class SpiceLog(final String text) extends SimEvent;

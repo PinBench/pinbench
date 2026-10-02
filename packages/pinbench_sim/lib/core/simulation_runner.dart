@@ -54,6 +54,10 @@ class SimulationRunner({
   /// Solved current (amps) per wire id, signed `start → end`, fired whenever it
   /// changes visibly. This is what the canvas animates flow from.
   final void Function(Map<String, double> currents)? onWireCurrents,
+
+  /// The running circuit's warnings — a supply rail past its rating — as
+  /// they change; an empty list clears them.
+  final void Function(List<String> warnings)? onCircuitWarnings,
 }) {
   /// Kept for API compatibility. Per-frame samples now live in the sim isolate,
   /// so this stays empty unless profiling is re-plumbed across the boundary.
@@ -69,6 +73,7 @@ class SimulationRunner({
       onDebugLog: onDebugLog,
       onFrameStats: onFrameStats,
       onWireCurrents: onWireCurrents,
+      onCircuitWarnings: onCircuitWarnings,
       onSelfStop: _handleSelfStop,
     );
   }

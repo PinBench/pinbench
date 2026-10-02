@@ -29,6 +29,7 @@ class SimulationRunnerBackendImpl({
   required final void Function(String)? _onDebugLog,
   required final void Function(FrameStats stats)? _onFrameStats,
   required final void Function(Map<String, double> currents)? _onWireCurrents,
+  required final void Function(List<String> warnings)? _onCircuitWarnings,
   required final void Function() _onSelfStop,
 }) implements SimulationRunnerBackend {
   SimulationEngine? _engine;
@@ -84,6 +85,7 @@ class SimulationRunnerBackendImpl({
         } catch (_) {}
       },
       onWireCurrents: (currents) => _onWireCurrents?.call(currents),
+      onCircuitWarnings: (warnings) => _onCircuitWarnings?.call(warnings),
       onFrameStats: (stats) => _onFrameStats?.call(stats),
       micInput: _mic,
     );

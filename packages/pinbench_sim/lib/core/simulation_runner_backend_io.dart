@@ -27,6 +27,7 @@ class SimulationRunnerBackendImpl({
   required final void Function(String)? _onDebugLog,
   required final void Function(FrameStats stats)? _onFrameStats,
   required final void Function(Map<String, double> currents)? _onWireCurrents,
+  required final void Function(List<String> warnings)? _onCircuitWarnings,
   required final void Function() _onSelfStop,
 }) implements SimulationRunnerBackend {
   Isolate? _isolate;
@@ -71,6 +72,8 @@ class SimulationRunnerBackendImpl({
         if (updates.isNotEmpty) circuit.applyNodeUpdates(updates);
       case final WireCurrents w:
         _onWireCurrents?.call(w.currents);
+      case final CircuitWarnings w:
+        _onCircuitWarnings?.call(w.warnings);
       case final SerialPrint p:
         _onSerialPrint?.call(p.text);
       case final SpiceLog l:

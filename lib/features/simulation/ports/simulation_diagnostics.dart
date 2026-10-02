@@ -33,6 +33,11 @@ abstract interface class SimulationDiagnostics {
   /// compile error should be cleared.
   void reportCompileError(Object? error);
 
+  /// Shows what the running circuit is doing that a real one would not
+  /// survive for long — a supply rail past its rating — as warnings, or
+  /// clears them for an empty list.
+  void reportCircuitWarnings(List<String> warnings);
+
   /// How many problems are currently showing, from every source. Reported with
   /// each compile so a failure's blast radius is visible in analytics.
   int get problemCount;

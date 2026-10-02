@@ -56,6 +56,12 @@ class const BoardProfile({
   /// the board reads what it would on a desk.
   required final Map<String, double> supplies,
 
+  /// The most current each of [supplies] is rated to deliver, in amps: the
+  /// regulator's limit, or the USB fuse's for a rail fed straight from USB.
+  /// The solver will happily push an amp through a rail; this is what says a
+  /// real board would not.
+  required final Map<String, double> supplyLimits,
+
   /// The ADC's inputs, as board ports, in channel order: entry 0 is channel 0.
   required final List<String> analogInputPorts,
 
@@ -89,6 +95,9 @@ class const BoardProfile({
     pinSourceOhms: 40,
     digitalPins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
     supplies: {'5V': 5.0, '3.3V': 3.3},
+    // 5V comes from USB through a 500 mA polyfuse; 3.3V from an LP2985
+    // regulator rated for 150 mA.
+    supplyLimits: {'5V': 0.5, '3.3V': 0.15},
     analogInputPorts: ['A0', 'A1', 'A2', 'A3', 'A4', 'A5'],
     // The ATmega328P's TWI hardware is wired to A4/A5 and nothing else; the
     // R3 header's separate SDA/SCL pins are the same two pads brought out
@@ -128,6 +137,9 @@ class const BoardProfile({
     // VBUS is the USB 5 V; VSYS is VBUS after the board's Schottky diode,
     // about 0.3 V down; 3V3 OUT is the buck regulator's output.
     supplies: {'5V': 5.0, 'VSYS': 4.7, '3.3V': 3.3},
+    // VBUS and VSYS are USB's 500 mA; the datasheet keeps 3V3 OUT's load
+    // under 300 mA, the buck regulator's rating less the board's own draw.
+    supplyLimits: {'5V': 0.5, 'VSYS': 0.5, '3.3V': 0.3},
     // ADC0–2 are GP26–28; arduino-pico calls them A0–A2 and numbers them 26–28.
     analogInputPorts: ['26', '27', '28'],
     // Every pin an I²C block can use, not only `Wire`'s default GP4/GP5: an
