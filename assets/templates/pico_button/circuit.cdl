@@ -1,0 +1,44 @@
+// Circuit description (.cdl) — kept in sync with the canvas.
+// Edit components and wires here or on the canvas; both update together.
+Circuit {
+    pico := RaspberryPiPicoW {
+        position: (-208, -176);
+    }
+    r_series := Resistor {
+        position: (0, -256);
+        rotation: 270;
+        resistance: 220;
+    }
+    led_red := LED {
+        position: (-16, -328);
+        color: red;
+    }
+    button := PushButton {
+        position: (80, 0);
+    }
+    Wire {
+        from: button.leg1;
+        to: pico.GND_4;
+        color: black;
+    }
+    Wire {
+        from: button.leg2;
+        to: pico.15;
+        color: yellow;
+    }
+    Wire {
+        from: pico.21;
+        to: r_series.left;
+        color: red;
+    }
+    Wire {
+        from: r_series.right;
+        to: led_red.anode;
+        color: red;
+    }
+    Wire {
+        from: led_red.cathode;
+        to: pico.GND_6;
+        color: black;
+    }
+}
