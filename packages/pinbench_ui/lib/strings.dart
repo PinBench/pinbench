@@ -224,6 +224,8 @@ class AppStrings._() {
 
   static const newBlankProjectTitle = 'New Blank Project';
   static const newBlankProjectSubtitle = 'Start with an empty canvas';
+  static String newBoardProjectTitle(String board) => 'New $board Project';
+  static String newBoardProjectSubtitle(String board) => 'Start with the $board on the canvas';
   static const openFolderTileSubtitle = 'Load an existing workspace';
   // Pre-existing wording inconsistency vs. explorer_view.dart's version — kept
   // verbatim as its own constant rather than merged/reworded.
@@ -280,6 +282,12 @@ class AppStrings._() {
       'Print numbers with Serial.println() — e.g. "temp:23.5,humidity:60" — to plot them.';
 
   static const noProblemsMessage = 'No problems have been detected in the workspace.';
+  static String missingBoardCoreProblem(String board) => 'The $board core is not installed';
+  static String installBoardCoreLabel(String board) => 'Install the $board core';
+  static const installingBoardCoreLabel = 'Installing…';
+  static const boardCoreInstalledTitle = 'Core installed';
+  static const boardCoreInstalledMessage = 'Run the sketch again to build it.';
+  static const boardCoreInstallFailedTitle = 'Install failed';
   static const problemSourceCircuitLabel = 'Circuit';
   static const problemSourceCompilerLabel = 'Compiler';
   static const problemSourceParserLabel = 'Parser';

@@ -1,9 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pinbench_parts/models/board_profile.dart';
+import 'package:pinbench_ui/strings.dart';
+
+import '../../core/platform/platform_capabilities.dart';
 
 import '../../core/telemetry/telemetry_providers.dart';
 import '../../features/simulation/ports/simulation_diagnostics.dart';
 import '../../features/workspace/providers/debug_console_provider.dart';
 import '../../features/workspace/providers/problems_provider.dart';
+import '../../features/workspace/services/compiler_service.dart';
+import '../../features/workspace/services/local_compile_service.dart';
 
 /// Binds the simulation's [SimulationDiagnostics] port to the panes that show
 /// a run's output: the three log channels and the Problems list.
@@ -30,25 +36,50 @@ class const WorkspaceSimulationDiagnostics(final Ref _ref) implements Simulation
   }
 
   @override
-  void reportCompileError(String? error) {
+  void reportCompileError(Object? error) {
     final problems = _ref.read(problemsProvider.notifier);
     if (error == null) {
       problems.clearSource(ProblemSource.compiler);
       return;
     }
 
-    final detail = _firstMeaningfulLine(error);
+    final detail = _firstMeaningfulLine('$error');
     // Breadcrumb (not a crash) so a later report shows the failed compile.
     _ref.read(crashReporterProvider).log('compile error: $detail');
     problems.setForSource(ProblemSource.compiler, [
-      Problem(
-        severity: ProblemSeverity.error,
-        source: ProblemSource.compiler,
-        message: 'Sketch failed to compile',
-        detail: detail,
-      ),
+      if (error is MissingBoardCoreException && PlatformCapabilities.supportsLocalCompile)
+        Problem(
+          severity: ProblemSeverity.error,
+          source: ProblemSource.compiler,
+          message: AppStrings.missingBoardCoreProblem(error.board.partName),
+          detail: detail,
+          action: _installCore(error.board),
+        )
+      else
+        Problem(
+          severity: ProblemSeverity.error,
+          source: ProblemSource.compiler,
+          message: 'Sketch failed to compile',
+          detail: detail,
+        ),
     ]);
   }
+
+  /// Installs [board]'s core when the user asks, its progress in the Debug
+  /// Console, then clears the problem: the next run builds.
+  ProblemAction _installCore(BoardProfile board) => ProblemAction(
+    label: AppStrings.installBoardCoreLabel(board.partName),
+    runningLabel: AppStrings.installingBoardCoreLabel,
+    doneTitle: AppStrings.boardCoreInstalledTitle,
+    doneMessage: AppStrings.boardCoreInstalledMessage,
+    failedTitle: AppStrings.boardCoreInstallFailedTitle,
+    run: () async {
+      debug('[Setup] Installing the ${board.partName} core with arduino-cli…');
+      await LocalCompileService.installCore(board, onOutput: (line) => debug('[Setup] $line'));
+      debug('[Setup] Installed. Run the sketch again.');
+      _ref.read(problemsProvider.notifier).clearSource(ProblemSource.compiler);
+    },
+  );
 
   @override
   int get problemCount => _ref.read(problemCountProvider);

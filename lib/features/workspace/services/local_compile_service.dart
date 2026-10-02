@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -6,7 +9,14 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pinbench_parts/models/board_profile.dart';
 import 'package:pinbench_sim/core/board/intel_hex.dart';
 
-import 'compiler_service.dart' show CompilerException;
+import 'compiler_service.dart' show CompilerException, MissingBoardCoreException;
+
+/// One `arduino-cli` invocation with [arguments], each line of its output
+/// passed to [onOutput]; completes with its exit code.
+typedef ArduinoCliRun = Future<int> Function(
+  List<String> arguments,
+  void Function(String line) onOutput,
+);
 
 /// Compiles Arduino sketches to Intel-HEX by shelling out to `arduino-cli`
 /// (located on PATH or common install dirs), for whichever board is on the
@@ -50,7 +60,7 @@ abstract final class LocalCompileService {
     ]);
 
     if (result.exitCode != 0) {
-      throw CompilerException(_failure(result, board));
+      throw failureFor(result, board);
     }
 
     // Named after the directory; a sketch named sketch.ino is the fallback.
@@ -107,7 +117,7 @@ abstract final class LocalCompileService {
       ]);
 
       if (result.exitCode != 0) {
-        throw CompilerException(_failure(result, board));
+        throw failureFor(result, board);
       }
 
       final program = await _readProgram(outDir.path, 'sketch.ino', board);
@@ -137,21 +147,91 @@ abstract final class LocalCompileService {
     return null;
   }
 
-  /// The compiler's output, and — when the board's core is what is missing —
-  /// how to install it, which is the one failure the output alone does not
-  /// explain to someone who has never added a board package.
-  static String _failure(ProcessResult result, BoardProfile board) {
+  /// The exception for a failed build: the compiler's output, and — when the
+  /// board's core is what is missing — a [MissingBoardCoreException] that also
+  /// says how to install it, the one failure the output alone does not explain
+  /// to someone who has never added a board package.
+  @visibleForTesting
+  static CompilerException failureFor(ProcessResult result, BoardProfile board) {
     final output = '${result.stderr}\n${result.stdout}';
-    final core = board.fqbn.split(':').take(2).join(':');
+    final core = _coreOf(board);
     final missingCore = RegExp(
       'platform not installed|unknown package|invalid FQBN',
       caseSensitive: false,
     ).hasMatch(output);
-    if (!missingCore || board.coreIndexUrl == null) return 'Compilation failed:\n$output';
-    return 'Compilation failed: the $core core for the ${board.partName} is not installed. '
-        'Install it with:\n'
-        '  arduino-cli core install $core --additional-urls ${board.coreIndexUrl}\n\n'
-        '$output';
+    if (!missingCore || board.coreIndexUrl == null) {
+      return CompilerException('Compilation failed:\n$output');
+    }
+    return MissingBoardCoreException(
+      'Compilation failed: the $core core for the ${board.partName} is not installed. '
+      'Install it from the Problems pane, or with:\n'
+      '  arduino-cli core install $core --additional-urls ${board.coreIndexUrl}\n\n'
+      '$output',
+      board: board,
+    );
+  }
+
+  /// `rp2040:rp2040` for `rp2040:rp2040:rpipico`: the package and architecture.
+  static String _coreOf(BoardProfile board) => board.fqbn.split(':').take(2).join(':');
+
+  /// The `arduino-cli` runs that install [board]'s core: refresh the index its
+  /// Boards Manager URL names, then install from it. Passing the URL on the
+  /// command line rather than adding it to arduino-cli's config leaves the
+  /// user's own configuration as it was.
+  @visibleForTesting
+  static List<List<String>> coreInstallSteps(BoardProfile board) {
+    final url = board.coreIndexUrl;
+    if (url == null) return const [];
+    return [
+      ['core', 'update-index', '--additional-urls', url],
+      ['core', 'install', _coreOf(board), '--additional-urls', url],
+    ];
+  }
+
+  /// Installs [board]'s core with `arduino-cli`, passing each line of its
+  /// output to [onOutput]. A few hundred megabytes for the arduino-pico core,
+  /// so only ever on the user's say-so, never as a side effect of a build.
+  ///
+  /// [run] runs one `arduino-cli` invocation and returns its exit code; tests
+  /// pass their own so nothing is downloaded. Throws [CompilerException] when
+  /// arduino-cli cannot be found or a step fails.
+  static Future<void> installCore(
+    BoardProfile board, {
+    void Function(String line)? onOutput,
+    ArduinoCliRun? run,
+  }) async {
+    final steps = coreInstallSteps(board);
+    if (steps.isEmpty) {
+      throw CompilerException('The ${board.partName} needs no extra core.');
+    }
+    final runner = run ?? await _arduinoCliRunner();
+    for (final arguments in steps) {
+      final exitCode = await runner(arguments, onOutput ?? (_) {});
+      if (exitCode != 0) {
+        throw CompilerException('arduino-cli ${arguments.join(' ')} failed (exit code $exitCode).');
+      }
+    }
+  }
+
+  /// Runs `arduino-cli` with the given arguments, streaming its output a line
+  /// at a time.
+  static Future<ArduinoCliRun> _arduinoCliRunner() async {
+    final cliPath = await _findArduinoCli();
+    if (cliPath == null) throw CompilerException('arduino-cli not found.');
+    Future<int> run(List<String> arguments, void Function(String line) onOutput) async {
+      final process = await Process.start(cliPath, arguments);
+      final lines = [process.stdout, process.stderr].map(
+        (stream) => stream
+            .transform(const SystemEncoding().decoder)
+            .transform(const LineSplitter())
+            .forEach(onOutput),
+      );
+      final exitCode = await process.exitCode;
+      await Future.wait(lines);
+      return exitCode;
+    }
+
+    return run;
   }
 
   static Future<String?> _findArduinoCli() async {

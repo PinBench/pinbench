@@ -25,6 +25,23 @@ class const Problem({
 
   /// Optional secondary line (e.g. compiler stderr, a file path).
   final String? detail,
+
+  /// What the user can do about it from the pane, when the app can fix it
+  /// rather than only explain it.
+  final ProblemAction? action,
+});
+
+/// A one-button remedy offered beside a [Problem]: [label] on the button,
+/// [runningLabel] while [run] works — it may take minutes; installing a
+/// board's core downloads a toolchain — then a toast: [doneTitle] and
+/// [doneMessage] when it succeeds, [failedTitle] and the error when it throws.
+class const ProblemAction({
+  required final String label,
+  required final String runningLabel,
+  required final Future<void> Function() run,
+  required final String doneTitle,
+  required final String doneMessage,
+  required final String failedTitle,
 });
 
 /// Aggregates diagnostics from the circuit validator, the compiler and the CDL

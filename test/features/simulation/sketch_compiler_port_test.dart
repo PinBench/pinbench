@@ -22,11 +22,11 @@ import '../../support/simulation_bindings.dart';
 /// Every case here stops before the emulator starts — the compiler either
 /// throws or the run is rejected — so nothing spawns an isolate.
 void main() {
-  ({SimulationRunner runner, List<String?> problems}) build(
+  ({SimulationRunner runner, List<Object?> problems}) build(
     SketchCompiler compiler, {
     List<ComponentInstance> nodes = const [],
   }) {
-    final problems = <String?>[];
+    final problems = <Object?>[];
     final runner = SimulationRunner(
       // An empty circuit, or a board alone: nothing here gets as far as
       // building a netlist.
@@ -104,19 +104,19 @@ void main() {
     expect(seenPath, isNull);
   });
 
-  test('a compile failure refuses to start and surfaces the message verbatim', () async {
+  test('a compile failure refuses to start and reports what the compiler threw', () async {
+    const failure = FormatException('sketch.ino:4: expected ;');
     final harness = build(({workspacePath, required code, required board}) async {
-      throw const FormatException('sketch.ino:4: expected ;');
+      throw failure;
     });
 
     final started = await harness.runner.start('oops', onStop: () {});
 
     expect(started, isFalse, reason: 'a failed build must not start the emulator');
-    expect(
-      harness.problems.whereType<String>().join(),
-      contains('expected ;'),
-      reason: 'this string is what the user reads in the Problems pane',
-    );
+    expect(harness.problems, [
+      same(failure),
+    ], reason: 'the error itself, so the Problems pane can tell one failure from another by type');
+    expect('${harness.problems.single}', contains('expected ;'));
   });
 }
 
