@@ -1469,8 +1469,8 @@ packages:
     dependency: transitive
     description:
       path: "."
-      ref: "8a1140bf60f92fb8c05ac9fb18211eaefa12cf84"
-      resolved-ref: "8a1140bf60f92fb8c05ac9fb18211eaefa12cf84"
+      ref: b465ac8d979fbdf04d85bc0ae0556b1143f01897
+      resolved-ref: b465ac8d979fbdf04d85bc0ae0556b1143f01897
       url: "https://github.com/PinBench/rp2040_dart.git"
     source: git
     version: "0.1.0"

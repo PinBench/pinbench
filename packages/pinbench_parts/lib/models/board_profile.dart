@@ -130,9 +130,12 @@ class const BoardProfile({
     supplies: {'5V': 5.0, 'VSYS': 4.7, '3.3V': 3.3},
     // ADC0–2 are GP26–28; arduino-pico calls them A0–A2 and numbers them 26–28.
     analogInputPorts: ['26', '27', '28'],
-    // `Wire`'s default pins in arduino-pico: I2C0 on GP4/GP5.
-    i2cSdaPorts: {'4'},
-    i2cSclPorts: {'5'},
+    // Every pin an I²C block can use, not only `Wire`'s default GP4/GP5: an
+    // even GPIO can be SDA and an odd one SCL (GP0–21, and GP26–28), and the
+    // sketch picks with `Wire.setSDA()`/`setSCL()` or uses `Wire1`. A module
+    // wired to GP8/GP9 is on a bus as surely as one on GP4/GP5.
+    i2cSdaPorts: {'0', '2', '4', '6', '8', '10', '12', '14', '16', '18', '20', '26', '28'},
+    i2cSclPorts: {'1', '3', '5', '7', '9', '11', '13', '15', '17', '19', '21', '27'},
     builtinLedPin: 25,
     binLoadAddress: 0x10000000,
     // RUN low holds the chip in reset (a reset button does exactly that), and

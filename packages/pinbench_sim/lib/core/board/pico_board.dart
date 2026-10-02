@@ -26,9 +26,6 @@ class PicoBoardEmulator implements BoardEmulator {
 
   static const _flashStart = 0x10000000;
   static const _flashSize = 16 * 1024 * 1024;
-
-  /// IC_RAW_INTR_STAT's TX_EMPTY bit.
-  static const _txEmpty = 1 << 4;
   static const _gpioCount = 30;
   static const _nanosPerCycle = 1e9 / 125e6;
 
@@ -45,7 +42,13 @@ class PicoBoardEmulator implements BoardEmulator {
   var _usbConnected = false;
 
   final _i2c = I2cRecorder();
+
+  /// Typed Serial Monitor bytes waiting for `Serial` (USB) and for `Serial1`
+  /// (UART0). Each line goes to both, so a sketch reads it from whichever port
+  /// it listens on; one that reads both sees it twice, as it would with a
+  /// terminal attached to each.
   final _rxQueue = Queue<int>();
+  final _uartRxQueue = Queue<int>();
   final _freqDetector = FrequencyDetector(clockHz: BoardProfile.picoW.clockHz);
 
   // Per-pin edge bookkeeping, in clock nanoseconds. A pin is high exactly when
@@ -84,6 +87,16 @@ class PicoBoardEmulator implements BoardEmulator {
 
     _usbConnected = false;
     _rxQueue.clear();
+    _uartRxQueue.clear();
+    _sdaPin = _defaultSdaPin;
+    _sclPin = _defaultSclPin;
+
+    // ADC inputs no part drives. Channel 3 is GP29, wired on the board to VSYS
+    // through a 3:1 divider; channel 4 is the die's temperature sensor, which
+    // reads 0.706 V at 27 °C. Left at 0, `analogReadTemp()` reported a chip
+    // at 437 °C.
+    mcu.adc.channelValues[3] = _adcCounts(BoardProfile.picoW.supplies['VSYS']! / 3);
+    mcu.adc.channelValues[4] = _adcCounts(0.706);
     _cdc = USBCDC(mcu.usbCtrl)
       ..onDeviceConnected = (() => _usbConnected = true)
       ..onSerialData = _lineSplitter(onSerialPrint);
@@ -135,15 +148,7 @@ class PicoBoardEmulator implements BoardEmulator {
         i2c.beginTransaction(address, write: mode == I2CMode.Write);
         // The ACK is what `Wire.endTransmission()` returns and an I²C scanner
         // counts, so only a device on the canvas may give it.
-        final ack = i2c.acknowledges(address);
-        bus.completeConnect(ack);
-        // A NACK aborts the transfer and flushes the TX FIFO, and on the chip
-        // an empty FIFO *is* TX_EMPTY — a level, not an event. rp2040js (and
-        // so rp2040_dart) only raises it when a command is taken, so after an
-        // abort it never rises, and the pico-sdk, which waits on it, sits out
-        // `Wire`'s timeout: every scan of an empty address cost about a second
-        // and reported 5 (timeout) instead of 2 (NACK).
-        if (!ack) bus.setInterrupts(_txEmpty);
+        bus.completeConnect(i2c.acknowledges(address));
       }
       ..onWriteByte = (value) {
         i2c.writeByte(value);
@@ -160,6 +165,7 @@ class PicoBoardEmulator implements BoardEmulator {
     // Before the high/low filter below: a released open-drain line changes
     // from driven-low to an input, which is a rise on the bus but not a pin
     // the sketch drives high.
+    if (pin != _sdaPin && pin != _sclPin && _probeBits < 0) _followProbe(pin);
     if (pin == _sdaPin || pin == _sclPin) _watchProbe();
 
     final isHigh = state == GPIOPinState.High;
@@ -185,9 +191,45 @@ class PicoBoardEmulator implements BoardEmulator {
     }
   }
 
-  // `Wire`'s pins, I2C0 on GP4/GP5.
-  static final _sdaPin = int.parse(BoardProfile.picoW.i2cSdaPorts.single);
-  static final _sclPin = int.parse(BoardProfile.picoW.i2cSclPorts.single);
+  // The pins `Wire` drives: I2C0 on GP4/GP5 until the sketch moves it, which
+  // [_followI2cPins] notices. The address probe is watched on these.
+  static const _defaultSdaPin = 4;
+  static const _defaultSclPin = 5;
+  var _sdaPin = _defaultSdaPin;
+  var _sclPin = _defaultSclPin;
+
+  /// GPIO function 3: the pin belongs to an I²C block.
+  static const _functionI2c = 3;
+
+  /// Moves the probe watch to whichever pins the sketch has given to I²C —
+  /// `Wire.setSDA()`/`setSCL()`, or `Wire1` — preferring a pair on one block.
+  ///
+  /// On the RP2040 an even GPIO can be its I²C block's SDA and an odd one its
+  /// SCL, and which block is bit 1 of the pin number. Scanned once a slice,
+  /// not per edge: pins change function at `Wire.begin()`, a handful of times
+  /// in a run, and during the probe itself they are plain GPIOs, so the last
+  /// pair seen in I²C mode is the one being probed.
+  void _followI2cPins(RP2040 mcu) {
+    // (The slice-end scan; [_followProbe] catches a probe that starts within
+    // the same slice as `Wire.begin()`, which is the usual case.)
+    for (final bus in const [0, 1]) {
+      int? sda;
+      int? scl;
+      for (var pin = 0; pin < _gpioCount; pin++) {
+        if (mcu.gpio[pin].functionSelect != _functionI2c || (pin >> 1) & 1 != bus) continue;
+        if (pin.isEven) {
+          sda ??= pin;
+        } else {
+          scl ??= pin;
+        }
+      }
+      if (sda != null && scl != null) {
+        _sdaPin = sda;
+        _sclPin = scl;
+        return;
+      }
+    }
+  }
 
   // The address probe in flight: bits of the address byte read so far (-1
   // when none is), the byte itself, and the bus as last seen.
@@ -196,6 +238,23 @@ class PicoBoardEmulator implements BoardEmulator {
   bool? _probeHeldSda;
   var _scl = true;
   var _sda = true;
+
+  /// Switches the probe watch to [pin]'s pair when [pin] has just left I²C for
+  /// a plain GPIO while its partner is still on I²C — the first step of
+  /// arduino-pico's probe, which takes the pins one at a time. `Wire.begin()`
+  /// and a scanner's first probe usually fall in the same slice, before the
+  /// slice-end scan in [_followI2cPins] has seen the pins move.
+  void _followProbe(int pin) {
+    final mcu = _mcu!;
+    final partner = pin.isEven ? pin + 1 : pin - 1;
+    if (partner < 0 || partner >= _gpioCount) return;
+    if (mcu.gpio[pin].functionSelect == _functionI2c) return;
+    if (mcu.gpio[partner].functionSelect != _functionI2c) return;
+    _sdaPin = pin.isEven ? pin : partner;
+    _sclPin = pin.isEven ? partner : pin;
+    _scl = _line(_sclPin);
+    _sda = _line(_sdaPin);
+  }
 
   /// The level on bus line [pin]: what the sketch drives when the pin is an
   /// output, and otherwise what the circuit holds it at.
@@ -290,15 +349,25 @@ class PicoBoardEmulator implements BoardEmulator {
       _duty[pin] = window > 0 ? high / window : (_highSince[pin] >= 0 ? 1 : 0);
     }
     if (_freqDetector.checkTimeout(getCycles())) onBuzzerFrequencyChanged?.call(null);
+    _followI2cPins(mcu);
   }
 
-  /// Moves typed bytes into the USB serial port as it has room. Held until the
-  /// sketch's USB stack has enumerated, which is when `Serial` exists at all.
+  /// The UART's receive-FIFO-full flag (UARTFR.RXFF).
+  static const _uartRxFull = 1 << 6;
+
+  /// Moves typed bytes into each serial port as it has room: USB once the
+  /// sketch's USB stack has enumerated, which is when `Serial` exists at all,
+  /// and UART0 once `Serial1.begin()` has enabled it.
   void _feedSerial() {
-    if (!_usbConnected) return;
-    final fifo = _cdc.txFIFO;
-    while (_rxQueue.isNotEmpty && !fifo.full) {
-      _cdc.sendSerialByte(_rxQueue.removeFirst());
+    if (_usbConnected) {
+      final fifo = _cdc.txFIFO;
+      while (_rxQueue.isNotEmpty && !fifo.full) {
+        _cdc.sendSerialByte(_rxQueue.removeFirst());
+      }
+    }
+    final uart = _mcu!.uart[0];
+    while (_uartRxQueue.isNotEmpty && uart.enabled && uart.flags & _uartRxFull == 0) {
+      uart.feedByte(_uartRxQueue.removeFirst());
     }
   }
 
@@ -354,11 +423,17 @@ class PicoBoardEmulator implements BoardEmulator {
   void setAnalogVoltage(int channel, double voltage) {
     final adc = _mcu?.adc;
     if (adc == null || channel < 0 || channel >= adc.channelValues.length) return;
-    adc.channelValues[channel] = (voltage / _adcVref * _adcMax).round().clamp(0, _adcMax);
+    adc.channelValues[channel] = _adcCounts(voltage);
   }
 
+  /// [voltage] as the 12-bit ADC reads it against its 3.3 V reference.
+  static int _adcCounts(double voltage) => (voltage / _adcVref * _adcMax).round().clamp(0, _adcMax);
+
   @override
-  void queueSerialInput(String text) => _rxQueue.addAll(text.codeUnits);
+  void queueSerialInput(String text) {
+    _rxQueue.addAll(text.codeUnits);
+    _uartRxQueue.addAll(text.codeUnits);
+  }
 
   /// Every pin's pulses are measured, not just these: the edges arrive anyway,
   /// and timing one costs a subtraction. Kept only to be read back.
