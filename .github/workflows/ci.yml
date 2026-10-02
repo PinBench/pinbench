@@ -123,6 +123,14 @@ jobs:
       # checked on their own terms rather than the app's. Looping keeps a new
       # package covered the day it is added instead of the day someone
       # remembers to edit this file.
+      # Each package is resolved against its siblings' checkouts — the
+      # submodule commits the app pins — not the git branches its pubspec
+      # names. Without this, pinbench_parts and pinbench_sim were tested
+      # against pdl's main while the app built the submodule, and a branch
+      # the app needed failed here on APIs main did not have yet.
+      - name: Link packages to their siblings
+        run: tools/link_packages.sh
+
       - name: Analyze and test each package
         run: |
           set -euo pipefail
