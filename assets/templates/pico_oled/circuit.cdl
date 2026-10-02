@@ -1,0 +1,32 @@
+// Circuit description (.cdl) — kept in sync with the canvas.
+// Edit components and wires here or on the canvas; both update together.
+Circuit {
+    pico := RaspberryPiPicoW {
+        position: (-208, -176);
+    }
+    oled := OLEDDisplay {
+        position: (-160, -416);
+        I2C Address: 0x3C;
+        Pixel Color: White;
+    }
+    Wire {
+        from: oled.GND;
+        to: pico.GND_8;
+        color: black;
+    }
+    Wire {
+        from: oled.VCC;
+        to: pico.3.3V;
+        color: red;
+    }
+    Wire {
+        from: oled.SCL;
+        to: pico.27;
+        color: yellow;
+    }
+    Wire {
+        from: oled.SDA;
+        to: pico.26;
+        color: blue;
+    }
+}

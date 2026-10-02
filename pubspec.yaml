@@ -182,6 +182,9 @@ flutter:
     - assets/templates/mic/
     - assets/templates/oled/
     - assets/templates/pico_blink/
+    - assets/templates/pico_button/
+    - assets/templates/pico_fade/
+    - assets/templates/pico_oled/
     - assets/templates/piezo_buzzer/
     - assets/templates/servo/
     - assets/templates/voltage_divider/
