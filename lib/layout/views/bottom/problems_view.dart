@@ -6,6 +6,9 @@ import 'package:pinbench_ui/theme/tokens.dart';
 import 'package:pinbench_ui/theme/app_colors.dart';
 import 'package:pinbench_ui/theme/app_icons.dart';
 import 'package:pinbench_ui/theme/theme.dart';
+import 'package:pinbench_ui/ui/app_button.dart';
+import 'package:pinbench_ui/ui/app_spinner.dart';
+import 'package:pinbench_ui/ui/app_toast.dart';
 
 import '../../../features/workspace/providers/problems_provider.dart';
 
@@ -66,6 +69,11 @@ class const _ProblemRow({required final Problem problem}) extends StatelessWidge
                     padding: const EdgeInsets.only(top: AppSpacing.xxs),
                     child: Text(problem.detail!.trim()),
                   ),
+                if (problem.action case final action?)
+                  Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.xs),
+                    child: _ProblemActionButton(action: action),
+                  ),
               ],
             ),
           ),
@@ -87,4 +95,42 @@ class const _ProblemRow({required final Problem problem}) extends StatelessWidge
     ProblemSource.compiler => AppStrings.problemSourceCompilerLabel,
     ProblemSource.parser => AppStrings.problemSourceParserLabel,
   };
+}
+
+/// The button for a [Problem]'s [ProblemAction]: disabled with a spinner while
+/// it runs — an install takes minutes, and a second press would start a second
+/// download — then a toast saying how it went.
+class const _ProblemActionButton({required final ProblemAction action}) extends StatefulWidget {
+  @override
+  State<_ProblemActionButton> createState() => _ProblemActionButtonState();
+}
+
+class _ProblemActionButtonState extends State<_ProblemActionButton> {
+  var _running = false;
+
+  Future<void> _run() async {
+    setState(() => _running = true);
+    try {
+      await widget.action.run();
+      if (!mounted) return;
+      showAppToast(context, title: widget.action.doneTitle, message: widget.action.doneMessage);
+    } catch (e) {
+      if (!mounted) return;
+      showAppToast(context, title: widget.action.failedTitle, message: '$e', isError: true);
+    } finally {
+      if (mounted) setState(() => _running = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: Alignment.centerLeft,
+    child: AppButton(
+      variant: AppButtonVariant.outline,
+      size: AppButtonSize.sm,
+      onPressed: _running ? null : _run,
+      prefix: _running ? const AppSpinner(size: 14) : null,
+      child: Text(_running ? widget.action.runningLabel : widget.action.label),
+    ),
+  );
 }

@@ -28,9 +28,10 @@ abstract interface class SimulationDiagnostics {
   /// a fresh one.
   void clearRunLogs();
 
-  /// Reports the compiler's verdict: the raw error output, or null when the
-  /// build succeeded and any previous compile error should be cleared.
-  void reportCompileError(String? error);
+  /// Reports the compiler's verdict: what it threw — its message is the raw
+  /// compiler output — or null when the build succeeded and any previous
+  /// compile error should be cleared.
+  void reportCompileError(Object? error);
 
   /// How many problems are currently showing, from every source. Reported with
   /// each compile so a failure's blast radius is visible in analytics.

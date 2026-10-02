@@ -41,9 +41,11 @@ class SimulationRunner({
   final void Function(String)? onSpiceLog,
   final void Function(String)? onDebugLog,
 
-  /// Reports a compilation error (the message), or `null` when compilation
-  /// succeeded — used to surface build failures in the Problems pane.
-  final void Function(String?)? onCompileError,
+  /// Reports a compilation error — what the compiler threw, so its owner can
+  /// tell one failure from another by type rather than by its wording — or
+  /// `null` when compilation succeeded. Surfaces build failures in the
+  /// Problems pane.
+  final void Function(Object? error)? onCompileError,
 
   /// Periodic frame-stats callback (~1 Hz). Fired with rolling averages so the
   /// owning provider can push them to the tracing/metrics service.
@@ -117,7 +119,7 @@ class SimulationRunner({
       } catch (e) {
         onSerialPrint?.call('Compilation Failed:\n$e\n');
         onDebugLog?.call('[Build] Compilation failed.');
-        onCompileError?.call('$e');
+        onCompileError?.call(e);
         return false;
       }
     }

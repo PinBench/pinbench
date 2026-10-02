@@ -4,10 +4,12 @@ import 'package:flutter/services.dart';
 
 import 'package:path/path.dart' as p;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pinbench_parts/models/board_profile.dart';
 import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/part_model.dart';
 import 'package:pinbench_parts/models/wire_model.dart';
 import 'package:pinbench_parts/cdl/circuit_parser.dart';
+import 'package:pinbench_parts/part_registry.dart';
 
 import '../data/template_asset_loader.dart';
 import '../data/workspace_fs.dart';
@@ -95,12 +97,40 @@ class TemplateService {
 
   Future<String> createBlankWorkspace() => _createUntitledWorkspace(const []);
 
+  /// A temporary workspace with [board] already on the canvas and a blank
+  /// sketch to build for it: what the welcome screen's "New … Project" tiles
+  /// open, so starting on a Pico does not begin with finding the Pico in the
+  /// palette.
+  Future<String> createBoardWorkspace(BoardProfile board) {
+    final part = standardParts.firstWhere((candidate) => candidate.name == board.partName).clone();
+    return _createUntitledWorkspace(
+      // Where the templates put their board, on the connection lattice.
+      [ComponentInstance(position: const Offset(-208, -176), part: part)],
+      sketchHeader: _sketchHeader(board),
+    );
+  }
+
+  /// A line or two at the top of a new sketch for [board], when it needs one.
+  ///
+  /// The Uno's sketch stays the blank one it always was. A Pico's says how its
+  /// pins are numbered, because `digitalWrite(15, …)` meaning GP15 is the
+  /// first thing someone coming from the Uno has to know.
+  static String _sketchHeader(BoardProfile board) {
+    if (board.gpioPrefix.isEmpty) return '';
+    final pin = '${board.gpioPrefix}15';
+    return '// ${board.partName}: a pin is its GPIO number, so digitalWrite(15, HIGH)\n'
+        "// drives $pin, and LED_BUILTIN is the board's own LED.\n\n";
+  }
+
   /// A temporary workspace with [part] alone on the canvas and a blank sketch:
   /// what a `/part/<name>` link opens, so a part's page can hand you the part.
   Future<String> createWorkspaceWithPart(PartModel part) =>
       _createUntitledWorkspace([ComponentInstance(position: Offset.zero, part: part)]);
 
-  Future<String> _createUntitledWorkspace(List<ComponentInstance> nodes) async {
+  Future<String> _createUntitledWorkspace(
+    List<ComponentInstance> nodes, {
+    String sketchHeader = '',
+  }) async {
     final base = await _fs.tempBasePath();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     const projectName = 'Untitled';
@@ -113,7 +143,7 @@ class TemplateService {
     // Create a basic blank .ino file matching the directory name
     await _fs.writeString(
       p.join(workspaceDir, '$projectName.ino'),
-      'void setup() {\n  // put your setup code here, to run once:\n}\n\n'
+      '${sketchHeader}void setup() {\n  // put your setup code here, to run once:\n}\n\n'
       'void loop() {\n  // put your main code here, to run repeatedly:\n}\n',
     );
 

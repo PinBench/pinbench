@@ -16,6 +16,16 @@ class CompilerException(final String message) implements Exception {
   String toString() => message;
 }
 
+/// A local build that failed because `arduino-cli` has no core for [board] —
+/// the arduino-pico core, the first time someone builds for a Pico.
+///
+/// Its own type rather than a sentence to match in the message, because it is
+/// the one failure the app can fix rather than only explain: the Problems pane
+/// offers to install the core (see [LocalCompileService.installCore]). The
+/// message still says how to do it by hand.
+class MissingBoardCoreException(super.message, {required final BoardProfile board})
+    extends CompilerException;
+
 /// Compiles Arduino sketches to Intel-HEX. Dispatches to [LocalCompileService]
 /// (native, via `arduino-cli`) or [RemoteCompileService] (web, via a
 /// configured compile API), and exposes [TemplateProvenanceService]'s pristine

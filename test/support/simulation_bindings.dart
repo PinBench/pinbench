@@ -107,7 +107,7 @@ class FakeSimulationDiagnostics implements SimulationDiagnostics {
   void clearRunLogs() {}
 
   @override
-  void reportCompileError(String? error) {}
+  void reportCompileError(Object? error) {}
 
   @override
   int get problemCount => 0;
