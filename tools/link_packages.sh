@@ -13,10 +13,12 @@
 # pubspec's dependency_overrides already do this for the app; this does the
 # same for each package, by writing the pubspec_overrides.yaml pub reads.
 #
-# Every sibling is listed, not only direct dependencies: overrides apply only
-# at the root of a resolve, so pinbench_sim must override pinbench_pdl itself,
-# which it reaches only through pinbench_parts. Overrides for packages a
-# package never reaches are ignored.
+# A package is linked to every sibling it reaches, directly or through other
+# siblings: overrides apply only at the root of a resolve, so pinbench_sim must
+# override pinbench_pdl itself, which it reaches only through pinbench_parts.
+# Only those: pub records an override in the lockfile even when nothing
+# depends on it, so listing every sibling filled composite_plugin's tracked
+# pubspec.lock with packages it never uses.
 #
 # A package that already has a pubspec_overrides.yaml (gitignored; a local
 # setup may point ngspice_dart at a checkout too) is left alone unless --force,
@@ -62,15 +64,37 @@ for entry in "${packages[@]}"; do
     echo "  $dir: keeping its existing pubspec_overrides.yaml"
     continue
   fi
+  # The siblings this package reaches: a breadth-first walk over the sibling
+  # names each pubspec mentions as a dependency key.
+  reached=()
+  queue=("$dir")
+  while [ "${#queue[@]}" -gt 0 ]; do
+    current="${queue[0]}"
+    queue=("${queue[@]:1}")
+    for other in "${packages[@]}"; do
+      other_name="${other%%	*}"
+      other_dir="packages/${other#*	}"
+      [ "$other_name" = "$name" ] && continue
+      case " ${reached[*]-} " in *" $other_name "*) continue ;; esac
+      if grep -qE "^[[:space:]]+${other_name}:" "$current/pubspec.yaml"; then
+        reached+=("$other_name")
+        queue+=("$other_dir")
+      fi
+    done
+  done
+  if [ "${#reached[@]}" -eq 0 ]; then
+    echo "  $dir: depends on no sibling"
+    continue
+  fi
   {
     echo "# Written by tools/link_packages.sh — the sibling checkouts the app builds."
     echo "dependency_overrides:"
     for other in "${packages[@]}"; do
       other_name="${other%%	*}"
-      [ "$other_name" = "$name" ] && continue
+      case " ${reached[*]} " in *" $other_name "*) ;; *) continue ;; esac
       echo "  $other_name:"
       echo "    path: ../${other#*	}"
     done
   } > "$out"
-  echo "  $dir: linked to its siblings"
+  echo "  $dir: linked to ${reached[*]}"
 done
