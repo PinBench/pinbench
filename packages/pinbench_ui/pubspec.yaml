@@ -17,6 +17,9 @@ dependencies:
   # than generated, so this package needs no build_runner step of its own —
   # see theme/theme.dart.
   flutter_riverpod: ^3.4.2
+  # The brand kit's wordmark and icon, drawn from its SVG masters
+  # (widgets/brand_logo.dart).
+  flutter_svg: ^2.2.3
   # The widget library, and the icon set — which counts as one, because it is
   # a library's worth of API surface that spreads as far as a theme lookup
   # does. Naming either outside `theme/` and `ui/` is what

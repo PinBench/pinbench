@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/widgets.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pinbench_ui/widgets/brand_logo.dart';
 import 'package:pinbench_ui/theme/text.dart';
 import 'package:pinbench_ui/strings.dart';
 import 'package:pinbench_ui/theme/tokens.dart';
@@ -123,15 +124,17 @@ class const WelcomeView({super.key}) extends ConsumerWidget {
     padding: const EdgeInsets.only(bottom: AppSpacing.lg),
     child: Row(
       children: [
-        // Sized to the two lines of text beside it. At 80 it was the largest
+        // The brand kit's horizontal lockup: the app icon beside the drawn
+        // wordmark. Sized to the two lines beside it. At 80 it was the largest
         // thing on the screen and read as a splash screen, not a workspace.
-        Icon(AppIcons.board, size: AppIconSize.display, color: context.appColors.primary),
+        const BrandIcon(size: AppIconSize.display),
         Gap.hXl,
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppSpacing.xs,
             children: [
-              Text(AppStrings.welcomeHeaderTitle, style: AppTextStyles.h1LargePrimary(context)),
+              const BrandWordmark(height: 36),
               Text(AppStrings.welcomeHeaderSubtitle, style: AppTextStyles.largeMuted(context)),
             ],
           ),

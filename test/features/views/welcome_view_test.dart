@@ -15,6 +15,7 @@ import 'package:pinbench/features/workspace/providers/recent_workspaces_provider
 import 'package:pinbench/features/workspace/services/template_service.dart';
 import 'package:pinbench/layout/views/center/welcome_view.dart';
 import 'package:pinbench_ui/strings.dart';
+import 'package:pinbench_ui/widgets/brand_logo.dart';
 
 import '../../support/harness.dart';
 
@@ -48,6 +49,17 @@ void main() {
     // The entry points the patrol journeys tap.
     expect($(AppStrings.newBlankProjectTitle).exists, isTrue);
     expect($(AppStrings.templatesSectionTitle).exists, isTrue);
+  });
+
+  patrolWidgetTest('the header is the brand lockup, still named for screen readers', ($) async {
+    final semantics = $.tester.ensureSemantics();
+    await $.pumpWidgetAndSettle(_app(_baseOverrides(prefs)));
+
+    // Drawn, not typed: the kit's icon and outlined wordmark.
+    expect($(BrandIcon).exists, isTrue);
+    expect($(BrandWordmark).exists, isTrue);
+    expect(find.bySemanticsLabel('PinBench'), findsOneWidget);
+    semantics.dispose();
   });
 
   patrolWidgetTest("puts an edition side panel's entry above the cards", ($) async {
