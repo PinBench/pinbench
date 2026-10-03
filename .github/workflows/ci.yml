@@ -376,11 +376,14 @@ jobs:
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs
 
+      # Flutter hands FLUTTER_XCODE_* to xcodebuild as build settings; plain
+      # CODE_SIGNING_* variables never reach it, and the Release target's
+      # automatic signing then wants a provisioning profile CI cannot have.
       - name: Build Desktop App
         env:
-          CODE_SIGNING_ALLOWED: "NO"
-          CODE_SIGNING_REQUIRED: "NO"
-          CODE_SIGN_IDENTITY: ""
+          FLUTTER_XCODE_CODE_SIGNING_ALLOWED: "NO"
+          FLUTTER_XCODE_CODE_SIGNING_REQUIRED: "NO"
+          FLUTTER_XCODE_CODE_SIGN_IDENTITY: ""
         run: flutter build ${{ matrix.platform }} --release
 
       # One step instead of four `if:`-guarded ones. Every matrix leg used to

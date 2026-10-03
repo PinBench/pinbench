@@ -14,8 +14,8 @@ name: Release
 # releasing, which is how a change here is tested.
 #
 # Not signed yet: there is no Apple Developer ID or Windows certificate. Until
-# there is, macOS asks to confirm opening the app (right-click, Open) and
-# Windows shows a SmartScreen prompt for the installer.
+# there is, the macOS app is signed ad hoc, so macOS asks to confirm opening it
+# (right-click, Open), and Windows shows a SmartScreen prompt for the installer.
 on:
   push:
     tags: ["v*"]
@@ -110,11 +110,33 @@ jobs:
 
       - name: Build
         shell: bash
+        # Flutter hands FLUTTER_XCODE_* to xcodebuild as build settings; plain
+        # CODE_SIGNING_* variables never reach it, and the Release target's
+        # automatic signing then wants a provisioning profile CI cannot have.
         env:
-          CODE_SIGNING_ALLOWED: "NO"
-          CODE_SIGNING_REQUIRED: "NO"
-          CODE_SIGN_IDENTITY: ""
+          FLUTTER_XCODE_CODE_SIGNING_ALLOWED: "NO"
+          FLUTTER_XCODE_CODE_SIGNING_REQUIRED: "NO"
+          FLUTTER_XCODE_CODE_SIGN_IDENTITY: ""
         run: flutter build ${{ matrix.platform }} --release --build-name "$VERSION" --build-number "$BUILD_NUMBER"
+
+      # Apple silicon will not run an unsigned app, so until there is a
+      # Developer ID it is signed ad hoc, with the release entitlements less
+      # keychain-access-groups: that one needs a provisioning profile, and an
+      # app claiming it without one is killed at launch. (It serves the pro
+      # edition's sign-in, which this build does not include.) Then it is
+      # started, to prove macOS lets it run.
+      - name: Sign ad hoc, and launch (macOS)
+        if: matrix.platform == 'macos'
+        run: |
+          app=build/macos/Build/Products/Release/pinbench.app
+          cp macos/Runner/Release.entitlements "$RUNNER_TEMP/adhoc.entitlements"
+          plutil -remove keychain-access-groups "$RUNNER_TEMP/adhoc.entitlements"
+          codesign --force --deep --sign - --entitlements "$RUNNER_TEMP/adhoc.entitlements" "$app"
+          codesign --verify --deep --strict --verbose=2 "$app"
+          "$app/Contents/MacOS/pinbench" & pid=$!
+          sleep 15
+          kill -0 "$pid" || { echo "::error::the app exited within 15 s of launch"; exit 1; }
+          kill "$pid"
 
       - name: Package (macOS disk image)
         if: matrix.platform == 'macos'
