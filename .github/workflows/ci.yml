@@ -5,9 +5,21 @@ on:
     branches: [main]
     # Tags still run the analysis and the test suite: a release is cut from a
     # tag, and this is the gate it goes through. The binaries themselves are
-    # release.yml's job.
+    # release.yml's job. (Path filters do not apply to tags.)
     tags: ["v*"]
+    paths-ignore:
+      # Prose changes nothing this workflow checks, and a full run bills ~20
+      # minutes of the Actions allowance.
+      - "**.md"
+      - docs/**
+      - LICENSE
+      - NOTICE
   pull_request:
+    paths-ignore:
+      - "**.md"
+      - docs/**
+      - LICENSE
+      - NOTICE
   workflow_dispatch:
 
 # Cancel superseded runs on the same ref to save CI minutes.
