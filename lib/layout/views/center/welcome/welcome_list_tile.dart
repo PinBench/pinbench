@@ -28,6 +28,25 @@ class const WelcomeListTile({
     // without the padding and intrinsic sizing.
     return AppTappable(
       onPressed: onTap,
+      // The fill reaches a little past the row rather than the row being
+      // inset inside it: the thumbnail lines up with the icon in the card's
+      // heading, and padding the row for the fill would push it out of line.
+      builder: (context, child, {required hovered}) => Stack(
+        clipBehavior: Clip.none,
+        children: [
+          if (hovered)
+            Positioned.fill(
+              left: -AppSpacing.sm,
+              top: -AppSpacing.sm,
+              right: -AppSpacing.sm,
+              bottom: -AppSpacing.sm,
+              child: DecoratedBox(
+                decoration: BoxDecoration(color: colors.muted, borderRadius: AppRadii.lgAll),
+              ),
+            ),
+          child,
+        ],
+      ),
       // A minimum rather than a fixed height: the thumbnail sets its own size,
       // and pinning the row to it left the two lines of text 2px short of
       // fitting once the type scale changed underneath them.
