@@ -14,7 +14,8 @@
 // Needs `arduino-cli` with the cores and libraries the compile service has
 // (.github/workflows/template-firmware.yml installs the pinned set). A build
 // is only reproducible with the same toolchain, so rebuild with --write after
-// changing those versions.
+// changing those versions. Builds here map their source folders to fixed
+// names, so they match on any machine (and carry no one's home directory).
 import 'dart:io';
 
 /// The board each template's circuit is built on, by its `.cdl` type, and the
@@ -25,6 +26,32 @@ const fqbnByBoard = {'ArduinoUno': 'arduino:avr:uno', 'RaspberryPiPicoW': 'rp204
 /// Where a core that emits only a `.bin` loads it: the RP2040's XIP flash. The
 /// compile service converts it to Intel HEX at the same address.
 const binLoadAddress = {'rp2040:rp2040:rpipico': 0x10000000};
+
+/// The boards whose builds embed source paths, and so get [pathIndependence].
+/// Not AVR: its builds carry none, and its GCC 7 predates -ffile-prefix-map.
+const pathMappedBoards = {'rp2040:rp2040:rpipico'};
+
+/// Compiler flags that keep a build from depending on where it ran.
+///
+/// Assertions bake the path of their source file into the firmware: the
+/// Pico SDK's do, through Wire, so pico_oled carried the builder's home
+/// directory, and built differently on any other machine. Each folder a
+/// source can come from is mapped to a fixed name instead.
+Future<List<String>> pathIndependence(String sketchRoot) async {
+  Future<String> dir(String key) async =>
+      ((await Process.run('arduino-cli', ['config', 'get', key])).stdout as String).trim();
+  final flags = [
+    '-ffile-prefix-map=${await dir('directories.data')}=/arduino',
+    '-ffile-prefix-map=${await dir('directories.user')}=/arduino-user',
+    '-ffile-prefix-map=$sketchRoot=/sketch',
+  ].join(' ');
+  return [
+    for (final kind in ['c', 'cpp', 'S']) ...[
+      '--build-property',
+      'compiler.$kind.extra_flags=$flags',
+    ],
+  ];
+}
 
 Future<void> main(List<String> args) async {
   final write = args.contains('--write');
@@ -75,6 +102,7 @@ Future<({bool ok, String message})> check(Directory dir, String name, {required 
       'compile',
       '--fqbn',
       fqbn,
+      if (pathMappedBoards.contains(fqbn)) ...await pathIndependence(work.path),
       '--output-dir',
       out.path,
       sketch.path,
