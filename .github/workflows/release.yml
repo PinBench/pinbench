@@ -35,8 +35,8 @@ permissions:
   contents: read
 
 jobs:
-  # The builds need the private format packages, and the release the signing
-  # keys: neither reaches a pull request from a fork or Dependabot.
+  # A trial needs the signing keys, which a pull request from a fork or
+  # Dependabot does not get, and a macOS build is the dearest minute there is.
   version:
     name: Version
     if: github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]')
@@ -83,15 +83,6 @@ jobs:
       BUILD_NUMBER: ${{ needs.version.outputs.number }}
     steps:
       - uses: actions/checkout@v7
-
-      # The two format packages are private: submodules here, and git
-      # dependencies for pub. See ci.yml.
-      - name: Load the deploy keys for the private format repositories
-        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.PDL_DEPLOY_KEY }}
-            ${{ secrets.CDL_DEPLOY_KEY }}
 
       - name: Fetch submodules
         run: git submodule update --init --recursive
@@ -225,14 +216,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # tools/release_metadata.dart needs the app's dependencies (crypto),
-      # which resolve through the private format packages.
-      - name: Load the deploy keys for the private format repositories
-        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.PDL_DEPLOY_KEY }}
-            ${{ secrets.CDL_DEPLOY_KEY }}
       - run: git submodule update --init --recursive
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:

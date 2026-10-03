@@ -27,31 +27,12 @@ permissions:
 # --web-renderer flag survived the 3.44 upgrade in some steps and not others.
 
 jobs:
-  # A pull request from a fork, or Dependabot's, gets none of this repository's
-  # secrets, and so cannot read the private format packages (pdl, cdl) that
-  # everything below builds against. Those skip here, and fork-note says
-  # why; build-web and build-desktop need this job, so they skip with it.
   analyze-and-test:
     name: Analyze & Test
-    if: github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
-
-      # pinbench_pdl and pinbench_cdl are private, and so needed twice: as
-      # submodules, and as git dependencies that `flutter pub get` fetches. The
-      # default token reads neither. Each has a read-only deploy key, whose
-      # private half is a secret here; the key's comment names its repository,
-      # which is how the action rewrites that repository's https:// and git@
-      # URLs to use it — for git and therefore for pub. Drop this once the two
-      # repositories are public.
-      - name: Load the deploy keys for the private format repositories
-        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.PDL_DEPLOY_KEY }}
-            ${{ secrets.CDL_DEPLOY_KEY }}
 
       - name: Fetch submodules
         run: git submodule update --init --recursive
@@ -194,17 +175,6 @@ jobs:
   # A malformed workflow fails the run in 0s with no usable error in the API —
   # `shell: ${{ matrix.shell }}` (expressions are not allowed there) cost a
   # push to discover. actionlint catches that class of mistake in ~2s.
-  fork-note:
-    name: Note for forks
-    if: github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]')
-    runs-on: ubuntu-latest
-    timeout-minutes: 2
-    steps:
-      - run: >-
-          echo "::notice::Analysis, tests and builds need the private pdl and
-          cdl packages, which a pull request from a fork cannot read. They run
-          when a maintainer merges, or opens this branch here."
-
   workflow-lint:
     name: Workflow Lint
     runs-on: ubuntu-latest
@@ -231,20 +201,6 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
-
-      # pinbench_pdl and pinbench_cdl are private, and so needed twice: as
-      # submodules, and as git dependencies that `flutter pub get` fetches. The
-      # default token reads neither. Each has a read-only deploy key, whose
-      # private half is a secret here; the key's comment names its repository,
-      # which is how the action rewrites that repository's https:// and git@
-      # URLs to use it — for git and therefore for pub. Drop this once the two
-      # repositories are public.
-      - name: Load the deploy keys for the private format repositories
-        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.PDL_DEPLOY_KEY }}
-            ${{ secrets.CDL_DEPLOY_KEY }}
 
       - name: Fetch submodules
         run: git submodule update --init --recursive
@@ -352,20 +308,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
-
-      # pinbench_pdl and pinbench_cdl are private, and so needed twice: as
-      # submodules, and as git dependencies that `flutter pub get` fetches. The
-      # default token reads neither. Each has a read-only deploy key, whose
-      # private half is a secret here; the key's comment names its repository,
-      # which is how the action rewrites that repository's https:// and git@
-      # URLs to use it — for git and therefore for pub. Drop this once the two
-      # repositories are public.
-      - name: Load the deploy keys for the private format repositories
-        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.PDL_DEPLOY_KEY }}
-            ${{ secrets.CDL_DEPLOY_KEY }}
 
       - name: Fetch submodules
         run: git submodule update --init --recursive
