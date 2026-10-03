@@ -31,12 +31,25 @@ class const CustomCodeEditor({
     final isPdl = filePath.endsWith('.pdl');
     final langMode = isCdl ? langCdl : (isPdl ? langPdl : langCpp);
 
+    // re_editor already binds ⌘/ (Ctrl+/ elsewhere) to toggle a line comment
+    // and ⇧⌘/ to a block comment, but does nothing without a formatter. Every
+    // language here comments a line with `//`; only C and C++ have `/* */`.
+    // The CDL and PDL parsers strip line comments and nothing else, so a
+    // block comment there would break the file, not comment it out.
+    final isC = !isCdl && !isPdl;
+    final commentFormatter = DefaultCodeCommentFormatter(
+      singleLinePrefix: '//',
+      multiLinePrefix: isC ? '/*' : null,
+      multiLineSuffix: isC ? '*/' : null,
+    );
+
     return CodeAutocomplete(
       viewBuilder: (context, notifier, onSelected) =>
           AutocompleteOptionsView(notifier: notifier, onSelected: onSelected),
       promptsBuilder: DefaultCodeAutocompletePromptsBuilder(language: langMode),
       child: CodeEditor(
         controller: controller,
+        commentFormatter: commentFormatter,
         shortcutOverrideActions: {
           CodeShortcutSaveIntent: CallbackAction<CodeShortcutSaveIntent>(
             onInvoke: (intent) {
