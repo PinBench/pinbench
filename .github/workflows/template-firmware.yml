@@ -1,0 +1,80 @@
+name: Template firmware
+
+# The web app runs an untouched example's bundled <name>.ino.hex instead of
+# compiling it, so each one must be the build of its sketch. This compiles
+# every template and compares, whenever a template, the check or this file
+# changes. Rebuild one with `dart tools/check_template_firmware.dart --write`.
+on:
+  pull_request:
+    paths:
+      - assets/templates/**
+      - tools/check_template_firmware.dart
+      - .github/workflows/template-firmware.yml
+  push:
+    branches: [main]
+    paths:
+      - assets/templates/**
+      - tools/check_template_firmware.dart
+      - .github/workflows/template-firmware.yml
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# The compile service's toolchain (PinBench/compile-service tools/setup-vm.sh),
+# pinned: a build only reproduces with the same versions. When the service
+# moves to newer ones, bump these to match and rebuild the templates with
+# --write in the same pull request.
+env:
+  ARDUINO_CLI_VERSION: 1.5.1
+  ARDUINO_CORES: arduino:avr@1.8.8 rp2040:rp2040@6.2.0
+  ARDUINO_LIBRARIES: Adafruit SSD1306@2.5.17|Adafruit GFX Library@1.12.6|Adafruit BusIO@1.17.4|IRremote@4.7.1
+  RP2040_INDEX: https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
+
+jobs:
+  check:
+    name: Templates match their firmware
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Flutter (for Dart)
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version-file: .fvmrc
+          channel: stable
+          cache: true
+
+      - name: Cache the Arduino toolchain
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.arduino15
+            ~/Arduino/libraries
+          key: arduino-${{ env.ARDUINO_CLI_VERSION }}-${{ env.ARDUINO_CORES }}-${{ env.ARDUINO_LIBRARIES }}
+
+      - name: Install arduino-cli, its cores and libraries
+        run: |
+          mkdir -p "$HOME/bin"
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh \
+            | BINDIR="$HOME/bin" sh -s "$ARDUINO_CLI_VERSION"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/bin:$PATH"
+          arduino-cli config init --overwrite
+          arduino-cli config add board_manager.additional_urls "$RP2040_INDEX"
+          arduino-cli core update-index
+          # shellcheck disable=SC2086 # one word per core
+          arduino-cli core install $ARDUINO_CORES
+          # --no-deps: each dependency is pinned in the list itself.
+          IFS='|' read -ra libraries <<< "$ARDUINO_LIBRARIES"
+          arduino-cli lib install --no-deps "${libraries[@]}"
+          arduino-cli core list
+          arduino-cli lib list
+
+      - name: Compile each template and compare its firmware
+        run: dart tools/check_template_firmware.dart
