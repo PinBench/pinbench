@@ -22,6 +22,15 @@ flutter test --exclude-tags arduino
 ```
 
 Cloned without `--recursive`? `git submodule update --init` fills in `packages/`.
+`tools/bootstrap.sh` does all of the setup above that a checkout is missing,
+the submodules and every package's dependencies included, and is quick when
+nothing is; the pre-push hook runs it, so a new worktree can push straight away.
+
+An example's `<name>.ino.hex` must be the build of its sketch, because the web
+app runs it instead of compiling an untouched example. After changing a
+template's `.ino`, rebuild it with `dart tools/check_template_firmware.dart
+--write <name>` (arduino-cli with the toolchain pinned in
+`.github/workflows/template-firmware.yml`); CI checks every template.
 
 ### Changing a package
 
