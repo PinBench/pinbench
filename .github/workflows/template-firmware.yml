@@ -16,6 +16,10 @@ on:
       - assets/templates/**
       - tools/check_template_firmware.dart
       - .github/workflows/template-firmware.yml
+  # Weekly too, for the service-toolchain job: the service can change
+  # without anything here changing.
+  schedule:
+    - cron: "41 6 * * 1"
   workflow_dispatch:
 
 concurrency:
@@ -25,10 +29,11 @@ concurrency:
 permissions:
   contents: read
 
-# The compile service's toolchain (PinBench/compile-service tools/setup-vm.sh),
-# pinned: a build only reproduces with the same versions. When the service
-# moves to newer ones, bump these to match and rebuild the templates with
-# --write in the same pull request.
+# The compile service's toolchain, pinned (its source of truth is
+# PinBench/compile-service deploy/toolchain.env): a build only reproduces with
+# the same versions. The service-toolchain job checks these against what the
+# live service reports. When the service moves to newer ones, bump these to
+# match and rebuild the templates with --write in the same pull request.
 env:
   ARDUINO_CLI_VERSION: 1.5.1
   ARDUINO_CORES: arduino:avr@1.8.8 rp2040:rp2040@6.2.0
@@ -36,8 +41,36 @@ env:
   RP2040_INDEX: https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
 
 jobs:
+  # The live service's /health lists the versions it builds with; if they are
+  # not these, the bundled firmware no longer matches what an edited sketch
+  # compiles to, and this pinned set is out of date.
+  service-toolchain:
+    name: Pinned toolchain matches the compile service
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      COMPILE_SERVICE: ${{ vars.COMPILE_API_URL || 'https://138-3-254-103.sslip.io' }}
+    steps:
+      - name: Compare with /health
+        run: |
+          health=$(curl -fsS --max-time 30 "$COMPILE_SERVICE/health")
+          problems=0
+          check() {  # what, pinned, live
+            if [ "$2" = "$3" ]; then echo "ok    $1 $2"; else echo "DRIFT $1: pinned $2, the service has $3"; problems=1; fi
+          }
+          check arduino-cli "$ARDUINO_CLI_VERSION" "$(jq -r '.arduinoCliVersion' <<<"$health")"
+          for core in $ARDUINO_CORES; do
+            check "${core%@*}" "${core#*@}" "$(jq -r --arg k "${core%@*}" '.toolchain.cores[$k] // "nothing"' <<<"$health")"
+          done
+          IFS='|' read -ra libraries <<< "$ARDUINO_LIBRARIES"
+          for lib in "${libraries[@]}"; do
+            check "${lib%@*}" "${lib#*@}" "$(jq -r --arg k "${lib%@*}" '.toolchain.libraries[$k] // "nothing"' <<<"$health")"
+          done
+          exit "$problems"
+
   check:
     name: Templates match their firmware
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
