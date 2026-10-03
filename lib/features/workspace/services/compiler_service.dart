@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:pinbench_parts/models/board_profile.dart';
@@ -33,8 +34,9 @@ class MissingBoardCoreException(super.message, {required final BoardProfile boar
 class CompilerService {
   /// Base URL of the remote `arduino-cli` compile service used on the web (the
   /// browser cannot run `arduino-cli` locally). Set at build time with
-  /// `--dart-define=COMPILE_API_URL=https://your-service`. When empty, the web
-  /// build falls back to the bundled precompiled template hex.
+  /// `--dart-define=COMPILE_API_URL=https://your-service`. An unedited example
+  /// runs its bundled precompiled hex either way (see [compileWorkspaceOnWeb]);
+  /// without a service, nothing else can be built on the web.
   // ignore: do_not_use_environment
   static const _compileApiUrl = String.fromEnvironment('COMPILE_API_URL');
 
@@ -47,43 +49,73 @@ class CompilerService {
     String directoryPath, {
     BoardProfile board = BoardProfile.arduinoUno,
   }) async {
-    // The browser cannot run `arduino-cli`. When a remote compile service is
-    // configured, send the (edited) sketch there; otherwise fall back to the
-    // bundled precompiled template hex so the examples still run offline.
+    // The browser cannot run `arduino-cli`.
     if (!PlatformCapabilities.supportsLocalCompile) {
-      if (_compileApiUrl.isNotEmpty) {
-        return RemoteCompileService.compile(directoryPath, _compileApiUrl, board: board);
-      }
-      final dirName = p.basename(directoryPath);
-      final hexPath = p.join(directoryPath, '$dirName.ino.hex');
-      final inoPath = p.join(directoryPath, '$dirName.ino');
-      final fs = WorkspaceFs();
-      if (fs.existsFile(hexPath)) {
-        final pristineHash = TemplateProvenanceService.pristineHashFor(directoryPath, fs);
-        final currentSource = fs.existsFile(inoPath) ? fs.readStringSync(inoPath) : null;
-        // Only serve the bundled hex when we can *confirm* the source still
-        // matches the pristine template. If provenance is unknown (no
-        // recorded/persisted pristine hash — e.g. the workspace was reopened
-        // or wasn't created from a template), fail closed instead of risking
-        // silently running stale code that doesn't match the editor.
-        if (pristineHash != null && currentSource?.hashCode == pristineHash) {
-          return fs.readString(hexPath);
-        }
-        throw CompilerException(
-          "You've edited this sketch, but the web preview can't compile custom "
-          'code without a compile service — running the old precompiled result '
-          'would silently ignore your changes. Set COMPILE_API_URL or use the '
-          'desktop app to compile edited sketches.',
-        );
-      }
-      throw CompilerException(
-        'The web preview can only run the bundled example templates, which ship '
-        'precompiled. Compiling new or edited sketches needs a compile service '
-        '(set COMPILE_API_URL) or the desktop app.',
+      return compileWorkspaceOnWeb(
+        directoryPath,
+        board: board,
+        compileApiUrl: _compileApiUrl,
+        remote: RemoteCompileService.compile,
       );
     }
 
     return LocalCompileService.compileWorkspace(directoryPath, board: board);
+  }
+
+  /// The browser's build of the workspace at [directoryPath].
+  ///
+  /// An example nobody has edited runs the precompiled hex it ships with:
+  /// that is the very build of its source, it starts at once, and it works
+  /// when the compile service is slow, down, or refuses the page's origin.
+  /// Anything else goes to the compile service at [compileApiUrl] through
+  /// [remote], and without one it fails with a message that says why; the
+  /// shipped hex is never run for code it was not built from.
+  ///
+  /// Separate from [compileWorkspace] so tests on the native VM, where
+  /// [PlatformCapabilities.supportsLocalCompile] is always true, can reach it.
+  @visibleForTesting
+  static Future<String> compileWorkspaceOnWeb(
+    String directoryPath, {
+    required BoardProfile board,
+    required String compileApiUrl,
+    required Future<String> Function(
+      String directoryPath,
+      String compileApiUrl, {
+      BoardProfile board,
+    })
+    remote,
+  }) async {
+    final dirName = p.basename(directoryPath);
+    final hexPath = p.join(directoryPath, '$dirName.ino.hex');
+    final inoPath = p.join(directoryPath, '$dirName.ino');
+    final fs = WorkspaceFs();
+    final hasHex = fs.existsFile(hexPath);
+    if (hasHex) {
+      final pristineHash = TemplateProvenanceService.pristineHashFor(directoryPath, fs);
+      final currentSource = fs.existsFile(inoPath) ? fs.readStringSync(inoPath) : null;
+      // Only when the source is *confirmed* to be the pristine template's. If
+      // provenance is unknown (no recorded or persisted pristine hash, e.g. a
+      // workspace not created from a template), the hex may not match it.
+      if (pristineHash != null && currentSource?.hashCode == pristineHash) {
+        return fs.readString(hexPath);
+      }
+    }
+    if (compileApiUrl.isNotEmpty) {
+      return remote(directoryPath, compileApiUrl, board: board);
+    }
+    if (hasHex) {
+      throw CompilerException(
+        "You've edited this sketch, but the web preview can't compile custom "
+        'code without a compile service — running the old precompiled result '
+        'would silently ignore your changes. Set COMPILE_API_URL or use the '
+        'desktop app to compile edited sketches.',
+      );
+    }
+    throw CompilerException(
+      'The web preview can only run the bundled example templates, which ship '
+      'precompiled. Compiling new or edited sketches needs a compile service '
+      '(set COMPILE_API_URL) or the desktop app.',
+    );
   }
 
   static Future<String> compile(String code, {BoardProfile board = BoardProfile.arduinoUno}) async {
