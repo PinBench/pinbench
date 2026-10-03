@@ -1,0 +1,218 @@
+name: Release
+
+# Builds the desktop app for macOS, Windows and Linux and makes a release of
+# them: a .dmg, the Inno Setup installer (windows/packaging/installer.iss) and
+# a .tar.gz, with SHA256SUMS.txt and the files the app's updater reads
+# (appcast-macos.xml, appcast-windows.xml and latest.json, written by
+# tools/release_metadata.dart). The download page lists the newest release.
+#
+#   git tag v0.2.0 && git push origin v0.2.0
+#
+# A tag makes a *draft* release: look it over, then publish it, which is when
+# the updater and the download page see it. A pull request that changes this
+# file, the installer or the metadata tool builds everything without
+# releasing, which is how a change here is tested.
+#
+# Not signed yet: there is no Apple Developer ID or Windows certificate. Until
+# there is, macOS asks to confirm opening the app (right-click, Open) and
+# Windows shows a SmartScreen prompt for the installer.
+on:
+  push:
+    tags: ["v*"]
+  pull_request:
+    paths:
+      - .github/workflows/release.yml
+      - windows/packaging/**
+      - tools/release_metadata.dart
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      name: ${{ steps.v.outputs.name }}
+      number: ${{ steps.v.outputs.number }}
+    steps:
+      - uses: actions/checkout@v7
+      # A tag v1.2.3 is version 1.2.3 with build number 10203, which only ever
+      # grows from one release to the next: Sparkle compares build numbers. A
+      # pull request's trial build takes pubspec.yaml's version.
+      - id: v
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            name="${GITHUB_REF_NAME#v}"
+          else
+            name="$(sed -n 's/^version: *\([0-9.]*\).*/\1/p' pubspec.yaml)"
+          fi
+          IFS=. read -r major minor patch <<< "$name"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "number=$((major * 10000 + minor * 100 + patch))" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build ${{ matrix.target }}
+    needs: version
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: macos
+            target: macOS
+          - os: windows-latest
+            platform: windows
+            target: Windows
+          - os: ubuntu-latest
+            platform: linux
+            target: Linux
+    env:
+      VERSION: ${{ needs.version.outputs.name }}
+      BUILD_NUMBER: ${{ needs.version.outputs.number }}
+    steps:
+      - uses: actions/checkout@v7
+
+      # The two format packages are private: submodules here, and git
+      # dependencies for pub. See ci.yml.
+      - name: Load the deploy keys for the private format repositories
+        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.PDL_DEPLOY_KEY }}
+            ${{ secrets.CDL_DEPLOY_KEY }}
+
+      - name: Fetch submodules
+        run: git submodule update --init --recursive
+
+      - name: Install Linux build dependencies
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libblkid-dev libasound2-dev
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version-file: .fvmrc
+          channel: stable
+          cache: true
+
+      - run: flutter config --enable-${{ matrix.platform }}-desktop
+      - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build
+        shell: bash
+        env:
+          CODE_SIGNING_ALLOWED: "NO"
+          CODE_SIGNING_REQUIRED: "NO"
+          CODE_SIGN_IDENTITY: ""
+        run: flutter build ${{ matrix.platform }} --release --build-name "$VERSION" --build-number "$BUILD_NUMBER"
+
+      - name: Package (macOS disk image)
+        if: matrix.platform == 'macos'
+        run: |
+          mkdir -p dist
+          hdiutil create -volname PinBench -srcfolder build/macos/Build/Products/Release/pinbench.app \
+            -ov -format UDZO "dist/pinbench-$VERSION-macos.dmg"
+
+      - name: Package (Windows installer)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" `
+            "/DAppVersion=$env:VERSION" `
+            "/DSourceDir=$env:GITHUB_WORKSPACE\build\windows\x64\runner\Release" `
+            "/DOutputDir=$env:GITHUB_WORKSPACE\dist" `
+            windows\packaging\installer.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Package (Linux tarball)
+        if: matrix.platform == 'linux'
+        run: |
+          mkdir -p dist
+          tar -czf "dist/pinbench-$VERSION-linux.tar.gz" -C build/linux/x64/release/bundle .
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: pinbench-${{ matrix.platform }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    name: ${{ github.event_name == 'pull_request' && 'Assemble (trial, not released)' || 'Draft the release' }}
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.version.outputs.name }}
+      BUILD_NUMBER: ${{ needs.version.outputs.number }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+
+      # tools/release_metadata.dart needs the app's dependencies (crypto),
+      # which resolve through the private format packages.
+      - name: Load the deploy keys for the private format repositories
+        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.PDL_DEPLOY_KEY }}
+            ${{ secrets.CDL_DEPLOY_KEY }}
+      - run: git submodule update --init --recursive
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version-file: .fvmrc
+          channel: stable
+          cache: true
+      - run: flutter pub get
+
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Write the updater's files and the checksums
+        run: |
+          tag="v$VERSION"
+          base="https://github.com/$GITHUB_REPOSITORY/releases/download/$tag"
+          dart run tools/release_metadata.dart \
+            --version "$VERSION" \
+            --build-number "$BUILD_NUMBER" \
+            --base-url "$base" \
+            --notes-url "https://github.com/$GITHUB_REPOSITORY/releases/tag/$tag" \
+            --published-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --out dist \
+            --asset "macos=dist/pinbench-$VERSION-macos.dmg" \
+            --asset "windows=dist/pinbench-$VERSION-windows-setup.exe" \
+            --asset "linux=dist/pinbench-$VERSION-linux.tar.gz"
+          (cd dist && sha256sum pinbench-* > SHA256SUMS.txt)
+          ls -la dist
+          cat dist/SHA256SUMS.txt
+
+      - name: Keep the trial's files
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-trial
+          path: dist/*
+          retention-days: 7
+
+      - name: Draft the release
+        if: github.event_name == 'push'
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --draft \
+            --title "PinBench $VERSION" \
+            --generate-notes \
+            --notes "Desktop builds for macOS (Apple silicon and Intel), Windows and Linux. Not yet code-signed: on macOS, right-click the app and choose Open the first time; on Windows, the installer shows a SmartScreen prompt."
