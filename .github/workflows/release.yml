@@ -23,6 +23,8 @@ on:
     paths:
       - .github/workflows/release.yml
       - windows/packaging/**
+      - windows/runner/Runner.rc
+      - macos/Runner/Info.plist
       - tools/release_metadata.dart
 
 concurrency:
@@ -156,11 +158,48 @@ jobs:
             windows\packaging\installer.iss
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      # What a user does with it: install (per user, silently), start the app
+      # and see it stay up, then uninstall and see it gone.
+      - name: Install, launch and uninstall (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $setup = Get-ChildItem dist\*-windows-setup.exe | Select-Object -First 1
+          Start-Process $setup.FullName -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/CURRENTUSER' -Wait
+          $dir = Join-Path $env:LOCALAPPDATA 'Programs\PinBench'
+          $exe = Join-Path $dir 'pinbench.exe'
+          if (-not (Test-Path $exe)) { Write-Error "the installer did not put pinbench.exe in $dir"; exit 1 }
+          $app = Start-Process $exe -PassThru
+          Start-Sleep -Seconds 15
+          if ($app.HasExited) { Write-Error "the installed app exited within 15 s (code $($app.ExitCode))"; exit 1 }
+          Stop-Process -Id $app.Id -Force
+          Start-Sleep -Seconds 2
+          Start-Process (Join-Path $dir 'unins000.exe') -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait
+          Start-Sleep -Seconds 3
+          if (Test-Path $exe) { Write-Error 'the uninstaller left pinbench.exe behind'; exit 1 }
+
       - name: Package (Linux tarball)
         if: matrix.platform == 'linux'
         run: |
           mkdir -p dist
           tar -czf "dist/pinbench-$VERSION-linux.tar.gz" -C build/linux/x64/release/bundle .
+
+      # Unpacked from the tarball as a user would, and started on a virtual
+      # display (Mesa's software GL stands in for a GPU) to see it stay up.
+      - name: Launch from the tarball (Linux)
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get install -y xvfb libgl1-mesa-dri
+          mkdir -p "$RUNNER_TEMP/app"
+          tar -xzf "dist/pinbench-$VERSION-linux.tar.gz" -C "$RUNNER_TEMP/app"
+          xvfb-run -a "$RUNNER_TEMP/app/pinbench" > "$RUNNER_TEMP/app.log" 2>&1 & pid=$!
+          sleep 15
+          if ! kill -0 "$pid" 2>/dev/null; then
+            cat "$RUNNER_TEMP/app.log"
+            echo "::error::the app exited within 15 s of launch"
+            exit 1
+          fi
+          kill "$pid"
 
       - uses: actions/upload-artifact@v7
         with:
@@ -204,6 +243,39 @@ jobs:
           path: dist
           merge-multiple: true
 
+      # The app installs an update only with a valid signature: Sparkle checks
+      # the .dmg's Ed25519 one against Info.plist's SUPublicEDKey, WinSparkle
+      # the installer's DSA one against Runner.rc's DSAPub. Each signature is
+      # verified here against those embedded keys, so a release signed with
+      # the wrong key fails now instead of every user's next update.
+      - name: Sign the updates
+        env:
+          ED_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+          DSA_KEY: ${{ secrets.WINSPARKLE_DSA_PRIVATE_KEY }}
+        run: |
+          if [ -z "$ED_KEY" ] || [ -z "$DSA_KEY" ]; then
+            echo "::error::SPARKLE_ED_PRIVATE_KEY and WINSPARKLE_DSA_PRIVATE_KEY must be set: the app rejects unsigned updates"
+            exit 1
+          fi
+          keys="$RUNNER_TEMP/keys" && mkdir -m 700 "$keys"
+          printf '%s\n' "$ED_KEY" > "$keys/ed.pem"
+          printf '%s\n' "$DSA_KEY" > "$keys/dsa.pem"
+          dmg="dist/pinbench-$VERSION-macos.dmg"
+          exe="dist/pinbench-$VERSION-windows-setup.exe"
+
+          openssl pkeyutl -sign -inkey "$keys/ed.pem" -rawin -in "$dmg" -out "$keys/ed.sig"
+          openssl dgst -sha1 -binary < "$exe" | openssl dgst -sha1 -sign "$keys/dsa.pem" -out "$keys/dsa.sig"
+
+          # The app's public keys, as it carries them.
+          ed_public=$(sed -n '/<key>SUPublicEDKey<\/key>/{n;s/.*<string>\(.*\)<\/string>.*/\1/p;}' macos/Runner/Info.plist)
+          { printf '\x30\x2a\x30\x05\x06\x03\x2b\x65\x70\x03\x21\x00'; printf '%s' "$ed_public" | base64 -d; } > "$keys/ed_public.der"
+          openssl pkeyutl -verify -pubin -keyform DER -inkey "$keys/ed_public.der" -rawin -in "$dmg" -sigfile "$keys/ed.sig"
+          openssl dgst -sha1 -binary < "$exe" | openssl dgst -sha1 -verify windows/runner/resources/winsparkle_dsa_public.pem -signature "$keys/dsa.sig"
+
+          echo "ED_SIGNATURE=$(base64 -w0 < "$keys/ed.sig")" >> "$GITHUB_ENV"
+          echo "DSA_SIGNATURE=$(base64 -w0 < "$keys/dsa.sig")" >> "$GITHUB_ENV"
+          rm -rf "$keys"
+
       - name: Write the updater's files and the checksums
         run: |
           tag="v$VERSION"
@@ -217,10 +289,14 @@ jobs:
             --out dist \
             --asset "macos=dist/pinbench-$VERSION-macos.dmg" \
             --asset "windows=dist/pinbench-$VERSION-windows-setup.exe" \
-            --asset "linux=dist/pinbench-$VERSION-linux.tar.gz"
+            --asset "linux=dist/pinbench-$VERSION-linux.tar.gz" \
+            --ed-signature "macos=$ED_SIGNATURE" \
+            --dsa-signature "windows=$DSA_SIGNATURE"
           (cd dist && sha256sum pinbench-* > SHA256SUMS.txt)
           ls -la dist
           cat dist/SHA256SUMS.txt
+          grep -q 'sparkle:edSignature=' dist/appcast-macos.xml
+          grep -q 'sparkle:dsaSignature=' dist/appcast-windows.xml
 
       - name: Keep the trial's files
         if: github.event_name == 'pull_request'

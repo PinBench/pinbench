@@ -15,7 +15,8 @@
 //     --asset macos=dist/App-macos.dmg \
 //     --asset windows=dist/App-windows-setup.exe \
 //     --asset linux=dist/App-linux.tar.gz \
-//     --ed-signature macos=<base64>
+//     --ed-signature macos=<base64> \
+//     --dsa-signature windows=<base64>
 //
 // Written in Dart rather than as a shell heredoc because it has to hash
 // files, XML-escape strings and emit two different formats — and because a
@@ -48,6 +49,7 @@ Future<void> generateReleaseMetadata(List<String> args) async {
       sha256: sha256.convert(bytes).toString(),
       size: bytes.length,
       edSignature: options.edSignatures[entry.key],
+      dsaSignature: options.dsaSignatures[entry.key],
     );
   }
 
@@ -100,11 +102,15 @@ class const AssetInfo({
   required final String sha256,
   required final int size,
 
-  /// Sparkle's EdDSA signature over the file, from `sign_update`. Null when
-  /// no signing key was available — Sparkle then falls back to verifying the
-  /// update's Developer ID against the running app's, which is weaker but is
-  /// still a real check, and is better than refusing to publish.
+  /// Sparkle's EdDSA (Ed25519) signature over the file, which the macOS app
+  /// checks against the SUPublicEDKey in its Info.plist: with that key set,
+  /// Sparkle refuses an update without a valid one.
   final String? edSignature,
+
+  /// WinSparkle's DSA signature (over the file's SHA-1), which the Windows
+  /// app checks against the DSAPub resource in Runner.rc. WinSparkle 0.8,
+  /// which auto_updater bundles, verifies DSA, not EdDSA.
+  final String? dsaSignature,
 });
 
 /// A single-item Sparkle appcast.
@@ -121,7 +127,10 @@ String buildAppcast({
   required DateTime publishedAt,
   required AssetInfo asset,
 }) {
-  final signature = asset.edSignature;
+  final signatures = [
+    if (asset.edSignature case final ed?) 'sparkle:edSignature="${_xml(ed)}"',
+    if (asset.dsaSignature case final dsa?) 'sparkle:dsaSignature="${_xml(dsa)}"',
+  ].map((attribute) => '\n                 $attribute').join();
   return '''
 <?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
@@ -138,7 +147,7 @@ String buildAppcast({
       <sparkle:releaseNotesLink>${_xml(notesUrl)}</sparkle:releaseNotesLink>
       <enclosure url="${_xml(asset.url)}"
                  length="${asset.size}"
-                 type="application/octet-stream"${signature == null ? '' : '\n                 sparkle:edSignature="${_xml(signature)}"'} />
+                 type="application/octet-stream"$signatures />
     </item>
   </channel>
 </rss>
@@ -185,11 +194,13 @@ class const ReleaseOptions({
   required final String outDir,
   required final Map<String, String> assets,
   required final Map<String, String> edSignatures,
+  required final Map<String, String> dsaSignatures,
 }) {
   factory parse(List<String> args) {
     final single = <String, String>{};
     final assets = <String, String>{};
     final signatures = <String, String>{};
+    final dsaSignatures = <String, String>{};
 
     for (var i = 0; i < args.length; i += 2) {
       final name = args[i].replaceFirst(RegExp('^--'), '');
@@ -205,6 +216,10 @@ class const ReleaseOptions({
           // flag — treat it as absent rather than emitting an empty
           // signature attribute, which Sparkle rejects the whole item over.
           if (signature.isNotEmpty) signatures[value.substring(0, split)] = signature;
+        case 'dsa-signature':
+          final split = value.indexOf('=');
+          final signature = value.substring(split + 1);
+          if (signature.isNotEmpty) dsaSignatures[value.substring(0, split)] = signature;
         default:
           single[name] = value;
       }
@@ -220,6 +235,7 @@ class const ReleaseOptions({
       outDir: single['out'] ?? 'dist',
       assets: assets,
       edSignatures: signatures,
+      dsaSignatures: dsaSignatures,
     );
   }
 }

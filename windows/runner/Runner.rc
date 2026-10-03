@@ -54,6 +54,17 @@ END
 // remains consistent on all systems.
 IDI_APP_ICON            ICON                    "resources\\app_icon.ico"
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// WinSparkle
+//
+
+// The public half of the update-signing DSA key: WinSparkle installs an
+// update only with a valid signature from the private half (the
+// WINSPARKLE_DSA_PRIVATE_KEY secret, which .github/workflows/release.yml
+// signs each release with).
+DSAPub                  DSAPEM                  "resources\\winsparkle_dsa_public.pem"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

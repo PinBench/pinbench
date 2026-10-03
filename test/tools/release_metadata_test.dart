@@ -68,6 +68,26 @@ void main() {
         asset: unsigned,
       );
       expect(output, isNot(contains('edSignature')));
+      expect(output, isNot(contains('dsaSignature')));
+    });
+
+    test("carries WinSparkle's DSA signature for the Windows feed", () {
+      const windows = AssetInfo(
+        fileName: 'app-setup.exe',
+        url: 'https://example.test/app-setup.exe',
+        sha256: 'beef',
+        size: 1,
+        dsaSignature: 'ZHNhLXNpZw==',
+      );
+      final output = buildAppcast(
+        version: '0.4.0',
+        buildNumber: 4000,
+        notesUrl: 'https://example.test/tag/v0.4.0',
+        publishedAt: DateTime.utc(2026, 8, 13, 12),
+        asset: windows,
+      );
+      expect(output, contains('sparkle:dsaSignature="ZHNhLXNpZw=="'));
+      expect(output, isNot(contains('edSignature')));
     });
 
     test('escapes a URL containing an ampersand', () {
@@ -102,10 +122,13 @@ void main() {
         'linux=dist/a.tar.gz',
         '--ed-signature',
         'macos=sig',
+        '--dsa-signature',
+        'windows=dsa',
       ]);
 
       expect(options.assets, {'macos': 'dist/a.dmg', 'linux': 'dist/a.tar.gz'});
       expect(options.edSignatures, {'macos': 'sig'});
+      expect(options.dsaSignatures, {'windows': 'dsa'});
       // The trailing slash would otherwise produce `…/v0.4.0//a.dmg`.
       expect(options.baseUrl, 'https://example.test/v0.4.0');
     });
@@ -126,8 +149,11 @@ void main() {
         '2026-08-13T12:00:00Z',
         '--ed-signature',
         'macos=',
+        '--dsa-signature',
+        'windows=',
       ]);
       expect(options.edSignatures, isEmpty);
+      expect(options.dsaSignatures, isEmpty);
     });
   });
 
