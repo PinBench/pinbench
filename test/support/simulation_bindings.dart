@@ -109,6 +109,12 @@ class FakeSimulationDiagnostics implements SimulationDiagnostics {
   @override
   void reportCompileError(Object? error) {}
 
+  /// Every warnings list reported, in order.
+  final circuitWarnings = <List<String>>[];
+
+  @override
+  void reportCircuitWarnings(List<String> warnings) => circuitWarnings.add(warnings);
+
   @override
   int get problemCount => 0;
 

@@ -54,6 +54,12 @@ class SimulationEngine({
   /// profiler rolling averages.
   final void Function(FrameStats stats)? onFrameStats,
 
+  /// The circuit's live warnings — today a supply rail delivering more than
+  /// its rating — as one message each, or an empty list once none apply.
+  /// Fired only when the set changes, so a steady overload costs nothing
+  /// after the first frame that finds it.
+  final void Function(List<String> warnings)? onCircuitWarnings,
+
   /// Optional profiler. Assign profiler.enabled = true to start
   /// collecting per-frame timing. Zero overhead when disabled.
   final FrameProfiler? profiler,
@@ -270,6 +276,11 @@ class SimulationEngine({
       _lastWireCurrents.clear();
       onWireCurrents?.call(const {});
     }
+    // An overload belongs to the run that drew it.
+    if (_overloadedRails.isNotEmpty) {
+      _overloadedRails.clear();
+      onCircuitWarnings?.call(const []);
+    }
   }
 
   Future<void> start(String compiledHex, {required void Function() onStop}) async {
@@ -479,6 +490,45 @@ class SimulationEngine({
     // A copy: the solver reuses its result map, and this one crosses an isolate.
     report(Map<String, double>.from(currents));
   }
+
+  /// The rails last reported over their rating, so the warning goes out once
+  /// when a rail crosses its limit and once when it comes back.
+  final Set<String> _overloadedRails = {};
+
+  /// Compares each supply rail's solved current with what the board can
+  /// deliver from it, and reports the set when it changes.
+  ///
+  /// A rail sources current out of the board, which [SpiceEngine.portCurrent]
+  /// reads as negative; a rail being back-driven by something else is not an
+  /// overload of it.
+  void _checkSupplyRails() {
+    final report = onCircuitWarnings;
+    final board = _boardNode;
+    if (report == null || board == null) return;
+    final profile = _canvasProfile;
+
+    final over = <String, double>{};
+    for (final MapEntry(key: rail, value: limit) in profile.supplyLimits.entries) {
+      if (!_spiceEngine.isPortConnected(board.key, rail)) continue;
+      final amps = -_spiceEngine.portCurrent(board.key, rail);
+      if (amps > limit) over[rail] = amps;
+    }
+    if (over.length == _overloadedRails.length && over.keys.every(_overloadedRails.contains)) {
+      return;
+    }
+    _overloadedRails
+      ..clear()
+      ..addAll(over.keys);
+    report([
+      for (final MapEntry(key: rail, value: amps) in over.entries)
+        _railWarning(profile, rail, amps),
+    ]);
+  }
+
+  static String _railWarning(BoardProfile board, String rail, double amps) =>
+      "The ${board.partName}'s $rail supply is delivering ${(amps * 1000).round()} mA, "
+      'more than the ${(board.supplyLimits[rail]! * 1000).round()} mA it is rated for. '
+      'On a real board it would sag, cut out or overheat.';
 
   void _queueNodeUpdate(LocalKey key, Map<String, dynamic> props) {
     _frameUpdates[key] = props;
@@ -736,6 +786,7 @@ class SimulationEngine({
     if (_isSpiceActive && solveSpice) {
       _updateAnalogInputs();
       _emitWireCurrents();
+      _checkSupplyRails();
     }
 
     // Declarative parts run every frame, solved circuit or not: their rules

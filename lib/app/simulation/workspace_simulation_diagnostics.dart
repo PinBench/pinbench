@@ -33,6 +33,8 @@ class const WorkspaceSimulationDiagnostics(final Ref _ref) implements Simulation
     _ref.read(spiceLogsProvider.notifier).clear();
     _ref.read(debugLogsProvider.notifier).clear();
     _ref.read(serialLogsProvider.notifier).clear();
+    // A rail overloaded last run is not this run's problem until it is again.
+    _ref.read(problemsProvider.notifier).clearSource(ProblemSource.simulation);
   }
 
   @override
@@ -64,6 +66,17 @@ class const WorkspaceSimulationDiagnostics(final Ref _ref) implements Simulation
         ),
     ]);
   }
+
+  @override
+  void reportCircuitWarnings(List<String> warnings) =>
+      _ref.read(problemsProvider.notifier).setForSource(ProblemSource.simulation, [
+        for (final warning in warnings)
+          Problem(
+            severity: ProblemSeverity.warning,
+            source: ProblemSource.simulation,
+            message: warning,
+          ),
+      ]);
 
   /// Installs [board]'s core when the user asks, its progress in the Debug
   /// Console, then clears the problem: the next run builds.

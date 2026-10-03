@@ -94,6 +94,7 @@ class const _ProblemRow({required final Problem problem}) extends StatelessWidge
     ProblemSource.circuit => AppStrings.problemSourceCircuitLabel,
     ProblemSource.compiler => AppStrings.problemSourceCompilerLabel,
     ProblemSource.parser => AppStrings.problemSourceParserLabel,
+    ProblemSource.simulation => AppStrings.problemSourceSimulationLabel,
   };
 }
 

@@ -50,6 +50,7 @@ class Simulation extends _$Simulation {
       onSpiceLog: diagnostics.spice,
       onDebugLog: diagnostics.debug,
       onCompileError: diagnostics.reportCompileError,
+      onCircuitWarnings: diagnostics.reportCircuitWarnings,
       onWireCurrents: (currents) => wireCurrents.value = currents,
       onFrameStats: (stats) {
         final tracing = ref.read(tracingProvider);

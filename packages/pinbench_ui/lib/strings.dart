@@ -291,6 +291,7 @@ class AppStrings._() {
   static const problemSourceCircuitLabel = 'Circuit';
   static const problemSourceCompilerLabel = 'Compiler';
   static const problemSourceParserLabel = 'Parser';
+  static const problemSourceSimulationLabel = 'Simulation';
 
   static const debugConsoleTitle = 'Debug Console';
   static const noDebugLogsMessage = 'No debug logs recorded.';
