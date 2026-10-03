@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
+import 'package:pinbench_parts/models/board_profile.dart';
 
 import 'package:pinbench/features/workspace/data/workspace_fs.dart';
 import 'package:pinbench/features/workspace/services/compiler_service.dart';
@@ -11,15 +12,13 @@ import 'package:pinbench/features/workspace/services/compiler_service.dart';
 /// Phase 0), written before Phase 2 extracts it into its own
 /// `TemplateProvenanceService`.
 ///
-/// `compileWorkspace`'s web-only pristine-hash fallback branch itself can't
-/// be exercised here: `dart test`/`flutter test` runs on the native VM, where
-/// `PlatformCapabilities.supportsLocalCompile` is always true, so that branch
-/// is unreachable outside an actual web run. These tests instead pin down the
-/// on-disk contract the branch depends on: the `.pristine_hash` sidecar file
-/// name/format and the `pristineSourceHashes` in-memory map, both of which
-/// Phase 2's extraction must preserve exactly (other code, e.g.
-/// `WorkspaceFiles._scanFiles`, filters the sidecar out of the file tree by
-/// this exact name).
+/// `dart test`/`flutter test` runs on the native VM, where
+/// `PlatformCapabilities.supportsLocalCompile` is always true, so the web
+/// branch of `compileWorkspace` is tested through `compileWorkspaceOnWeb`.
+/// The rest pins down the on-disk contract that branch depends on: the
+/// `.pristine_hash` sidecar file name/format and the `pristineSourceHashes`
+/// in-memory map (other code, e.g. `WorkspaceFiles._scanFiles`, filters the
+/// sidecar out of the file tree by this exact name).
 void main() {
   late Directory tempDir;
 
@@ -70,4 +69,81 @@ void main() {
       );
     },
   );
+
+  group('compileWorkspaceOnWeb', () {
+    const source = 'void setup() {}\nvoid loop() {}\n';
+    const hex = ':00000001FF\n';
+    late String dir;
+    late List<String> remoteCalls;
+
+    Future<String> remote(
+      String directoryPath,
+      String compileApiUrl, {
+      BoardProfile board = BoardProfile.arduinoUno,
+    }) async {
+      remoteCalls.add(compileApiUrl);
+      return 'remote hex';
+    }
+
+    Future<String> build({String compileApiUrl = 'https://compile.example'}) =>
+        CompilerService.compileWorkspaceOnWeb(
+          dir,
+          board: BoardProfile.arduinoUno,
+          compileApiUrl: compileApiUrl,
+          remote: remote,
+        );
+
+    setUp(() {
+      remoteCalls = [];
+      dir = p.join(tempDir.path, 'blink');
+      Directory(dir).createSync();
+      File(p.join(dir, 'blink.ino')).writeAsStringSync(source);
+      File(p.join(dir, 'blink.ino.hex')).writeAsStringSync(hex);
+    });
+
+    test('an untouched example runs its bundled hex, without the compile service', () async {
+      CompilerService.pristineSourceHashes[dir] = source.hashCode;
+      expect(await build(), hex);
+      expect(remoteCalls, isEmpty);
+    });
+
+    test('an edited example goes to the compile service', () async {
+      CompilerService.pristineSourceHashes[dir] = 'the template as shipped'.hashCode;
+      expect(await build(), 'remote hex');
+      expect(remoteCalls, ['https://compile.example']);
+    });
+
+    test('a sketch of unknown provenance goes to the compile service', () async {
+      expect(await build(), 'remote hex');
+      expect(remoteCalls, hasLength(1));
+    });
+
+    test('an edited example without a compile service fails, never running the old hex', () async {
+      CompilerService.pristineSourceHashes[dir] = 'the template as shipped'.hashCode;
+      await expectLater(
+        build(compileApiUrl: ''),
+        throwsA(
+          isA<CompilerException>().having(
+            (e) => e.message,
+            'message',
+            contains("You've edited this sketch"),
+          ),
+        ),
+      );
+    });
+
+    test('a sketch that is no template fails without a compile service', () async {
+      File(p.join(dir, 'blink.ino.hex')).deleteSync();
+      await expectLater(
+        build(compileApiUrl: ''),
+        throwsA(
+          isA<CompilerException>().having(
+            (e) => e.message,
+            'message',
+            contains('bundled example templates'),
+          ),
+        ),
+      );
+    });
+  });
 }
