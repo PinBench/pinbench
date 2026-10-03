@@ -1,4 +1,9 @@
-# PinBench
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/lockup-white.svg">
+    <img src="docs/brand/lockup-teal.svg" alt="PinBench" height="56">
+  </picture>
+</h1>
 
 [![CI](https://github.com/PinBench/pinbench/actions/workflows/ci.yml/badge.svg)](https://github.com/PinBench/pinbench/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
@@ -8,8 +13,8 @@
 
 Place components on a breadboard, wire them up, write a sketch, press Run, and
 watch the LEDs actually light. The simulator runs a real ATmega328P emulation
-against an analog solver, so a missing resistor browns out your LED instead of
-being silently ignored.
+against an analog solver, so leave out an LED's resistor and you see it being
+over-driven instead of the mistake being silently ignored.
 
 Works fully offline on desktop. No account required.
 

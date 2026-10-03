@@ -208,7 +208,6 @@ class AppStrings._() {
   static const templatesSectionTitle = 'Templates';
   static const recentWorkspacesSectionTitle = 'Recent Workspaces';
   static const cloudProjectsSectionTitle = 'Cloud Projects';
-  static const welcomeHeaderTitle = 'PinBench';
   static const welcomeHeaderSubtitle = 'Design, simulate, and build circuits beautifully.';
 
   static const noTemplatesFoundMessage = 'No templates found in the registry.';
