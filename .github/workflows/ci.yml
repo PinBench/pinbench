@@ -46,20 +46,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # pinbench_pdl and pinbench_cdl are private, and so needed twice: as
-      # submodules, and as git dependencies that `flutter pub get` fetches. The
-      # default token reads neither. Each has a read-only deploy key, whose
-      # private half is a secret here; the key's comment names its repository,
-      # which is how the action rewrites that repository's https:// and git@
-      # URLs to use it — for git and therefore for pub. Drop this once the two
-      # repositories are public.
-      - name: Load the deploy keys for the private format repositories
-        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.PDL_DEPLOY_KEY }}
-            ${{ secrets.CDL_DEPLOY_KEY }}
-
       - name: Fetch submodules
         run: git submodule update --init --recursive
 
@@ -228,20 +214,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # pinbench_pdl and pinbench_cdl are private, and so needed twice: as
-      # submodules, and as git dependencies that `flutter pub get` fetches. The
-      # default token reads neither. Each has a read-only deploy key, whose
-      # private half is a secret here; the key's comment names its repository,
-      # which is how the action rewrites that repository's https:// and git@
-      # URLs to use it — for git and therefore for pub. Drop this once the two
-      # repositories are public.
-      - name: Load the deploy keys for the private format repositories
-        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.PDL_DEPLOY_KEY }}
-            ${{ secrets.CDL_DEPLOY_KEY }}
-
       - name: Fetch submodules
         run: git submodule update --init --recursive
 
@@ -348,20 +320,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
-
-      # pinbench_pdl and pinbench_cdl are private, and so needed twice: as
-      # submodules, and as git dependencies that `flutter pub get` fetches. The
-      # default token reads neither. Each has a read-only deploy key, whose
-      # private half is a secret here; the key's comment names its repository,
-      # which is how the action rewrites that repository's https:// and git@
-      # URLs to use it — for git and therefore for pub. Drop this once the two
-      # repositories are public.
-      - name: Load the deploy keys for the private format repositories
-        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.PDL_DEPLOY_KEY }}
-            ${{ secrets.CDL_DEPLOY_KEY }}
 
       - name: Fetch submodules
         run: git submodule update --init --recursive
