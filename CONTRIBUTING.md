@@ -187,3 +187,18 @@ For anything security-related, **do not open a public issue** — see
 ## Code of conduct
 
 By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Releasing
+
+Push a version tag; `.github/workflows/release.yml` does the rest:
+
+```bash
+git tag v0.2.0 && git push origin v0.2.0
+```
+
+It builds macOS, Windows and Linux, packages a `.dmg`, the Inno Setup
+installer and a `.tar.gz`, writes the updater's appcasts and `latest.json`
+(`tools/release_metadata.dart`) and `SHA256SUMS.txt`, and makes a **draft**
+release. Publishing the draft is what the updater and the download page see.
+A tag `vX.Y.Z` gets build number `X*10000 + Y*100 + Z`, so tags must only go
+up. The builds are not code-signed yet.
