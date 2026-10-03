@@ -84,6 +84,15 @@ mixin CanvasControllerMixin {
   void panLeft() => viewerController.pan(const Offset(50, 0));
   void panRight() => viewerController.pan(const Offset(-50, 0));
 
+  /// Moves the view by [screenDelta] viewport pixels at any zoom, so the
+  /// canvas under a dragging cursor stays under it. Applied to the matrix
+  /// directly, like [zoomAt]: the boundary is infinite, so the controller's
+  /// boundary correction has nothing to do.
+  void panByScreen(Offset screenDelta) {
+    viewerController.value = Matrix4.translationValues(screenDelta.dx, screenDelta.dy, 0)
+      ..multiply(viewerController.value);
+  }
+
   bool get mouseDown => state.mouseDown;
   set mouseDown(bool value) {
     if (value == state.mouseDown) return;

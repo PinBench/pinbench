@@ -1,4 +1,5 @@
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:collection/collection.dart';
@@ -35,6 +36,16 @@ class _CanvasPointerEventState extends State<CanvasPointerEvent> {
   var _lastClickTime = 0;
   var _hasSavedHistoryForDrag = false;
   var _isBoxSelecting = false;
+  var _isPanning = false;
+
+  /// A middle-button drag, or a left drag with Space held, pans the view
+  /// with the mouse. A plain left drag already means box select, so panning
+  /// needs a button or key of its own, as in Figma or KiCad.
+  bool _startsPan(PointerDownEvent event) =>
+      event.kind == PointerDeviceKind.mouse &&
+      (event.buttons == kMiddleMouseButton ||
+          (event.buttons == kPrimaryMouseButton &&
+              HardwareKeyboard.instance.isLogicalKeyPressed(LogicalKeyboardKey.space)));
 
   @override
   Widget build(BuildContext context) => Listener(
@@ -48,6 +59,7 @@ class _CanvasPointerEventState extends State<CanvasPointerEvent> {
   );
 
   void onPointerCancel(PointerCancelEvent event) {
+    _isPanning = false;
     if (_isBoxSelecting) {
       controller.endBoxSelection();
       _isBoxSelecting = false;
@@ -86,6 +98,13 @@ class _CanvasPointerEventState extends State<CanvasPointerEvent> {
   void onPointerMove(PointerMoveEvent event) {
     final localPosition = _getLocalPosition(event);
     controller.mouseLocalPosition = localPosition;
+
+    // Moving the view is not an edit, so it works while a simulation runs.
+    if (_isPanning) {
+      controller.panByScreen(event.delta);
+      return;
+    }
+
     final canvasPos = controller.screenToCanvasCoordinates(localPosition);
 
     if (controller.isReadOnly) return;
@@ -117,6 +136,13 @@ class _CanvasPointerEventState extends State<CanvasPointerEvent> {
   }
 
   void onPointerUp(PointerUpEvent event) {
+    if (_isPanning) {
+      _isPanning = false;
+      controller.mouseDown = false;
+      controller.dragStartOffset = null;
+      return;
+    }
+
     if (controller.interactingNodeKey != null) {
       final node = controller.nodes.firstWhereOrNull((n) => n.key == controller.interactingNodeKey);
       if (node != null) {
@@ -173,9 +199,17 @@ class _CanvasPointerEventState extends State<CanvasPointerEvent> {
     _isDraggingDuringWiring = false;
     _hasSavedHistoryForDrag = false;
     _isBoxSelecting = false;
+    _isPanning = false;
 
     if (controller.contextMenuController.isOpen) {
       controller.contextMenuController.hide();
+    }
+
+    // Before anything that reads the press as a selection, a wire grab or a
+    // button push: a pan touches none of them.
+    if (_startsPan(event)) {
+      _isPanning = true;
+      return;
     }
 
     // Re-resolve hover against the *current* state before deciding what this
