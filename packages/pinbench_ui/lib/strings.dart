@@ -223,8 +223,6 @@ class AppStrings._() {
 
   static const newBlankProjectTitle = 'New Blank Project';
   static const newBlankProjectSubtitle = 'Start with an empty canvas';
-  static String newBoardProjectTitle(String board) => 'New $board Project';
-  static String newBoardProjectSubtitle(String board) => 'Start with the $board on the canvas';
   static const openFolderTileSubtitle = 'Load an existing workspace';
   // Pre-existing wording inconsistency vs. explorer_view.dart's version — kept
   // verbatim as its own constant rather than merged/reworded.
