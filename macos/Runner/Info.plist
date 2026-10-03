@@ -44,5 +44,10 @@
 	<false/>
 	<key>GOOGLE_ANALYTICS_DEFAULT_ALLOW_AD_PERSONALIZATION_SIGNALS</key>
 	<false/>
+	<!-- Sparkle accepts an update only with a valid Ed25519 signature from
+	     this key's private half (the SPARKLE_ED_PRIVATE_KEY secret, which
+	     .github/workflows/release.yml signs each release with). -->
+	<key>SUPublicEDKey</key>
+	<string>jqMWn4Bb3aiIhESqJSLgTYG42nx6nAvWt6ONYS5KLpM=</string>
 </dict>
 </plist>

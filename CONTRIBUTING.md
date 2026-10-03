@@ -201,4 +201,12 @@ installer and a `.tar.gz`, writes the updater's appcasts and `latest.json`
 (`tools/release_metadata.dart`) and `SHA256SUMS.txt`, and makes a **draft**
 release. Publishing the draft is what the updater and the download page see.
 A tag `vX.Y.Z` gets build number `X*10000 + Y*100 + Z`, so tags must only go
-up. The builds are not code-signed yet.
+up. The builds are not code-signed yet, but every update is: the app installs
+one only with a valid signature from the release keys, an Ed25519 key for
+Sparkle on macOS (public half in `macos/Runner/Info.plist`) and a DSA key for
+WinSparkle on Windows (public half in `windows/runner/resources/`). The
+private halves are the `SPARKLE_ED_PRIVATE_KEY` and
+`WINSPARKLE_DSA_PRIVATE_KEY` secrets, with a backup kept offline. **Never
+replace them** once a release is out: an installed app accepts only updates
+signed with the key it shipped with, so a new key strands every user on the
+version they have.
