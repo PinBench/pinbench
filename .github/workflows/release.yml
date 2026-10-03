@@ -35,8 +35,11 @@ permissions:
   contents: read
 
 jobs:
+  # The builds need the private format packages, and the release the signing
+  # keys: neither reaches a pull request from a fork or Dependabot.
   version:
     name: Version
+    if: github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]')
     runs-on: ubuntu-latest
     outputs:
       name: ${{ steps.v.outputs.name }}

@@ -27,8 +27,13 @@ permissions:
 # --web-renderer flag survived the 3.44 upgrade in some steps and not others.
 
 jobs:
+  # A pull request from a fork, or Dependabot's, gets none of this repository's
+  # secrets, and so cannot read the private format packages (pdl, cdl) that
+  # everything below builds against. Those skip here, and fork-note says
+  # why; build-web and build-desktop need this job, so they skip with it.
   analyze-and-test:
     name: Analyze & Test
+    if: github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -189,6 +194,17 @@ jobs:
   # A malformed workflow fails the run in 0s with no usable error in the API —
   # `shell: ${{ matrix.shell }}` (expressions are not allowed there) cost a
   # push to discover. actionlint catches that class of mistake in ~2s.
+  fork-note:
+    name: Note for forks
+    if: github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - run: >-
+          echo "::notice::Analysis, tests and builds need the private pdl and
+          cdl packages, which a pull request from a fork cannot read. They run
+          when a maintainer merges, or opens this branch here."
+
   workflow-lint:
     name: Workflow Lint
     runs-on: ubuntu-latest
