@@ -48,7 +48,7 @@ class const PaneSurface({
 
     return CustomPaint(
       foregroundPainter: _PaneOutline(
-        color: colors.border,
+        color: colors.chromeBorder,
         openTop: connectedTop,
         squareTopLeft: squareTopLeft,
       ),
@@ -99,22 +99,29 @@ class const _PaneOutline({
     // Corners are quadratics through the corner point: at this radius they are
     // indistinguishable from an arc, and unlike `arcToPoint` there is no sweep
     // direction to get backwards.
+    //
+    // The top corners start one hairline *above* the pane, on the strip's last
+    // row, which is where the strip draws its rule. Each side insets its line
+    // by half a stroke, so starting them at the pane's own top put the curves
+    // a pixel below the rule they continue: a visible step at every top corner.
+    // Nothing clips a pane to its rect, so the extra row paints.
     const r = AppRadii.pane;
+    final top = rect.top - AppChrome.hairline;
     final path = Path();
     if (squareTopLeft) {
-      path.moveTo(rect.left, rect.top);
+      path.moveTo(rect.left, top);
     } else {
       path
-        ..moveTo(rect.left + r, rect.top)
-        ..quadraticBezierTo(rect.left, rect.top, rect.left, rect.top + r);
+        ..moveTo(rect.left + r, top)
+        ..quadraticBezierTo(rect.left, top, rect.left, top + r);
     }
     path
       ..lineTo(rect.left, rect.bottom - r)
       ..quadraticBezierTo(rect.left, rect.bottom, rect.left + r, rect.bottom)
       ..lineTo(rect.right - r, rect.bottom)
       ..quadraticBezierTo(rect.right, rect.bottom, rect.right, rect.bottom - r)
-      ..lineTo(rect.right, rect.top + r)
-      ..quadraticBezierTo(rect.right, rect.top, rect.right - r, rect.top);
+      ..lineTo(rect.right, top + r)
+      ..quadraticBezierTo(rect.right, top, rect.right - r, top);
 
     canvas.drawPath(path, paint);
   }
