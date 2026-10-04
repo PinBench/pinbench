@@ -6,10 +6,13 @@
 #   ./setup_hooks.sh
 #
 # What you get:
-#   pre-commit — formats staged Dart, sorts imports, syncs templates into
-#                pubspec.yaml, sorts dependencies. Fast; runs on every commit.
-#   pre-push   — flutter analyze + flutter test, the same gates CI runs.
-#                About a minute, which is why it is not on commit.
+#   pre-commit — formats staged Dart and sorts its imports; syncs templates
+#                into pubspec.yaml and sorts dependencies when those changed.
+#                A few seconds; runs on every commit. No analysis — that is
+#                the IDE's and pre-push's.
+#   pre-push   — `dart analyze` and the tests, the same gates CI runs, for
+#                what the push changes: none for docs, the packages only when
+#                packages/ changed.
 #
 # Both live in .githooks/, which is committed — unlike .git/hooks/, which is
 # why `git config core.hooksPath` exists at all.

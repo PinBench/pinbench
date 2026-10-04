@@ -1,15 +1,27 @@
 #!/bin/sh
 
-# Runs the gates CI runs, before the push rather than after it.
+# Runs the gates CI runs, before the push rather than after it — but only the
+# ones the pushed commits can affect.
 #
-# This is deliberately NOT in pre-commit. Analysis and the suite take about a
-# minute together, which is fine once per push and not fine on every commit —
-# a hook slow enough to be worth skipping gets skipped, and then it protects
-# nothing. Committing stays instant; pushing is where the cost belongs,
-# because that is the point after which a red result costs someone else time.
+# This is deliberately NOT in pre-commit: analysis alone is ~40-55 s here, and a
+# hook slow enough to be worth skipping gets skipped, and then it protects
+# nothing. Pushing is where the cost belongs, because that is the point after
+# which a red result costs someone else time.
 #
-# Mirrors the analyze-and-test job in .github/workflows/ci.yml. Formatting and
-# import sorting are pre-commit's job and are not repeated here.
+# It mirrors CI's analyze, test and package jobs, which it used to run in full
+# on every push — ~2.5 min warm on an M-series Mac, docs included. Now:
+#
+#   - a push that touches nothing they check (docs, workflows) runs none;
+#   - the packages are checked only when something under packages/ changed:
+#     they cannot import the app, so app code cannot break them. An app-only
+#     push went from ~155 s to ~95 s.
+#
+# One thing at a time, deliberately. Measured on an 8-core Mac: analysis
+# alongside the tests took 135 s against 96 s in turn, and the eleven packages
+# all at once 107 s against 86 s in turn (three at a time saved 9 s). Each
+# already spreads over every core, so running them together only fights.
+#
+# Formatting and import sorting are pre-commit's job and are not repeated here.
 #
 # `dart analyze --fatal-infos`, not `flutter analyze`: the latter does not load
 # the analyzer plugins analysis_options.yaml registers, so it reports no
@@ -29,18 +41,51 @@
 # below runs in the working tree it was invoked from.
 unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE
 
-# Deleting a remote branch pushes no code, so there is nothing to check.
-# stdin carries "<local ref> <local sha> <remote ref> <remote sha>" per ref;
-# an all-zero local sha is a delete.
+zero=0000000000000000000000000000000000000000
+
+# What the push changes, across every ref in it. stdin carries
+# "<local ref> <local sha> <remote ref> <remote sha>" per ref. A deleted ref
+# (all-zero local sha) pushes no code. A new branch is compared with where it
+# left main. If no base can be found, everything is checked: a wasted minute
+# is cheaper than an unchecked push.
 pushing_code=0
-while read -r _ local_sha _ _; do
+check_everything=0
+changed=""
+while read -r _ local_sha _ remote_sha; do
     case "$local_sha" in
-        0000000000000000000000000000000000000000) ;;
-        '') ;;
-        *) pushing_code=1 ;;
+        "$zero" | '') continue ;;
     esac
+    pushing_code=1
+    if [ "$remote_sha" = "$zero" ]; then
+        base=$(git merge-base "$local_sha" origin/main 2>/dev/null || true)
+    else
+        base=$remote_sha
+    fi
+    if [ -n "$base" ] && git cat-file -e "$base^{commit}" 2>/dev/null; then
+        changed="$changed
+$(git diff --name-only "$base" "$local_sha")"
+    else
+        check_everything=1
+    fi
 done
 [ "$pushing_code" -eq 1 ] || exit 0
+
+touches() {
+    [ "$check_everything" -eq 1 ] || printf '%s\n' "$changed" | grep -qE "$1"
+}
+
+# What can change the app's analysis or tests: its code, its tests, the
+# packages and assets it builds from, its dependencies and its lint setup.
+app_paths='^(lib/|test/|packages/|assets/|tools/|pubspec\.(yaml|lock)$|analysis_options\.yaml$|build\.yaml$|dart_test\.yaml$)'
+check_app=0
+check_packages=0
+touches "$app_paths" && check_app=1
+touches '^packages/' && check_packages=1
+
+if [ "$check_app" -eq 0 ] && [ "$check_packages" -eq 0 ]; then
+    echo "✅ Nothing in this push changes what the checks cover — skipping them."
+    exit 0
+fi
 
 # A fresh clone or worktree has no dependencies or generated code yet, which
 # would fail every check below for reasons that have nothing to do with the
@@ -50,56 +95,55 @@ if ! tools/bootstrap.sh; then
     exit 1
 fi
 
-echo "🔍 Analyzing..."
-if ! dart analyze --fatal-infos; then
-    # Generated *.g.dart files are gitignored, so a fresh clone or a branch
-    # switch can leave the tree needing a regenerate. Say so plainly rather
-    # than leaving a wall of undefined-symbol errors that all have the same
-    # one-line cause.
-    echo ""
-    echo "❌ Analysis failed. If these are missing generated symbols, run:"
-    echo "   dart run build_runner build --delete-conflicting-outputs"
-    exit 1
-fi
+if [ "$check_app" -eq 1 ]; then
+    echo "🔍 Analyzing..."
+    if ! dart analyze --fatal-infos; then
+        # Generated *.g.dart files are gitignored, so a fresh clone or a branch
+        # switch can leave the tree needing a regenerate. Say so plainly rather
+        # than leaving a wall of undefined-symbol errors that all have the same
+        # one-line cause.
+        echo ""
+        echo "❌ Analysis failed. If these are missing generated symbols, run:"
+        echo "   dart run build_runner build --delete-conflicting-outputs"
+        exit 1
+    fi
 
-# The 'arduino' tag marks tests that shell out to a local arduino-cli
-# toolchain. CI excludes them and so does this — run them yourself if you
-# touched the compile path.
-echo "🧪 Running tests..."
-if ! flutter test --exclude-tags arduino; then
-    echo ""
-    echo "❌ Tests failed. Push blocked; use --no-verify to override."
-    exit 1
+    # The 'arduino' tag marks tests that shell out to a local arduino-cli
+    # toolchain. CI excludes them and so does this — run them yourself if you
+    # touched the compile path.
+    echo "🧪 Running tests..."
+    if ! flutter test --exclude-tags arduino; then
+        echo ""
+        echo "❌ Tests failed. Push blocked; use --no-verify to override."
+        exit 1
+    fi
 fi
 
 # Packages are separate pub roots: the root analyze excludes them and the root
 # test run does not descend into them, so without this they reach CI unchecked.
-for pkg in packages/*/; do
-    [ -f "$pkg/pubspec.yaml" ] || continue
-    echo "📦 Checking $pkg"
-    # No package registers analyzer plugins — only the root does — so here the
-    # difference from `flutter analyze` is purely `--fatal-infos`. Kept
-    # identical to the root command anyway, so there is one analyze incantation
-    # in this repo rather than two that drift.
-    if ! (cd "$pkg" && dart analyze --fatal-infos); then
-        echo ""
-        echo "❌ $pkg failed analysis. Push blocked; use --no-verify to override."
-        exit 1
-    fi
-    # Not every package is a library with a suite — composite_plugin is a
-    # generated analyzer plugin. `flutter test` exits 1 on "Test directory not
-    # found", which is not a test failure, so check before running rather than
-    # treating a testless package as broken. Said out loud so a package that
-    # *should* have tests and lost them is visible rather than silently passing.
-    if [ -d "$pkg/test" ]; then
-        if ! (cd "$pkg" && flutter test); then
+if [ "$check_packages" -eq 1 ]; then
+    for pkg in packages/*/; do
+        [ -f "$pkg/pubspec.yaml" ] || continue
+        echo "📦 Checking $pkg"
+        if ! (cd "$pkg" && dart analyze --fatal-infos); then
             echo ""
-            echo "❌ $pkg failed its tests. Push blocked; use --no-verify to override."
+            echo "❌ $pkg failed analysis. Push blocked; use --no-verify to override."
             exit 1
         fi
-    else
-        echo "   (no test/ directory — analysis only)"
-    fi
-done
+        # Not every package has a suite — composite_plugin is a generated
+        # analyzer plugin. `flutter test` exits 1 on "Test directory not
+        # found", which is not a test failure, so check before running. Said
+        # out loud so a package that *should* have tests and lost them shows.
+        if [ -d "$pkg/test" ]; then
+            if ! (cd "$pkg" && flutter test); then
+                echo ""
+                echo "❌ $pkg failed its tests. Push blocked; use --no-verify to override."
+                exit 1
+            fi
+        else
+            echo "   (no test/ directory — analysis only)"
+        fi
+    done
+fi
 
 echo "✅ Ready to push."
