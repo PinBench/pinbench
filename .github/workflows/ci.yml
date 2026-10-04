@@ -87,6 +87,11 @@ jobs:
         run: git ls-files -z -- 'lib/*.dart' 'test/*.dart' | xargs -0 dart format --output=none --set-exit-if-changed
 
   # The app's tests, in shards: the suite was ~4 min on its own in one job.
+  #
+  # Sharded by file, not with `flutter test --total-shards`. That splits the
+  # *tests*: every shard still compiled all ~105 files, which is most of the
+  # time, and then ran a third of them — each shard took ~3 min of the old
+  # job's 4. Here each shard gets every third file and compiles only those.
   test:
     name: Test (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
@@ -107,10 +112,15 @@ jobs:
       - name: Run tests
         env:
           COVERAGE: ${{ github.event_name == 'push' && '--coverage' || '' }}
+          SHARD: ${{ matrix.shard }}
         run: |
+          set -euo pipefail
+          # Every third file, in a stable order. A file added tomorrow joins a
+          # shard on its own.
+          mapfile -t files < <(git ls-files -- 'test/*_test.dart' | awk -v n=3 -v i="$SHARD" 'NR % n == i % n')
+          echo "Shard $SHARD/3: ${#files[@]} files"
           # shellcheck disable=SC2086 # COVERAGE is one flag or nothing.
-          flutter test --exclude-tags arduino $COVERAGE \
-            --total-shards 3 --shard-index $(( ${{ matrix.shard }} - 1 ))
+          flutter test --exclude-tags arduino $COVERAGE "${files[@]}"
 
       - name: Upload coverage
         if: github.event_name == 'push'
