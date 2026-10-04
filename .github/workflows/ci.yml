@@ -70,10 +70,25 @@ jobs:
       # own, where `flutter analyze` exited 0 with "No issues found". Verified
       # by pinning riverpod_lint to a nonexistent version — the message it
       # greps for is still the one printed.
+      # The analyzer's own cache — summaries of the SDK, every dependency and
+      # each library it has seen — kept between runs. Measured locally: 48 s
+      # with it empty, 27 s warm, for 76 MB. Keyed on the sources so an exact
+      # hit is this tree; a partial one still carries everything unchanged,
+      # since entries are addressed by content.
+      - name: Restore the analysis cache
+        uses: actions/cache@v6
+        with:
+          path: .dart_tool/analysis-cache
+          key: analysis-${{ runner.os }}-${{ hashFiles('pubspec.lock', 'analysis_options.yaml', 'lib/**/*.dart', 'test/**/*.dart') }}
+          restore-keys: analysis-${{ runner.os }}-
+
       - name: Analyze
         run: |
           set -o pipefail
-          dart analyze --fatal-infos 2>&1 | tee analyze.log
+          # Absolute: the analyzer resolves a relative --cache against its own
+          # install for the plugin builds it keeps there, and riverpod_lint
+          # then fails to load ("does not contain a valid AOT snapshot").
+          dart analyze --fatal-infos --cache="$PWD/.dart_tool/analysis-cache" 2>&1 | tee analyze.log
           if grep -q "error occurred while executing an analyzer plugin" analyze.log; then
             echo "::error::An analyzer plugin failed to load — see the log above."
             exit 1
@@ -87,6 +102,11 @@ jobs:
         run: git ls-files -z -- 'lib/*.dart' 'test/*.dart' | xargs -0 dart format --output=none --set-exit-if-changed
 
   # The app's tests, in shards: the suite was ~4 min on its own in one job.
+  #
+  # Sharded by file, not with `flutter test --total-shards`. That splits the
+  # *tests*: every shard still compiled all ~105 files, which is most of the
+  # time, and then ran a third of them — each shard took ~3 min of the old
+  # job's 4. Here each shard gets every third file and compiles only those.
   test:
     name: Test (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
@@ -107,10 +127,15 @@ jobs:
       - name: Run tests
         env:
           COVERAGE: ${{ github.event_name == 'push' && '--coverage' || '' }}
+          SHARD: ${{ matrix.shard }}
         run: |
+          set -euo pipefail
+          # Every third file, in a stable order. A file added tomorrow joins a
+          # shard on its own.
+          mapfile -t files < <(git ls-files -- 'test/*_test.dart' | awk -v n=3 -v i="$SHARD" 'NR % n == i % n')
+          echo "Shard $SHARD/3: ${#files[@]} files"
           # shellcheck disable=SC2086 # COVERAGE is one flag or nothing.
-          flutter test --exclude-tags arduino $COVERAGE \
-            --total-shards 3 --shard-index $(( ${{ matrix.shard }} - 1 ))
+          flutter test --exclude-tags arduino $COVERAGE "${files[@]}"
 
       - name: Upload coverage
         if: github.event_name == 'push'
@@ -178,11 +203,37 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
+
+      # A pull request that touches only what the web build does not compile —
+      # tests, the native runners, the git hooks — skips it. Checked here
+      # rather than by `detect`, which would make every web build wait for that
+      # job first, and the web build is CI's longest job. Anything else builds,
+      # workflow changes included, since they can break this job itself; so do
+      # pushes to main, which a web preview follows.
+      - name: Does this change reach the web build?
+        id: web
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          needed=true
+          if [ "$EVENT" = pull_request ] && git fetch -q --no-tags --depth=1 origin "$BASE_SHA"; then
+            if ! git diff --name-only "$BASE_SHA" HEAD \
+                | grep -qvE '^(test/|\.githooks/|setup_hooks\.sh$|(macos|windows|linux|ios|android)/)'; then
+              needed=false
+              echo "::notice::Nothing this pull request changes is compiled by the web build — skipped."
+            fi
+          fi
+          echo "needed=$needed" >> "$GITHUB_OUTPUT"
+
       - uses: ./.github/actions/setup-app
+        if: steps.web.outputs.needed == 'true'
 
       # --wasm because that is the configuration that ships; a dart2js-only
       # build would miss a WASM-specific compile failure.
       - name: Build (WASM)
+        if: steps.web.outputs.needed == 'true'
         run: flutter build web --wasm --pwa-strategy=none
 
   # What the rest of the run needs to know about this push or pull request:
