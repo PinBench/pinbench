@@ -8,6 +8,9 @@ PlatformMenu windowMenu() => const PlatformMenu(
     PlatformProvidedMenuItem(type: PlatformProvidedMenuItemType.minimizeWindow),
     PlatformProvidedMenuItem(type: PlatformProvidedMenuItemType.zoomWindow),
     PlatformMenuItemGroup(
+      members: [PlatformProvidedMenuItem(type: PlatformProvidedMenuItemType.toggleFullScreen)],
+    ),
+    PlatformMenuItemGroup(
       members: [PlatformProvidedMenuItem(type: PlatformProvidedMenuItemType.arrangeWindowsInFront)],
     ),
   ],

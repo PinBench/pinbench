@@ -11,7 +11,6 @@ import 'edit_menu.dart';
 import 'file/file_menu.dart';
 import 'help_menu.dart';
 import 'run_menu.dart';
-import 'view_menu.dart';
 import 'window_menu.dart';
 
 /// Wraps the entire application at the engine root level with a single
@@ -65,7 +64,8 @@ class _GlobalMenuWrapperState extends ConsumerState<GlobalMenuWrapper> {
       ),
       editMenu(ref, _editRouter),
       runMenu(ref: ref, hasWorkspace: hasWorkspace, simState: simState, workspace: workspace),
-      viewMenu(),
+      // No native View menu: its one entry, Enter Full Screen, is a window
+      // command and lives in the Window menu, where macOS apps keep it.
       windowMenu(),
       helpMenu(ref),
     ];
