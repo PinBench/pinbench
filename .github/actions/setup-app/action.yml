@@ -1,0 +1,63 @@
+name: Set up the app
+description: >-
+  Submodules, Flutter (from .fvmrc), dependencies and, unless turned off, the
+  generated code — what every CI job that builds or tests the app starts with.
+  Run actions/checkout first: a local action is read from the checkout.
+
+inputs:
+  codegen:
+    description: Generate the git-ignored *.g.dart files (riverpod_generator, …).
+    default: "true"
+  enforce-lockfile:
+    description: Fail if pubspec.lock is not exactly what pubspec.yaml resolves to.
+    default: "false"
+  flutter-cache:
+    description: >-
+      Cache the Flutter SDK between runs. Worth it on Linux; on the macOS and
+      Windows runners saving the cache took longer than downloading the SDK.
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Fetch submodules
+      shell: bash
+      run: git submodule update --init --recursive
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+      with:
+        flutter-version-file: .fvmrc
+        channel: stable
+        cache: ${{ inputs.flutter-cache }}
+
+    # --enforce-lockfile where asked (the analyze job): the committed
+    # pubspec.lock must be exactly what this repository resolves to. A lockfile
+    # regenerated under a local pubspec_overrides.yaml fails there instead of
+    # being merged.
+    - name: Install dependencies
+      shell: bash
+      run: flutter pub get ${{ inputs.enforce-lockfile == 'true' && '--enforce-lockfile' || '' }}
+
+    # The generated files are git-ignored, so every job needs them made. Cached
+    # with build_runner's own state, keyed on every Dart source they can depend
+    # on: an exact hit restores the files and skips build_runner altogether, a
+    # partial one lets it rebuild only what changed. It was 60-70 s a job.
+    #
+    # The key is taken before generation, while the *.g.dart files are absent,
+    # so it hashes sources only.
+    - name: Restore generated code
+      if: inputs.codegen == 'true'
+      id: codegen-cache
+      uses: actions/cache@v6
+      with:
+        path: |
+          .dart_tool/build
+          lib/**/*.g.dart
+        key: codegen-${{ runner.os }}-${{ hashFiles('pubspec.lock', 'lib/**/*.dart', 'packages/**/*.dart') }}
+        restore-keys: codegen-${{ runner.os }}-
+
+    - name: Generate code
+      if: inputs.codegen == 'true' && steps.codegen-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: dart run build_runner build --delete-conflicting-outputs
