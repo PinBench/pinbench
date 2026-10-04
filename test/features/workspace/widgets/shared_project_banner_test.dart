@@ -6,8 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:pinbench/core/auth/auth_provider.dart';
 import 'package:pinbench/core/utils/shared_preferences_provider.dart';
 
+import '../../../support/fake_auth.dart';
 import '../../../support/harness.dart';
 
 /// The banner sits unconditionally in the app layout, so "renders nothing" is its
@@ -65,8 +67,15 @@ void main() {
   });
 
   testWidgets('offers sign-in rather than a dead button when signed out', (tester) async {
-    // No Firebase in tests, so currentUser is null — the anonymous-visitor
-    // path, which is exactly who follows a share link.
+    // Sign-in configured, nobody signed in — the anonymous-visitor path,
+    // which is exactly who follows a share link.
+    container.dispose();
+    container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(await SharedPreferences.getInstance()),
+        authServiceProvider.overrideWithValue(SignedOutAuthService()),
+      ],
+    );
     final workspace = container.read(workspaceFilesProvider.notifier);
     workspace.state = workspace.state.copyWith(
       viewingSharedProjectId: 'p1',
@@ -94,5 +103,21 @@ void main() {
     await tester.pump();
 
     expect(find.textContaining(AppStrings.sharedProjectBannerTitle), findsNothing);
+  });
+
+  testWidgets('points at no sign-in in a build that has none', (tester) async {
+    // The default auth service is the disabled one: share links still open,
+    // but there is no sign-in to save a copy with.
+    final workspace = container.read(workspaceFilesProvider.notifier);
+    workspace.state = workspace.state.copyWith(
+      viewingSharedProjectId: 'p1',
+      viewingSharedProjectName: 'Blink',
+    );
+
+    await pump(tester);
+
+    expect(find.textContaining(AppStrings.sharedProjectBannerTitle), findsOneWidget);
+    expect(find.text(AppStrings.sharedProjectSignInToCopy), findsNothing);
+    expect(find.text(AppStrings.sharedProjectSaveCopyLabel), findsNothing);
   });
 }

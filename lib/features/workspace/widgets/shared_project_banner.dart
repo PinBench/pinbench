@@ -62,7 +62,8 @@ class _SharedProjectBannerState extends ConsumerState<SharedProjectBanner> {
   Widget build(BuildContext context) {
     final state = ref.watch(workspaceFilesProvider);
     if (!state.isViewingShared) return const SizedBox.shrink();
-    final signedIn = ref.watch(authServiceProvider).currentUser != null;
+    final auth = ref.watch(authServiceProvider);
+    final signedIn = auth.currentUser != null;
     final name = state.viewingSharedProjectName;
 
     return Container(
@@ -98,12 +99,15 @@ class _SharedProjectBannerState extends ConsumerState<SharedProjectBanner> {
               ],
             ),
           ),
-          Gap.hLg,
           // Signing in is a whole flow of its own, so an anonymous visitor is
-          // told what is missing rather than being dropped into it mid-edit.
-          if (!signedIn)
-            Text(AppStrings.sharedProjectSignInToCopy, style: context.appMutedText)
-          else
+          // told what is missing rather than being dropped into it mid-edit —
+          // in a build that has sign-in. One without has no copy to offer and
+          // no sign-in to point at, so the banner just says what this is.
+          if (auth.enabled && !signedIn) ...[
+            Gap.hLg,
+            Text(AppStrings.sharedProjectSignInToCopy, style: context.appMutedText),
+          ] else if (signedIn) ...[
+            Gap.hLg,
             AppButton(
               onPressed: (!_saving) ? _saveCopy : null,
               child: Text(
@@ -112,6 +116,7 @@ class _SharedProjectBannerState extends ConsumerState<SharedProjectBanner> {
                     : AppStrings.sharedProjectSaveCopyLabel,
               ),
             ),
+          ],
         ],
       ),
     );
