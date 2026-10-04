@@ -1,6 +1,9 @@
 import 'package:flutter/widgets.dart';
 
+import 'package:path/path.dart' as p;
 import 'package:re_editor/re_editor.dart';
+import 'package:re_highlight/languages/arduino.dart';
+import 'package:re_highlight/re_highlight.dart';
 import 'package:re_highlight/languages/c.dart';
 import 'package:re_highlight/languages/cpp.dart';
 import 'package:re_highlight/styles/vs.dart';
@@ -11,6 +14,19 @@ import '../../../core/shortcuts/app_intents.dart';
 import '../syntax/cdl_syntax.dart';
 import '../syntax/pdl_syntax.dart';
 import 'autocomplete_view.dart';
+
+/// The grammar the editor highlights and completes [filePath] with.
+///
+/// A sketch is C++ plus Arduino's own names — `pinMode`, `HIGH`, `Serial` —
+/// which the Arduino grammar knows and the C++ one does not.
+Mode editorLanguageFor(String filePath) =>
+    switch (p.extension(filePath).replaceFirst('.', '').toLowerCase()) {
+      'cdl' => langCdl,
+      'pdl' => langPdl,
+      'ino' => langArduino,
+      'c' || 'h' => langC,
+      _ => langCpp,
+    };
 
 class const CustomCodeEditor({
   super.key,
@@ -27,9 +43,9 @@ class const CustomCodeEditor({
     final scheme = context.appColors;
     final isDark = context.appBrightness == Brightness.dark;
 
-    final isCdl = filePath.endsWith('.cdl');
-    final isPdl = filePath.endsWith('.pdl');
-    final langMode = isCdl ? langCdl : (isPdl ? langPdl : langCpp);
+    final langMode = editorLanguageFor(filePath);
+    final isCdl = identical(langMode, langCdl);
+    final isPdl = identical(langMode, langPdl);
 
     // re_editor already binds ⌘/ (Ctrl+/ elsewhere) to toggle a line comment
     // and ⇧⌘/ to a block comment, but does nothing without a formatter. Every
@@ -70,15 +86,16 @@ class const CustomCodeEditor({
           cursorLineColor: scheme.foreground.withValues(alpha: 0.05),
           chunkIndicatorColor: scheme.mutedForeground,
           codeTheme: CodeHighlightTheme(
-            languages: {
-              'h': CodeHighlightThemeMode(mode: langC),
-              'c': CodeHighlightThemeMode(mode: langC),
-              'cpp': CodeHighlightThemeMode(mode: langCpp),
-              'ino': CodeHighlightThemeMode(mode: langCpp),
-              'hpp': CodeHighlightThemeMode(mode: langCpp),
-              'cdl': CodeHighlightThemeMode(mode: langCdl),
-              'pdl': CodeHighlightThemeMode(mode: langPdl),
-            },
+            // Only this file's language. Given several, re_editor guesses
+            // between them from the text, and a sketch kept being taken for
+            // CDL or PDL — their grammars know strings, numbers and comments
+            // and nothing else, so `void`, `HIGH` and the rest went
+            // uncoloured.
+            //
+            // Keyed in lower case: re_highlight stores a language under the
+            // name it is given but lowercases the name it is asked for, so a
+            // key like "Arduino" is never found and nothing is coloured.
+            languages: {'code': CodeHighlightThemeMode(mode: langMode)},
             theme: isDark ? vs2015Theme : vsTheme,
           ),
         ),
