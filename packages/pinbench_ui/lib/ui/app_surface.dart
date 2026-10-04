@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import '../theme/tokens.dart';
 import '../theme/app_colors.dart';
 import '../theme/theme.dart';
+import 'app_button.dart';
 
 /// The role a surface plays, which fixes its fill and radius.
 enum AppSurfaceVariant() {
@@ -50,10 +51,17 @@ class const AppSurface({
       AppSurfaceVariant.outline => AppPalette.transparent,
     };
 
-    final content = Container(
+    Widget content(Widget child, {bool hovered = false}) => Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: fill,
+        // A transparent or plain card fill has nothing to darken, so those
+        // take the muted fill the app's other rows hover to.
+        color: !hovered
+            ? fill
+            : switch (variant) {
+                AppSurfaceVariant.inset || AppSurfaceVariant.accent => colorScheme.hover(fill),
+                AppSurfaceVariant.card || AppSurfaceVariant.outline => colorScheme.muted,
+              },
         borderRadius: radius,
         border: bordered ? Border.all(color: colorScheme.border) : null,
       ),
@@ -61,10 +69,11 @@ class const AppSurface({
     );
 
     final surface = onTap == null
-        ? content
-        : MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(onTap: onTap, child: content),
+        ? content(child)
+        : AppTappable(
+            onPressed: onTap,
+            builder: (context, child, {required hovered}) => content(child, hovered: hovered),
+            child: child,
           );
 
     return margin == null ? surface : Padding(padding: margin!, child: surface);

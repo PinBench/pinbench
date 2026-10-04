@@ -82,9 +82,24 @@ class const AppButton({
 ///
 /// For rows and links that need hover and tap handling but supply their own
 /// box — an [AppButton] would bring an inset, a fill and intrinsic sizing that
-/// those surfaces immediately override.
-class const AppTappable({super.key, required final Widget child, final VoidCallback? onPressed})
-    extends StatelessWidget {
+/// those surfaces immediately override. [builder], when given, wraps [child]
+/// and is told whether the pointer is over it, for a surface that draws its
+/// own hover state.
+class const AppTappable({
+  super.key,
+  required final Widget child,
+  final VoidCallback? onPressed,
+  final Widget Function(BuildContext context, Widget child, {required bool hovered})? builder,
+}) extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => FTappable(onPress: onPressed, child: child);
+  Widget build(BuildContext context) {
+    final builder = this.builder;
+    if (builder == null) return FTappable(onPress: onPressed, child: child);
+    return FTappable(
+      onPress: onPressed,
+      builder: (context, states, child) =>
+          builder(context, child!, hovered: states.contains(FTappableVariant.hovered)),
+      child: child,
+    );
+  }
 }

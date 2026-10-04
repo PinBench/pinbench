@@ -72,21 +72,25 @@ class const _OpenInPlayground({required final String projectId}) extends Statele
           borderRadius: AppRadii.smAll,
         ),
         // forui has no link variant, and a ghost button would add an inset
-        // and a hover fill this does not want. The underline is the affordance.
+        // and a hover fill this does not want. The underline is the
+        // affordance; hover answers by bringing the text up to full strength.
         child: AppTappable(
           // An embed only ever renders in a browser, but the route is
           // reachable in a desktop build and `openExternalUrl` opens the
           // system browser there, so there is nothing left to guard.
           onPressed: () => openExternalUrl(shareLinkFor(projectId)),
-          child: Padding(
-            padding: AppInsets.badge,
-            child: Text(
-              AppStrings.embedOpenInAppLabel,
-              style: typography.sm.copyWith(
-                color: colors.mutedForeground,
-                decoration: TextDecoration.underline,
-              ),
+          // The whole style is set here, not on the text: the type scale's
+          // styles carry a colour of their own, which would win over this one.
+          builder: (context, child, {required hovered}) => DefaultTextStyle.merge(
+            style: typography.sm.copyWith(
+              color: hovered ? colors.foreground : colors.mutedForeground,
+              decoration: TextDecoration.underline,
             ),
+            child: child,
+          ),
+          child: const Padding(
+            padding: AppInsets.badge,
+            child: Text(AppStrings.embedOpenInAppLabel),
           ),
         ),
       ),

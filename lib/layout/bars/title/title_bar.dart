@@ -64,8 +64,14 @@ class const TitleBar({super.key}) extends ConsumerWidget {
       },
       child: Container(
         // A rule, not a gap: the title bar is a band of chrome, and the panes
-        // below start at its edge rather than floating away from it.
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        // below start at its edge rather than floating away from it. A little
+        // room above, though, so the buttons do not sit against the window's
+        // top edge.
+        padding: const EdgeInsets.only(
+          left: AppSpacing.md,
+          right: AppSpacing.md,
+          top: AppSpacing.xs,
+        ),
         child: _CentredTitleBar(
           leading: Row(
             mainAxisSize: MainAxisSize.min,

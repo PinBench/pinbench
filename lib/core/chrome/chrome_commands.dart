@@ -30,6 +30,10 @@ abstract final class AppTabs {
   /// gets the width a form needs and can be left open beside the work.
   static const settings = 'settings';
 
+  /// What changed in the running build. Chrome, like [settings]: the tab
+  /// carries no `data`, so nothing takes it for a file.
+  static const releaseNotes = 'release_notes';
+
   /// A file open in the code editor. The path *is* the id.
   static String editor(String filePath) => filePath;
 

@@ -43,6 +43,12 @@ class CanvasShortcuts {
     LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.keyD): const DuplicateIntent(),
     LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.quote): const ToggleGridIntent(),
     LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.digit0): const ResetViewIntent(),
+    // Space is held to pan with a left drag (see `CanvasPointerEvent`). It is
+    // read from `HardwareKeyboard`, so all this does is mark the key handled
+    // so macOS does not beep on every press and repeat. `DoNothingIntent`, not
+    // `DoNothingAndStopPropagationIntent`: that one reports the key unhandled
+    // to the platform on purpose, which is exactly the beep.
+    LogicalKeySet(LogicalKeyboardKey.space): const DoNothingIntent(),
   };
 
   static Map<Type, Action<Intent>> actions(CanvasController controller) => <Type, Action<Intent>>{

@@ -1,3 +1,5 @@
+import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +8,7 @@ import 'package:pinbench_parts/part_registry.dart';
 import 'package:pinbench/features/canvas/controller/canvas_controller.dart';
 import 'package:pinbench_parts/models/component_instance.dart';
 import 'package:pinbench_parts/models/wire_model.dart';
+import 'package:pinbench/features/canvas/widgets/core/canvas_shortcuts.dart';
 import 'package:pinbench/features/canvas/widgets/events/pointer_event.dart';
 import 'package:pinbench_parts/models/part_model.dart';
 import 'package:pinbench_parts/models/port_model.dart';
@@ -177,4 +180,86 @@ void main() {
       await resistorGesture.up();
     },
   );
+
+  group('mouse-drag pan', () {
+    Offset translation() {
+      final t = controller.viewerController.value.getTranslation();
+      return Offset(t.x, t.y);
+    }
+
+    testWidgets('a middle-button drag pans the view instead of box selecting', (tester) async {
+      final origin = await pumpCanvas(tester);
+
+      final gesture = await tester.startGesture(
+        origin + const Offset(400, 300),
+        kind: PointerDeviceKind.mouse,
+        buttons: kMiddleMouseButton,
+      );
+      addTearDown(gesture.removePointer);
+      expect(controller.boxSelectionRect, isNull);
+
+      await gesture.moveBy(const Offset(40, -30));
+      await tester.pump();
+      expect(translation(), const Offset(40, -30));
+
+      await gesture.up();
+      await tester.pump();
+      expect(controller.mouseDown, isFalse);
+    });
+
+    testWidgets('a left drag with Space held pans, even while read-only', (tester) async {
+      controller.isReadOnly = true;
+      final origin = await pumpCanvas(tester);
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.space);
+      final gesture = await tester.startGesture(
+        origin + const Offset(400, 300),
+        kind: PointerDeviceKind.mouse,
+      );
+      addTearDown(gesture.removePointer);
+      await gesture.moveBy(const Offset(-25, 15));
+      await tester.pump();
+      await gesture.up();
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.space);
+
+      expect(translation(), const Offset(-25, 15));
+      expect(controller.boxSelectionRect, isNull);
+    });
+
+    testWidgets('Space is consumed on the canvas, so macOS does not beep', (tester) async {
+      await tester.pumpWidget(
+        appTestApp(
+          Shortcuts(
+            shortcuts: CanvasShortcuts.shortcuts(),
+            child: Actions(
+              actions: CanvasShortcuts.actions(controller),
+              child: const Focus(autofocus: true, child: SizedBox.expand()),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(await tester.sendKeyDownEvent(LogicalKeyboardKey.space), isTrue);
+      expect(await tester.sendKeyRepeatEvent(LogicalKeyboardKey.space), isTrue);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.space);
+    });
+
+    testWidgets('pans by screen pixels at any zoom', (tester) async {
+      controller.viewerController.value = Matrix4.diagonal3Values(2, 2, 1);
+      final origin = await pumpCanvas(tester);
+
+      final gesture = await tester.startGesture(
+        origin + const Offset(400, 300),
+        kind: PointerDeviceKind.mouse,
+        buttons: kMiddleMouseButton,
+      );
+      addTearDown(gesture.removePointer);
+      await gesture.moveBy(const Offset(10, 20));
+      await gesture.up();
+
+      expect(translation(), const Offset(10, 20));
+      expect(controller.scale, 2);
+    });
+  });
 }

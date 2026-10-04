@@ -77,6 +77,7 @@ class _EditorTabItemState extends ConsumerState<EditorTab> {
     final isWelcome = widget.tab.snapshot.title == 'Welcome';
     final isCanvas = widget.tab.snapshot.data == 'canvas_view';
     final isSettings = widget.tab.snapshot.id == AppTabs.settings;
+    final isReleaseNotes = widget.tab.snapshot.id == AppTabs.releaseNotes;
 
     final trackedPath = _trackedPath();
     final isDirty =
@@ -113,6 +114,7 @@ class _EditorTabItemState extends ConsumerState<EditorTab> {
                   switch (true) {
                     _ when isWelcome => AppIcons.home,
                     _ when isSettings => AppIcons.settings,
+                    _ when isReleaseNotes => AppIcons.releaseNotes,
                     _ when isCanvas => AppIcons.circuit,
                     _ => AppIcons.code,
                   },
@@ -162,11 +164,15 @@ class _EditorTabItemState extends ConsumerState<EditorTab> {
   }
 
   /// Whether closing this tab should release editor state for a file. The
-  /// welcome screen and the settings tab are chrome, not documents — asking
+  /// welcome screen, the settings tab and the release notes are chrome, not
+  /// documents — asking
   /// the editor to close a file called `settings` finds nothing, but says
   /// something untrue about what the tab is.
   static bool _holdsAFile(String tabId) =>
-      tabId != 'Welcome' && tabId != 'welcome' && tabId != AppTabs.settings;
+      tabId != 'Welcome' &&
+      tabId != 'welcome' &&
+      tabId != AppTabs.settings &&
+      tabId != AppTabs.releaseNotes;
 
   /// The workspace file path this tab maps to (for dirty tracking / cleanup),
   /// or null for non-file tabs like Welcome. Editor tabs carry the path in

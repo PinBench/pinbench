@@ -16,6 +16,7 @@ import '../features/workspace/widgets/account_view.dart';
 import '../features/workspace/widgets/explorer_view.dart';
 import '../features/canvas/widgets/components/parts_view.dart';
 import '../features/canvas/widgets/properties/properties_view.dart';
+import 'views/center/release_notes_tab_view.dart';
 import 'views/center/settings_tab_view.dart';
 
 /// Maps `PlatView` leaf ids to their content widget and classifies each leaf
@@ -59,6 +60,7 @@ abstract final class LeafRegistry {
     // A center-pane document, matched on its id: the tab carries no `data`,
     // precisely so nothing mistakes it for a file. See `AppTabs.settings`.
     'settings' => const SettingsTabView(),
+    'release_notes' => const ReleaseNotesTabView(),
     'side_panel' => const SidePanelView(),
     'problems' => const ProblemsView(),
     'terminal' => const TerminalView(),

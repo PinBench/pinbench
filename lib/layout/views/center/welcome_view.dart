@@ -58,7 +58,7 @@ class const WelcomeView({super.key}) extends ConsumerWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Left Column (Start & Templates)
+                      // Left Column (Start & Recent)
                       Expanded(
                         flex: 4,
                         child: Column(
@@ -70,35 +70,36 @@ class const WelcomeView({super.key}) extends ConsumerWidget {
                               icon: AppIcons.upload,
                               child: const WelcomeStartSection(),
                             ),
-                            Gap.vLg,
-                            _buildSectionCard(
-                              context: context,
-                              title: AppStrings.templatesSectionTitle,
-                              icon: AppIcons.templates,
-                              child: const WelcomeTemplatesSection(),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Gap.hLg,
-                      // Right Column (Recent)
-                      Expanded(
-                        flex: 5,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
                             // Recent workspaces are local folders, which the web
                             // preview has no access to — the list is always empty
                             // there, so hide the card entirely on the web.
-                            if (!kIsWeb)
+                            if (!kIsWeb) ...[
+                              Gap.vLg,
                               _buildSectionCard(
                                 context: context,
                                 title: AppStrings.recentWorkspacesSectionTitle,
                                 icon: AppIcons.history,
                                 child: const WelcomeRecentSection(),
                               ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      Gap.hLg,
+                      // Right Column (Templates & Cloud)
+                      Expanded(
+                        flex: 5,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _buildSectionCard(
+                              context: context,
+                              title: AppStrings.templatesSectionTitle,
+                              icon: AppIcons.templates,
+                              child: const WelcomeTemplatesSection(),
+                            ),
                             if (ref.watch(authServiceProvider).enabled) ...[
-                              if (!kIsWeb) Gap.vLg,
+                              Gap.vLg,
                               _buildSectionCard(
                                 context: context,
                                 title: AppStrings.cloudProjectsSectionTitle,

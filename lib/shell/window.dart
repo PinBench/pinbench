@@ -8,7 +8,9 @@ import 'package:multiview_desktop/multiview_desktop.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../app/app.dart';
+import '../core/updates/release_notes.dart';
 import '../core/updates/update_providers.dart';
+import '../layout/controllers/app_layout_controller.dart';
 
 part 'window.g.dart';
 
@@ -61,8 +63,23 @@ class _WindowState extends ConsumerState<Window> {
       // toggle off would hold only until the next launch.
       final automatic = ref.read(automaticUpdateChecksProvider);
       await ref.read(updateServiceProvider).setAutomaticChecks(enabled: automatic);
+      unawaited(_showReleaseNotesAfterUpdate());
       await ref.read(updateControllerProvider.notifier).checkInBackground();
     });
+  }
+
+  /// Opens the release notes on the first launch of a new version, as VS Code
+  /// does. A first install, the same version again, or the box on the tab
+  /// cleared: nothing.
+  Future<void> _showReleaseNotesAfterUpdate() async {
+    final version = await ref.read(appVersionProvider.future);
+    if (version == null || !mounted) return;
+    final open = await ref
+        .read(showReleaseNotesAfterUpdateProvider.notifier)
+        .shouldOpenOnLaunchOf(version);
+    if (open && mounted) {
+      ref.read(appLayoutControllerProvider).openReleaseNotesTab(version: version);
+    }
   }
 
   /// Opens the app's window maximized.
