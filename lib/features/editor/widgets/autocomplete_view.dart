@@ -35,12 +35,19 @@ class const AutocompleteOptionsView({
             final isSelected = index == value.index;
             return AppTappable(
               onPressed: () => onSelected(value.copyWith(index: index).autocomplete),
-              child: Container(
+              // The keyboard's choice keeps its accent; the pointer's gets the
+              // quieter hover fill, so the two can be told apart.
+              builder: (context, child, {required hovered}) => ColoredBox(
+                color: isSelected
+                    ? context.appColors.accent
+                    : (hovered ? context.appColors.muted : AppPalette.transparent),
+                child: child,
+              ),
+              child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.lg,
                   vertical: AppSpacing.md,
                 ),
-                color: isSelected ? context.appColors.accent : AppPalette.transparent,
                 child: Text(prompt.word),
               ),
             );

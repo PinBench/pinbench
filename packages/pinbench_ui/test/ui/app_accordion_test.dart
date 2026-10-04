@@ -1,7 +1,9 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:pinbench_ui/theme/app_colors.dart';
 import 'package:pinbench_ui/ui/app_accordion.dart';
 
 import 'package:pinbench_ui/theme/testing.dart';
@@ -55,25 +57,56 @@ void main() {
     expect(find.text('an LED').hitTestable(), findsOneWidget);
   });
 
-  // forui draws a rule under every item unless told otherwise, and it cannot
-  // be suppressed by width — the divider asserts on zero — so this checks the
-  // thing that actually hides it.
-  testWidgets('draws no visible rule between sections', (tester) async {
+  // There used to be a forui accordion under this, which drew a rule under
+  // every item that had to be hidden. Built from parts now, there is none.
+  testWidgets('draws no rule between sections', (tester) async {
     await tester.pumpWidget(accordion());
     await tester.pumpAndSettle();
 
-    final dividers = find.byWidgetPredicate((w) => w.runtimeType.toString() == 'FDivider');
-    expect(dividers, findsWidgets, reason: 'forui draws one per item; they should be invisible');
+    expect(find.byWidgetPredicate((w) => w.runtimeType.toString() == 'FDivider'), findsNothing);
+  });
 
-    for (final divider in dividers.evaluate()) {
-      final box = find.descendant(
-        of: find.byWidget(divider.widget),
-        matching: find.byType(DecoratedBox),
-      );
-      for (final painted in box.evaluate()) {
-        final decoration = (painted.widget as DecoratedBox).decoration as BoxDecoration;
-        expect(decoration.color?.a ?? 0, 0, reason: 'the rule should be invisible');
-      }
-    }
+  Finder fill(WidgetTester tester) => find.byWidgetPredicate(
+    (w) =>
+        w is DecoratedBox &&
+        w.decoration is BoxDecoration &&
+        (w.decoration as BoxDecoration).color ==
+            tester.element(find.text('Inputs')).appColors.muted,
+  );
+
+  testWidgets('a header fills while the pointer is over it', (tester) async {
+    await tester.pumpWidget(accordion());
+    await tester.pumpAndSettle();
+    expect(fill(tester), findsNothing);
+
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    addTearDown(mouse.removePointer);
+    await mouse.addPointer(location: Offset.zero);
+    await mouse.moveTo(tester.getCenter(find.text('Inputs')));
+    await tester.pump();
+    expect(fill(tester), findsOneWidget, reason: 'only the hovered header');
+
+    await mouse.moveTo(Offset.zero);
+    await tester.pump();
+    expect(fill(tester), findsNothing);
+  });
+
+  testWidgets('the header says whether its section is open', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(accordion());
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.getSemantics(find.text('Inputs')),
+      isSemantics(isExpanded: true, hasExpandedState: true, isButton: true, hasTapAction: true),
+    );
+
+    await tester.tap(find.text('Inputs'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.getSemantics(find.text('Inputs')),
+      isSemantics(isExpanded: false, hasExpandedState: true, isButton: true, hasTapAction: true),
+    );
+    semantics.dispose();
   });
 }
