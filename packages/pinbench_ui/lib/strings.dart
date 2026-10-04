@@ -414,6 +414,9 @@ class AppStrings._() {
   static const selectAllMenuLabel = 'Select All';
 
   static const viewMenuLabel = 'View';
+
+  /// macOS's `AppDelegate.adoptWindowsMenu` finds the Window menu by this
+  /// title to hand it to AppKit (Fill, Center, the window list). Rename both.
   static const windowMenuLabel = 'Window';
   static const helpMenuLabel = 'Help';
   static const aboutMenuItemLabel = 'About';
