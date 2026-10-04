@@ -89,8 +89,16 @@ History.
 
     // The file the app actually bundles, so a reshuffle of its headings that
     // leaves the tab empty fails here rather than in front of a user.
-    test("the repository's changelog has notes to show", () {
-      final notes = releaseNotesFor(File('CHANGELOG.md').readAsStringSync(), '0.0.0')!;
+    // Asked for pubspec.yaml's version, which is what a build reports, so a
+    // version bumped without its own section fails here too: the tab would
+    // otherwise fall back to an empty [Unreleased].
+    test("the repository's changelog has notes for this version", () {
+      final version = RegExp(
+        r'^version:\s*([0-9.]+)',
+        multiLine: true,
+      ).firstMatch(File('pubspec.yaml').readAsStringSync())![1]!;
+      final notes = releaseNotesFor(File('CHANGELOG.md').readAsStringSync(), version)!;
+      expect(notes.title, version, reason: 'CHANGELOG.md needs a "## [$version] - <date>" section');
       expect(notes.body, contains('### Added'));
       expect(notes.body, isNot(contains('### Internal')));
     });

@@ -22,8 +22,25 @@ to it. Anything older is summarised at the end.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.1.2] - 2026-10-04
+
+The first published release: everything below is new to anyone installing it.
+
 ### Added
 
+- **A second board: the Raspberry Pi Pico W.** Its RP2040 runs your sketch in
+  an emulator, beside the analog simulation, as the Uno's ATmega328P does. New
+  **Pico Blink**, **Pico Button**, **Pico Fade** and **Pico OLED** templates.
+- **Pan the canvas with the mouse.** Drag with the middle button, or hold Space
+  and drag, from anywhere; a plain drag still selects.
+- **⌘/ comments out lines** in the code editor (Ctrl+/ on Windows and Linux).
+- **Release notes in the app.** Help ▸ Release Notes shows them, and after an
+  update the new version's open on their own (a box there turns that off).
+- **The macOS Window menu does what macOS apps do:** Fill, Center, window
+  tiling, Minimize All and the list of open windows. Enter Full Screen moved
+  there from View.
 - **You can see the current.** While a simulation runs, every wire carries
   moving dots showing which way the current flows and, by how fast and how
   brightly they travel, how much of it there is — from a microamp trickle to a
@@ -39,7 +56,8 @@ to it. Anything older is summarised at the end.
 - **Parts without Dart.** A part can be described entirely by data — an SVG
   body, pins, properties and declarative behaviour — in the `.pdl` format. See
   [`PDL.md`](packages/pinbench_pdl/doc/PDL.md).
-- **Cloud projects and sharing** in the hosted builds. Save projects to the
+- **Cloud projects and sharing** in the hosted desktop builds (the web app
+  leaves accounts out for now). Save projects to the
   cloud, share a view link, invite collaborators by email, and open a share link
   as a detached read-only copy.
 - **Embeddable circuits** via `?embed=1` — a chrome-less view for an `<iframe>`,
@@ -56,6 +74,16 @@ to it. Anything older is summarised at the end.
 
 ### Changed
 
+- **PinBench looks like PinBench.** The welcome screen shows the app icon and
+  the drawn wordmark, with the line "Wire it. Run it. See it work.", and the
+  interface is set in the brand's type: IBM Plex Sans, with Outfit for display.
+- **A simpler welcome screen.** Start is a blank project or a folder you
+  already have, with your recent workspaces under it and the templates beside
+  it; everything you can click answers the pointer.
+- **Closing the last tab leaves an empty editor**, not a blank area, listing
+  shortcuts the app actually has.
+- **A build without sign-in shows none:** no Account button, and a shared
+  project no longer asks you to sign in to save a copy.
 - **The breadboard is drawn landscape with real anatomy** — a 0.3" centre notch,
   centred row numbering, and power rails on the connection lattice, so DIP parts
   and buttons land where they do on a real board.
@@ -69,6 +97,14 @@ to it. Anything older is summarised at the end.
 
 ### Fixed
 
+- **Opening another project starts clean.** The Serial Monitor, Serial Plotter,
+  SPICE Logs, Debug Console and Problems no longer show the last project's
+  output, and undo no longer reaches back into its circuit.
+- Sketches get proper syntax colouring (`pinMode`, `HIGH`, `Serial`) instead of
+  being read as circuit files.
+- Help ▸ Welcome opens the welcome screen again.
+- File ▸ Close Editor (⌘W) and Revert File act on the tab you are looking at.
+- Where a pane meets its tabs, the edge is one unbroken line, in dark mode too.
 - The web preview no longer opens the browser's context menu over the app's.
 - The web loader matches the app's colours instead of flashing black.
 - The window no longer shrinks into a broken title bar.
@@ -78,6 +114,9 @@ to it. Anything older is summarised at the end.
 
 ### Internal
 
+- CI spends fewer minutes and less wall-clock time: no repeated runs, code
+  generated once, tests sharded by file. The git hooks check only what a commit
+  or push can affect.
 - The codebase is now an app plus standalone packages — `pinbench_parts`,
   `pinbench_pdl`, `pinbench_cdl`, `pinbench_sim`, `pinbench_ui`,
   `pinbench_terminal`, `pinbench_cloud`, `pinbench_entitlements` and the edition seam
