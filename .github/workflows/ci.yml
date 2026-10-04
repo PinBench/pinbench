@@ -2,11 +2,10 @@ name: CI
 
 on:
   push:
+    # Not tags: a tag names a commit that already passed this workflow when it
+    # landed on main, and nothing waits on a second run. release.yml builds
+    # the tag. (Was: tags ["v*"], a full rerun of an unchanged commit.)
     branches: [main]
-    # Tags still run the analysis and the test suite: a release is cut from a
-    # tag, and this is the gate it goes through. The binaries themselves are
-    # release.yml's job. (Path filters do not apply to tags.)
-    tags: ["v*"]
     paths-ignore:
       # Prose changes nothing this workflow checks, and a full run bills ~20
       # minutes of the Actions allowance.
@@ -69,6 +68,22 @@ jobs:
       # analysis/tests (riverpod_generator, etc.).
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs
+
+      # build-web and build-desktop take these instead of running build_runner
+      # again (40-70 s each). A tarball, not a list of paths: upload-artifact
+      # strips the paths' common prefix, which would drop lib/.
+      - name: Share the generated code
+        run: |
+          set -euo pipefail
+          find lib packages \( -name '*.g.dart' -o -name '*.freezed.dart' -o -name '*.gr.dart' \) -print0 \
+            | tar --null -czf generated.tgz -T -
+          tar -tzf generated.tgz | wc -l | xargs echo "generated files:"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: generated-code
+          path: generated.tgz
+          if-no-files-found: error
+          retention-days: 1
 
       # `dart analyze --fatal-infos`, not `flutter analyze`.
       #
@@ -184,25 +199,6 @@ jobs:
           # download one by hand; a week covers both.
           retention-days: 7
 
-  # A malformed workflow fails the run in 0s with no usable error in the API —
-  # `shell: ${{ matrix.shell }}` (expressions are not allowed there) cost a
-  # push to discover. actionlint catches that class of mistake in ~2s.
-  workflow-lint:
-    name: Workflow Lint
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v7
-      - name: actionlint
-        run: |
-          # Pinned, like every other tool version here. `latest` meant a
-          # release of actionlint could turn this job red on a push that
-          # changed nothing — 1.7.12 added a shellcheck rule and did exactly
-          # that. Bump deliberately, and fix what the new version finds in
-          # the same commit. Was: latest
-          bash <(curl -sS https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.7.12 .
-          ./actionlint -color
-
   # Proves the web target still compiles. Only proves it: this repository does
   # not publish the web app anywhere, so nothing here needs a deploy
   # configuration or its secrets.
@@ -227,8 +223,13 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs
+      # Generated once, by analyze-and-test.
+      - uses: actions/download-artifact@v7
+        with:
+          name: generated-code
+      - name: Unpack the generated code
+        shell: bash
+        run: tar -xzf generated.tgz && rm generated.tgz
 
       # --wasm because that is the configuration that ships; a dart2js-only
       # build would miss a WASM-specific compile failure.
@@ -245,8 +246,12 @@ jobs:
   # Written as a git diff rather than a paths-filter action: it is a dozen
   # lines, and the alternative is another third-party action holding the
   # workflow token.
+  #
+  # It also lints the workflows when one changed, which used to be a job of
+  # its own on every run: a job is billed as at least a minute, and actionlint
+  # needs two seconds.
   detect-native-changes:
-    name: Detect native changes
+    name: Detect changes
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -260,6 +265,13 @@ jobs:
         env:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.sha }}
+          EVENT: ${{ github.event_name }}
+          # The first line of a squash merge ends "(#123)".
+          HEAD_SUBJECT: ${{ github.event.head_commit.message }}
+          # release.yml's trial runs for its own paths on a same-repository
+          # pull request (its `version` job's condition) and builds all three
+          # platforms in release mode, so building them here too is a repeat.
+          SAME_REPO: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
         run: |
           set -euo pipefail
 
@@ -268,6 +280,7 @@ jobs:
           if [ -z "${BASE_SHA:-}" ] || ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
             echo "No usable base commit — building desktop to be safe."
             echo "native=true" >> "$GITHUB_OUTPUT"
+            echo "workflows=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -278,11 +291,40 @@ jobs:
           while IFS= read -r file; do
             [ -n "$file" ] && echo "  $file"
           done <<< "$changed"
+          native=false
           if echo "$changed" | grep -qE '^(macos|windows|linux)/'; then
-            echo "native=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "native=false" >> "$GITHUB_OUTPUT"
+            native=true
+            subject="${HEAD_SUBJECT%%$'\n'*}"
+            if [ "$EVENT" = push ] && [[ "$subject" =~ \(#[0-9]+\)$ ]]; then
+              # A merged pull request: it built the desktop apps before it
+              # merged, and a tag's release builds them again.
+              echo "Merged from a pull request that built desktop — not again."
+              native=false
+            elif [ "$SAME_REPO" = true ] && echo "$changed" | grep -qE '^(\.github/workflows/release\.yml|windows/packaging/|windows/runner/Runner\.rc|macos/Runner/Info\.plist|tools/release_metadata\.dart)'; then
+              echo "::notice::The Release workflow's trial builds all three platforms for this change, so CI does not."
+              native=false
+            fi
           fi
+          echo "native=$native" >> "$GITHUB_OUTPUT"
+          if echo "$changed" | grep -q '^\.github/workflows/'; then
+            echo "workflows=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "workflows=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # A malformed workflow fails the run in 0s with no usable error in the API —
+      # `shell: ${{ matrix.shell }}` (expressions are not allowed there) cost a
+      # push to discover. actionlint catches that class of mistake in ~2s.
+      - name: actionlint
+        if: steps.filter.outputs.workflows == 'true'
+        run: |
+          # Pinned, like every other tool version here. `latest` meant a
+          # release of actionlint could turn this job red on a push that
+          # changed nothing — 1.7.12 added a shellcheck rule and did exactly
+          # that. Bump deliberately, and fix what the new version finds in
+          # the same commit. Was: latest
+          bash <(curl -sS https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.7.12 .
+          ./actionlint -color
 
   # Desktop binaries are release deliverables, not something consumed per
   # commit, and they cost ~30 min of runner time a push (Windows alone is
@@ -343,8 +385,13 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs
+      # Generated once, by analyze-and-test.
+      - uses: actions/download-artifact@v7
+        with:
+          name: generated-code
+      - name: Unpack the generated code
+        shell: bash
+        run: tar -xzf generated.tgz && rm generated.tgz
 
       # Flutter hands FLUTTER_XCODE_* to xcodebuild as build settings; plain
       # CODE_SIGNING_* variables never reach it, and the Release target's
