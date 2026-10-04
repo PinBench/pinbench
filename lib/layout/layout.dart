@@ -207,7 +207,7 @@ class const Layout({super.key}) extends ConsumerWidget {
                               // pane's border below it — two parallel lines where
                               // there should be one.
                               padding: EdgeInsets.zero,
-                              decoration: _TabStripOutline(color: context.appColors.border),
+                              decoration: _TabStripOutline(color: context.appColors.chromeBorder),
                             ),
                           ),
                           child: PlatView(

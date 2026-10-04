@@ -28,6 +28,17 @@ class const AppColorScheme._(final FColors _colors) {
   /// Hairline borders and rules.
   Color get border => _colors.border;
 
+  /// [border] made solid, as it looks on the window ground — for the lines
+  /// that outline the panes and their tabs.
+  ///
+  /// In dark mode [border] is translucent (white at 10%), so one colour drew
+  /// a different line over each thing beneath it: lighter over a pane's or a
+  /// tab's own surface than over the ground beside them, and lighter again
+  /// wherever two lines overlapped at a corner. The pane's sides, its tab
+  /// strip's rule and the active tab's outline are meant to read as one
+  /// unbroken edge, so they all draw this.
+  Color get chromeBorder => Color.alphaBlend(_colors.border, _colors.background);
+
   /// The interactive teal, and ink that sits on it.
   Color get primary => _colors.primary;
   Color get primaryForeground => _colors.primaryForeground;

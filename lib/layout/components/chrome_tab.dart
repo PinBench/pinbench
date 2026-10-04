@@ -52,7 +52,7 @@ class const ChromeTab({super.key, required final PlatTabDetails tab, final Widge
             isNextActive: isNextActive,
             activeBackgroundColor: context.appColors.surface,
             hoverBackgroundColor: context.appColors.accent,
-            borderColor: context.appColors.border,
+            borderColor: context.appColors.chromeBorder,
           ),
           child: _Tab(tab: tab, isActive: isActive, child: child),
         ),
