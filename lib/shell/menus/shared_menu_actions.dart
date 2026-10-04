@@ -88,9 +88,10 @@ void openReleaseNotes(WidgetRef ref) => ref
     .read(appLayoutControllerProvider)
     .openReleaseNotesTab(version: ref.read(appVersionProvider).value);
 
-/// Switches back to the Welcome tab. Backs "Welcome" on the Help menu (and
-/// the web menu bar's equivalent entry).
-void goToWelcomeTab(WidgetRef ref) {
-  ref.read(tabsListProvider.notifier).updateTabs(['Welcome']);
-  ref.read(activeTabProvider.notifier).setActive('Welcome');
-}
+/// Opens the Welcome tab, or switches to it. Backs "Welcome" on the Help menu
+/// (and the web menu bar's equivalent entry).
+///
+/// Through the layout, which owns the tabs. This used to set `tabsListProvider`
+/// and `activeTabProvider`, which nothing that draws a tab reads, so the menu
+/// item did nothing at all.
+void goToWelcomeTab(WidgetRef ref) => ref.read(appLayoutControllerProvider).openWelcomeTab();

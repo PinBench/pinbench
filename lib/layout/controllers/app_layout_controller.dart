@@ -206,21 +206,33 @@ class AppLayoutController(
     });
   }
 
+  /// Opens the welcome screen as a tab beside whatever is open, or focuses it
+  /// if it already is — Help ▸ Welcome, as in VS Code. Unlike
+  /// [resetToWelcome] it leaves the panes alone: a project may well be open,
+  /// and asking to see the welcome screen is not asking to close it.
+  void openWelcomeTab() {
+    _platController.transaction(() {
+      _insertWelcomeTab();
+      _platController.focus(AppTabs.welcome);
+    });
+  }
+
+  void _insertWelcomeTab() {
+    if (_platController.snapshot(AppTabs.welcome) != null) return;
+    final tab = PlatTab.leaf(id: AppTabs.welcome, title: 'Welcome');
+    final inserted = _platController.insertTab(tabGroupId: 'center_pane', tab: tab);
+    if (!inserted) {
+      _platController.setSlotChild(
+        slotId: 'center_slot',
+        child: Plat.tabs([tab], id: 'center_pane'),
+      );
+    }
+  }
+
   /// Resets the layout to its initial state, showing only the welcome screen.
   void resetToWelcome() {
     _platController.transaction(() {
-      if (_platController.snapshot(AppTabs.welcome) == null) {
-        final inserted = _platController.insertTab(
-          tabGroupId: 'center_pane',
-          tab: PlatTab.leaf(id: AppTabs.welcome, title: 'Welcome'),
-        );
-        if (!inserted) {
-          _platController.setSlotChild(
-            slotId: 'center_slot',
-            child: Plat.tabs([PlatTab.leaf(id: 'welcome', title: 'Welcome')], id: 'center_pane'),
-          );
-        }
-      }
+      _insertWelcomeTab();
 
       sidebarPane.collapse(_platController);
       _platController.setHidden('bottom_pane', hidden: true);
