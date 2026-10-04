@@ -58,8 +58,10 @@ you touch the compile path.
 
 CI runs these on every pull request; running them first saves a round trip.
 `./setup_hooks.sh`, once after cloning, has git do it for you: the pre-commit
-hook formats, sorts imports and analyzes what you staged, and the pre-push hook
-runs the analysis and the tests below.
+hook formats and sorts imports in what you staged (analysis is left to your IDE,
+since it takes the better part of a minute here), and the pre-push hook runs the
+analysis and the tests below — those the push can affect, so a docs change runs
+none of them.
 
 ```bash
 dart analyze --fatal-infos            # must be clean, infos included — as CI runs it
@@ -72,8 +74,9 @@ for p in packages/*/; do [ -d "$p/test" ] && (cd "$p" && flutter test); done
 Packages under `packages/` carry their own `pubspec.yaml` and
 `analysis_options.yaml` and are checked on their own terms — the root
 `flutter analyze` excludes them and the root `flutter test` does not descend
-into them. CI loops over every package, and so does the pre-push hook: all of
-them are analyzed, and the ones with a `test/` directory are tested.
+into them. CI checks every package, and the pre-push hook does too whenever a
+push changes something under `packages/`: all of them are analyzed, and the ones
+with a `test/` directory are tested.
 (`composite_plugin` is a generated analyzer plugin and has none.)
 
 `flutter analyze` exits non-zero on **warnings and infos**, not just errors, so
