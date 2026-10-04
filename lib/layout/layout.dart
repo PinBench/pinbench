@@ -12,6 +12,7 @@ import 'package:pinbench_ui/ui/app_spinner.dart';
 
 import 'components/editor_tab_item.dart';
 import 'components/pane_sizing.dart';
+import '../features/editor/widgets/empty_editor_view.dart';
 import '../features/workspace/providers/workspace_loading_provider.dart';
 import 'bars/activity/activity_bar.dart';
 import 'components/chrome_tab.dart';
@@ -161,9 +162,6 @@ class const Layout({super.key}) extends ConsumerWidget {
                     controller: controller,
                     child: Stack(
                       children: [
-                        // Empty editor screen sits behind PlatView;
-                        // visible when the center tab group has no tabs.
-                        // const EmptyEditorView(),
                         // Always render PlatView so sidebars/bottom pane stay alive.
                         PlatTheme(
                           data: PlatTheme.of(context).copyWith(
@@ -235,6 +233,7 @@ class const Layout({super.key}) extends ConsumerWidget {
                                 tabBuilder: (context, tab) => EditorTab(tab: tab),
                               );
                             },
+                            slotBuilder: buildSlot,
                             leafBuilder: (context, leaf) => _buildLeaf(
                               context,
                               leaf.id,
@@ -314,6 +313,19 @@ class const Layout({super.key}) extends ConsumerWidget {
         return false;
     }
   }
+
+  /// A slot as the layout draws it: its child, or for an empty center slot,
+  /// the empty editor.
+  ///
+  /// Closing the last editor tab removes the center tab group and leaves its
+  /// slot empty, which drew nothing at all. The empty editor fills it, on the
+  /// same island a tab's content stands on.
+  @visibleForTesting
+  static Widget buildSlot(BuildContext context, SlotSnapshot slot, Widget? child) =>
+      child ??
+      (slot.id == 'center_slot'
+          ? const PaneSurface(child: EmptyEditorView())
+          : const SizedBox.shrink());
 
   Widget _buildLeaf(BuildContext context, String id, Object? data, {bool firstTabActive = false}) {
     final child = LeafRegistry.buildChild(id, data);
