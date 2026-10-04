@@ -85,7 +85,10 @@ jobs:
       - name: Analyze
         run: |
           set -o pipefail
-          dart analyze --fatal-infos --cache=.dart_tool/analysis-cache 2>&1 | tee analyze.log
+          # Absolute: the analyzer resolves a relative --cache against its own
+          # install for the plugin builds it keeps there, and riverpod_lint
+          # then fails to load ("does not contain a valid AOT snapshot").
+          dart analyze --fatal-infos --cache="$PWD/.dart_tool/analysis-cache" 2>&1 | tee analyze.log
           if grep -q "error occurred while executing an analyzer plugin" analyze.log; then
             echo "::error::An analyzer plugin failed to load — see the log above."
             exit 1
