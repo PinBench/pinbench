@@ -8,8 +8,8 @@
 # What you get:
 #   pre-commit — formats staged Dart and sorts its imports; syncs templates
 #                into pubspec.yaml and sorts dependencies when those changed.
-#                A few seconds; runs on every commit. No analysis — that is
-#                the IDE's and pre-push's.
+#                About a second; runs on every commit. No analysis or
+#                `dart fix` — those are the IDE's and pre-push's.
 #   pre-push   — `dart analyze` and the tests, the same gates CI runs, for
 #                what the push changes: none for docs, the packages only when
 #                packages/ changed.
