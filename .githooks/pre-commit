@@ -37,10 +37,14 @@ if [ -n "$staged_pubspec" ] || [ -n "$staged_templates" ]; then
     git add pubspec.yaml
 fi
 
-# 3. Fix and format Dart files if any were staged
+# 3. Sort imports in and format the staged Dart files
+#
+# No `dart fix --apply`. It analyzed the whole project to apply a handful of
+# fixes — ~9 s, most of what was left of a commit — and rewrote files that were
+# not staged. The lints it fixes show in the IDE and block at pre-push; run
+# `dart fix --apply` yourself when they come up.
 if [ -n "$staged_dart_files" ]; then
-    echo "🧹 Applying automated dart fixes and sorting imports..."
-    dart fix --apply
+    echo "🧹 Sorting imports..."
 
     # Sort imports in the STAGED files only. `--folders lib` rewrote every file
     # under lib/ on every commit, and better_imports renders long `show` clauses
@@ -49,8 +53,8 @@ if [ -n "$staged_dart_files" ]; then
     staged_csv=$(printf '%s,' $staged_dart_files | sed 's/,$//')
     dart pub global run better_imports --silent --relative --files "$staged_csv"
 
-    # Format LAST. `dart fix` and better_imports both rewrite code, and their
-    # output is not formatter-clean at page_width:100. Formatting before them
+    # Format LAST. better_imports rewrites code, and its output is not
+    # formatter-clean at page_width:100. Formatting before it
     # (or not at all) is how the tree drifted to 145 unformatted files and kept
     # CI's "Check formatting" step red for a month.
     echo "🎨 Formatting staged Dart files..."
