@@ -34,6 +34,13 @@ class HistoryManager {
     _redoStack.add(command);
   }
 
+  /// Forgets every command. For a canvas that now shows another workspace's
+  /// circuit: undoing what was done to the last one would replay it here.
+  void clear() {
+    _undoStack.clear();
+    _redoStack.clear();
+  }
+
   void redo(CanvasContext controller) {
     if (!canRedo) return;
     final command = _redoStack.removeLast();
