@@ -194,13 +194,14 @@ class AppStrings._() {
 
   // ── Empty workspace / empty editor placeholders ──────────────────────────
 
-  static const noFileOpenHeading = 'No file is open';
-  static const noFileOpenSubtext = 'Select a file from the workspace to start editing';
-  static const openChatShortcutLabel = 'Open Chat';
-  static const showAllCommandsShortcutLabel = 'Show All Commands';
   static const openRecentMenuLabel = 'Open Recent';
-  static const openFileOrFolderShortcutLabel = 'Open File or Folder';
   static const newUntitledFileShortcutLabel = 'New Untitled Text File';
+
+  // The empty editor's cheat sheet. Each names a shortcut the app binds.
+  static const emptyEditorOpenFolder = 'Open Folder';
+  static const emptyEditorToggleExplorer = 'Toggle Explorer';
+  static const emptyEditorRunSimulation = 'Run Simulation';
+  static const emptyEditorOpenSettings = 'Open Settings';
   static const untitledProjectLabel = 'Untitled';
 
   // ── Welcome screen ────────────────────────────────────────────────────────

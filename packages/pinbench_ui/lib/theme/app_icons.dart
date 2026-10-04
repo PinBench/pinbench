@@ -88,7 +88,6 @@ abstract final class AppIcons {
   static const templates = LucideIcons.layoutGrid;
   static const recent = LucideIcons.inbox;
   static const blankProject = LucideIcons.squarePlus;
-  static const emptyEditor = LucideIcons.code2;
   static const expanded = LucideIcons.chevronDown;
   static const collapsed = LucideIcons.chevronRight;
 

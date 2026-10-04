@@ -84,8 +84,10 @@ class const AppShortcutHint({
     mainAxisSize: spaceBetween ? MainAxisSize.max : MainAxisSize.min,
     mainAxisAlignment: spaceBetween ? MainAxisAlignment.spaceBetween : MainAxisAlignment.start,
     children: [
-      Text(label),
-      if (!spaceBetween) Gap.hMd,
+      // The label gives way, not the keys: a long one ellipsizes rather than
+      // pushing the caps out of a fixed-width column.
+      Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis)),
+      Gap.hMd,
       Row(
         mainAxisSize: MainAxisSize.min,
         children: [

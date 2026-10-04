@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pinbench_ui/widgets/brand_logo.dart';
+import 'package:pinbench_ui/widgets/brand_wash.dart';
 import 'package:pinbench_ui/theme/text.dart';
 import 'package:pinbench_ui/strings.dart';
 import 'package:pinbench_ui/theme/tokens.dart';
@@ -20,106 +21,91 @@ import 'welcome/welcome_templates_section.dart';
 
 class const WelcomeView({super.key}) extends ConsumerWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final colors = context.appColors;
-
-    return DecoratedBox(
-      // A wash, not a spotlight. At a quarter opacity the brand teal turned the
-      // whole lower half of the first screen green, which is the loudest thing
-      // a tool can do before the user has done anything.
-      decoration: BoxDecoration(
-        gradient: RadialGradient(
-          radius: 0.85,
-          stops: const [0.0, 1.0],
-          center: Alignment.bottomCenter,
-          colors: [colors.primary.withValues(alpha: 0.05), colors.surface],
-        ),
-      ),
-      child: Center(
-        child: ScrollConfiguration(
-          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.all(AppSpacing.xxxl),
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 900),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildHeader(context),
-                  const WelcomeConsentCard(),
-                  // The side panel's entry point, when the edition has one. The
-                  // pane itself stays closed here; see `closeWelcome`.
-                  if (ref.watch(editionPanelProvider)?.welcome case final welcome?) ...[
-                    Builder(builder: welcome),
-                    Gap.vLg,
-                  ],
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Left Column (Start & Recent)
-                      Expanded(
-                        flex: 4,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _buildSectionCard(
-                              context: context,
-                              title: AppStrings.startSectionTitle,
-                              icon: AppIcons.upload,
-                              child: const WelcomeStartSection(),
-                            ),
-                            // Recent workspaces are local folders, which the web
-                            // preview has no access to — the list is always empty
-                            // there, so hide the card entirely on the web.
-                            if (!kIsWeb) ...[
-                              Gap.vLg,
-                              _buildSectionCard(
-                                context: context,
-                                title: AppStrings.recentWorkspacesSectionTitle,
-                                icon: AppIcons.history,
-                                child: const WelcomeRecentSection(),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      Gap.hLg,
-                      // Right Column (Templates & Cloud)
-                      Expanded(
-                        flex: 5,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _buildSectionCard(
-                              context: context,
-                              title: AppStrings.templatesSectionTitle,
-                              icon: AppIcons.templates,
-                              child: const WelcomeTemplatesSection(),
-                            ),
-                            if (ref.watch(authServiceProvider).enabled) ...[
-                              Gap.vLg,
-                              _buildSectionCard(
-                                context: context,
-                                title: AppStrings.cloudProjectsSectionTitle,
-                                icon: AppIcons.cloud,
-                                child: const WelcomeCloudSection(),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+  Widget build(BuildContext context, WidgetRef ref) => BrandWash(
+    child: Center(
+      child: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.all(AppSpacing.xxxl),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 900),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildHeader(context),
+                const WelcomeConsentCard(),
+                // The side panel's entry point, when the edition has one. The
+                // pane itself stays closed here; see `closeWelcome`.
+                if (ref.watch(editionPanelProvider)?.welcome case final welcome?) ...[
+                  Builder(builder: welcome),
+                  Gap.vLg,
                 ],
-              ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Left Column (Start & Recent)
+                    Expanded(
+                      flex: 4,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildSectionCard(
+                            context: context,
+                            title: AppStrings.startSectionTitle,
+                            icon: AppIcons.upload,
+                            child: const WelcomeStartSection(),
+                          ),
+                          // Recent workspaces are local folders, which the web
+                          // preview has no access to — the list is always empty
+                          // there, so hide the card entirely on the web.
+                          if (!kIsWeb) ...[
+                            Gap.vLg,
+                            _buildSectionCard(
+                              context: context,
+                              title: AppStrings.recentWorkspacesSectionTitle,
+                              icon: AppIcons.history,
+                              child: const WelcomeRecentSection(),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    Gap.hLg,
+                    // Right Column (Templates & Cloud)
+                    Expanded(
+                      flex: 5,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildSectionCard(
+                            context: context,
+                            title: AppStrings.templatesSectionTitle,
+                            icon: AppIcons.templates,
+                            child: const WelcomeTemplatesSection(),
+                          ),
+                          if (ref.watch(authServiceProvider).enabled) ...[
+                            Gap.vLg,
+                            _buildSectionCard(
+                              context: context,
+                              title: AppStrings.cloudProjectsSectionTitle,
+                              icon: AppIcons.cloud,
+                              child: const WelcomeCloudSection(),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 
   Widget _buildHeader(BuildContext context) => Padding(
     padding: const EdgeInsets.only(bottom: AppSpacing.lg),
