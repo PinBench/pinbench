@@ -40,6 +40,7 @@ import '../shell/menus/global_menu_wrapper.dart';
 import 'canvas_sync_bindings.dart';
 import 'chrome_bindings.dart';
 import 'edition_host_bindings.dart';
+import 'workspace_session_reset.dart';
 import 'simulation/simulation_bindings.dart';
 
 /// Everything `main()` needs to bring up before the first frame: telemetry,
@@ -219,7 +220,9 @@ ProviderScope Function(Widget child) buildGlobalScope({
   required FeatureFlags featureFlags,
 }) =>
     (child) => ProviderScope(
-      child: GlobalMenuWrapper(child: TelemetryListener(child: child)),
+      child: GlobalMenuWrapper(
+        child: TelemetryListener(child: WorkspaceSessionReset(child: child)),
+      ),
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),
         appTempDirProvider.overrideWithValue(appTempDir),

@@ -29,6 +29,10 @@ class LogsRepository {
     _notify(channel);
   }
 
+  /// Empties every channel, for when the workspace whose output they hold is
+  /// replaced by another.
+  void clearAll() => LogChannel.values.forEach(clear);
+
   List<String> getLogs(LogChannel channel) => List.of(_logs[channel] ?? []);
 
   void listen(LogChannel channel, VoidCallback onChanged) {
