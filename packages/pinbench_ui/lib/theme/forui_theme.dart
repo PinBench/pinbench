@@ -6,10 +6,11 @@
 /// `shared/widgets` should construct or name it.
 ///
 /// The base is forui's own Neutral scheme rather than a port of `AppPalette` —
-/// the point of adopting the library was its look, so its greys, typography
-/// and component shapes are left alone. Only [primary] is overridden, because
-/// the teal is the product's identity and not something a library should
-/// decide.
+/// the point of adopting the library was its look, so its greys, type scale
+/// and component shapes are left alone. Two things are the product's identity
+/// and not something a library should decide, so they are overridden: the
+/// teal ([primary]), and the typefaces, the brand kit's IBM Plex Sans and
+/// Outfit (see [fTheme]) in place of forui's Inter.
 library;
 
 import 'package:flutter/widgets.dart';
@@ -89,4 +90,20 @@ FColors _colors(Brightness brightness) => brightness == Brightness.light
 ///
 /// `touch: false` because this is a desktop IDE — forui sizes its controls for
 /// fingers by default, which would make every toolbar in the app taller.
-FThemeData fTheme(Brightness brightness) => FThemeData(touch: false, colors: _colors(brightness));
+FThemeData fTheme(Brightness brightness) {
+  final colors = _colors(brightness);
+  return FThemeData(
+    touch: false,
+    colors: colors,
+    typography: FTypography(
+      display: FTypeface.inherit(colors: colors, touch: false, fontFamily: _displayFont),
+      body: FTypeface.inherit(colors: colors, touch: false, fontFamily: _bodyFont),
+    ),
+  );
+}
+
+/// The brand kit's type, bundled by this package (see its pubspec): IBM Plex
+/// Sans for body and UI text, Outfit for display. forui's sizes, weights and
+/// line heights are kept; only the faces change.
+const _bodyFont = 'packages/pinbench_ui/IBMPlexSans';
+const _displayFont = 'packages/pinbench_ui/Outfit';
