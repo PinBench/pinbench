@@ -285,6 +285,7 @@ class _WebMenuBarState extends ConsumerState<WebMenuBar> {
   // ── Help ─────────────────────────────────────────────────────────────────
   List<AppMenuEntry> _helpItems() => [
     _action('Welcome', onPressed: () => goToWelcomeTab(ref)),
+    _action(AppStrings.releaseNotesMenuLabel, onPressed: () => openReleaseNotes(ref)),
     // Present on the web too, where it says the build updates itself on
     // reload — the alternative is a menu whose entries differ per platform
     // for a question every user is entitled to ask.

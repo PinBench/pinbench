@@ -330,6 +330,21 @@ class AppStrings._() {
   static const updatesReleaseNotesLabel = 'Release notes';
   static const updatesDialogTitle = 'Update';
 
+  // ── Release notes ────────────────────────────────────────────────────────
+  static const releaseNotesMenuLabel = 'Release Notes';
+
+  /// The tab's title: "Release Notes: 0.3.0", or without a number before the
+  /// version is known.
+  static String releaseNotesTabTitle(String? version) =>
+      version == null ? 'Release Notes' : 'Release Notes: $version';
+
+  /// The page heading: "PinBench 0.3.0".
+  static String releaseNotesHeading(String version) => '$appName $version';
+  static const releaseNotesShowAfterUpdate = 'Show release notes after an update';
+  static const releaseNotesViewOnline = 'View online';
+  static String releaseNotesDate(String date) => 'Release date: $date';
+  static const releaseNotesUnavailable = 'The release notes for this build could not be read.';
+
   /// The banner headline. [version] is null when the platform's updater
   /// reported a version string that could not be parsed — the update is still
   /// real and still installable, so it is announced without a number rather

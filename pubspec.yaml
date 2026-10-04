@@ -175,6 +175,9 @@ flutter:
   # which is the same upstream migration `ui_library_boundary_test` tracks.
   uses-material-design: true
   assets:
+    # The Release Notes tab reads the running version's section from it, so
+    # the notes always match the build and need no network.
+    - CHANGELOG.md
     - assets/templates/blink/
     - assets/templates/breadboard/
     - assets/templates/clap_rhythm/

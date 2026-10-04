@@ -15,6 +15,10 @@ PlatformMenu helpMenu(WidgetRef ref) => PlatformMenu(
   menus: <PlatformMenuItem>[
     PlatformMenuItem(label: 'Welcome', onSelected: () => goToWelcomeTab(ref)),
     PlatformMenuItem(
+      label: AppStrings.releaseNotesMenuLabel,
+      onSelected: () => openReleaseNotes(ref),
+    ),
+    PlatformMenuItem(
       label: AppStrings.updatesCheckMenuLabel,
       onSelected: () => unawaited(checkForUpdates(ref)),
     ),

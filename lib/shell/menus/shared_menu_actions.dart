@@ -8,6 +8,7 @@ import 'package:pinbench_ui/strings.dart';
 import '../../features/editor/providers/editor_provider.dart';
 import '../../features/workspace/providers/workspace_files_provider.dart';
 import '../../features/workspace/providers/editor_state_provider.dart';
+import '../../core/updates/update_providers.dart';
 import '../../layout/controllers/app_layout_controller.dart';
 import '../../layout/updates/update_dialog.dart';
 
@@ -80,6 +81,12 @@ Future<void> checkForUpdates(WidgetRef ref, {BuildContext? context}) async {
   if (ctx == null) return;
   await showUpdateDialog(ctx, ref);
 }
+
+/// Opens the release notes for the running build. Backs "Release Notes" on
+/// the Help menu and the web menu bar's.
+void openReleaseNotes(WidgetRef ref) => ref
+    .read(appLayoutControllerProvider)
+    .openReleaseNotesTab(version: ref.read(appVersionProvider).value);
 
 /// Switches back to the Welcome tab. Backs "Welcome" on the Help menu (and
 /// the web menu bar's equivalent entry).

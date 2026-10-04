@@ -1,5 +1,6 @@
 import 'package:path/path.dart' as p;
 import 'package:plat/plat.dart';
+import 'package:pinbench_ui/strings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../core/chrome/chrome_commands.dart';
@@ -133,6 +134,28 @@ class AppLayoutController(
       );
     }
     _platController.focus(AppTabs.settings);
+  }
+
+  /// Opens the release notes as a center-pane tab, or focuses it if already
+  /// open. [version] goes in the tab's title, as VS Code's does.
+  void openReleaseNotesTab({String? version}) {
+    if (_platController.snapshot(AppTabs.releaseNotes) != null) {
+      _platController.focus(AppTabs.releaseNotes);
+      return;
+    }
+
+    final tab = PlatTab.leaf(
+      id: AppTabs.releaseNotes,
+      title: AppStrings.releaseNotesTabTitle(version),
+    );
+    final inserted = _platController.insertTab(tabGroupId: 'center_pane', tab: tab);
+    if (!inserted) {
+      _platController.setSlotChild(
+        slotId: 'center_slot',
+        child: Plat.tabs([tab], id: 'center_pane'),
+      );
+    }
+    _platController.focus(AppTabs.releaseNotes);
   }
 
   /// Whether the settings tab is open *and* the one on screen — the activity

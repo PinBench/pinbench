@@ -32,6 +32,15 @@ abstract final class UpdateConfig {
     defaultValue: 'https://pinbench.web.app/download',
   );
 
+  /// The changelog on the web, which the Release Notes tab's "View online"
+  /// opens: every release's notes, where the tab shows the running one's.
+  // Build-time config, not a secret — it is the public address of the repo.
+  // ignore: do_not_use_environment
+  static const changelogUrl = String.fromEnvironment(
+    'CHANGELOG_URL',
+    defaultValue: 'https://github.com/PinBench/pinbench/blob/main/CHANGELOG.md',
+  );
+
   /// Seconds between Sparkle's own background checks. A day is Sparkle's
   /// default and its documented sweet spot: often enough that a security fix
   /// lands within a day, rare enough that it is never the reason the app
