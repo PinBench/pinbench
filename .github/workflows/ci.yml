@@ -7,8 +7,7 @@ on:
     # the tag. (Was: tags ["v*"], a full rerun of an unchanged commit.)
     branches: [main]
     paths-ignore:
-      # Prose changes nothing this workflow checks, and a full run bills ~20
-      # minutes of the Actions allowance.
+      # Prose changes nothing this workflow checks.
       - "**.md"
       - docs/**
       - LICENSE
@@ -21,7 +20,7 @@ on:
       - NOTICE
   workflow_dispatch:
 
-# Cancel superseded runs on the same ref to save CI minutes.
+# Cancel superseded runs on the same ref.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
@@ -32,79 +31,45 @@ concurrency:
 permissions:
   contents: read
 
-# The Flutter version is .fvmrc's, in every job here and in the workflows
-# elsewhere that build this app — one file, which fvm reads locally too. It was
-# pinned separately in three jobs once, which is how the removed
-# --web-renderer flag survived the 3.44 upgrade in some steps and not others.
+# Laid out for wall-clock time, not runner minutes. The repository is public,
+# and GitHub-hosted runners are free for public repositories, so the checks run
+# side by side — analysis, the app's tests in shards, each package, the web
+# build — rather than one after another in a single job, which took ~10 min
+# before the web build could even start. The earlier layout was shaped by a
+# private plan's minute allowance, which ran out.
+#
+# Every app job starts with .github/actions/setup-app: submodules, Flutter
+# from .fvmrc (one file, which fvm reads locally too), dependencies and the
+# generated code, cached.
 
 jobs:
-  analyze-and-test:
-    name: Analyze & Test
+  # Lints and formatting, apart from the tests so neither waits on the other.
+  analyze:
+    name: Analyze
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
-
-      - name: Fetch submodules
-        run: git submodule update --init --recursive
-
-      # No GTK/clang/ninja here on purpose: this job only analyzes and runs
-      # unit tests, which execute on the Dart VM and compile nothing native.
-      # The desktop toolchain belongs to build-desktop.
-      - name: Set up Flutter
-        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+      - uses: ./.github/actions/setup-app
         with:
-          flutter-version-file: .fvmrc
-          channel: stable
-          cache: true
-
-      # --enforce-lockfile: the committed pubspec.lock must be exactly what this
-      # repository resolves to. A lockfile regenerated under a local
-      # pubspec_overrides.yaml fails here instead of being merged.
-      - name: Install dependencies
-        run: flutter pub get --enforce-lockfile
-
-      # Generated *.g.dart files are git-ignored, so regenerate them before
-      # analysis/tests (riverpod_generator, etc.).
-      - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs
-
-      # build-web and build-desktop take these instead of running build_runner
-      # again (40-70 s each). A tarball, not a list of paths: upload-artifact
-      # strips the paths' common prefix, which would drop lib/.
-      - name: Share the generated code
-        run: |
-          set -euo pipefail
-          find lib packages \( -name '*.g.dart' -o -name '*.freezed.dart' -o -name '*.gr.dart' \) -print0 \
-            | tar --null -czf generated.tgz -T -
-          tar -tzf generated.tgz | wc -l | xargs echo "generated files:"
-      - uses: actions/upload-artifact@v7
-        with:
-          name: generated-code
-          path: generated.tgz
-          if-no-files-found: error
-          retention-days: 1
+          enforce-lockfile: "true"
 
       # `dart analyze --fatal-infos`, not `flutter analyze`.
       #
-      # The grep below was added because a lint suite that silently stops
-      # running is worse than one that was never configured — the green check
-      # says it is working. It was guarding the right thing and missing the
-      # bigger instance of it: `flutter analyze` does not load the analyzer
-      # plugins `analysis_options.yaml` registers *at all*, so every
-      # riverpod_lint rule was inert here, and 34 findings accumulated behind
-      # this green step. They were only ever visible in an IDE.
+      # `flutter analyze` does not load the analyzer plugins
+      # `analysis_options.yaml` registers *at all*, so every riverpod_lint rule
+      # was inert here, and 34 findings accumulated behind a green step. They
+      # were only ever visible in an IDE.
       #
       # `--fatal-infos` because the two commands disagree on what failure
       # means: `flutter analyze` exits non-zero on an info, plain
       # `dart analyze` exits 0. Most of what riverpod_lint reports is
       # info-level, so without the flag this step would have got weaker.
       #
-      # The grep stays as redundancy rather than the only defence: an
-      # unresolvable plugin now exits 4 on its own, where `flutter analyze`
-      # exited 0 with "No issues found". Verified by pinning riverpod_lint to a
-      # nonexistent version — the message it greps for is still the one
-      # printed.
+      # The grep stays as redundancy: an unresolvable plugin exits 4 on its
+      # own, where `flutter analyze` exited 0 with "No issues found". Verified
+      # by pinning riverpod_lint to a nonexistent version — the message it
+      # greps for is still the one printed.
       - name: Analyze
         run: |
           set -o pipefail
@@ -115,151 +80,144 @@ jobs:
           fi
 
       # Check only files tracked in git. `lib/ test/` would also cover the
-      # *.g.dart / *.freezed.dart regenerated by the step above — those are
-      # git-ignored build output, and build_runner does not emit them at the
-      # page_width:100 this project uses, so including them fails CI over files
-      # that are not even in the repository.
+      # generated *.g.dart files — git-ignored build output, which build_runner
+      # does not emit at the page_width:100 this project uses, so including them
+      # fails CI over files that are not even in the repository.
       - name: Check formatting
         run: git ls-files -z -- 'lib/*.dart' 'test/*.dart' | xargs -0 dart format --output=none --set-exit-if-changed
 
+  # The app's tests, in shards: the suite was ~4 min on its own in one job.
+  test:
+    name: Test (${{ matrix.shard }}/3)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-app
+
       # The 'arduino' tag covers tests that shell out to a local arduino-cli
       # toolchain, which isn't available on CI — they run locally instead.
-      - name: Run tests
-        run: flutter test --exclude-tags arduino --coverage
-
-      # The root analysis_options excludes packages/**, and `flutter test` at
-      # the root does not descend into them either — so until this step existed
-      # nothing in packages/ was ever analyzed or run on CI. The entitlements
-      # package's tests had never executed here at all.
       #
-      # Each package carries its own analysis_options and pubspec, so they are
-      # checked on their own terms rather than the app's. Looping keeps a new
-      # package covered the day it is added instead of the day someone
-      # remembers to edit this file.
-      # Each package is resolved against its siblings' checkouts — the
-      # submodule commits the app pins — not the git branches its pubspec
-      # names. Without this, pinbench_parts and pinbench_sim were tested
-      # against pdl's main while the app built the submodule, and a branch
-      # the app needed failed here on APIs main did not have yet.
+      # Coverage only for a push to main. It is read as a trend on main's runs,
+      # and collecting it made the suite ~30% slower, so pull requests skip it.
+      - name: Run tests
+        env:
+          COVERAGE: ${{ github.event_name == 'push' && '--coverage' || '' }}
+        run: |
+          # shellcheck disable=SC2086 # COVERAGE is one flag or nothing.
+          flutter test --exclude-tags arduino $COVERAGE \
+            --total-shards 3 --shard-index $(( ${{ matrix.shard }} - 1 ))
+
+      - name: Upload coverage
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-${{ matrix.shard }}
+          path: coverage/lcov.info
+          if-no-files-found: error
+          retention-days: 7
+
+  # The packages in packages/, each on its own runner.
+  #
+  # The root analysis_options excludes packages/**, and `flutter test` at the
+  # root does not descend into them, so they are checked here on their own
+  # terms — each carries its own analysis_options and pubspec. They used to run
+  # one after another in the app's job (~2.5 min); the list comes from the
+  # repository (`detect`), so a new package is covered the day it is added.
+  package:
+    name: Package ${{ matrix.package }}
+    needs: detect
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.detect.outputs.packages) }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-app
+        with:
+          codegen: "false"
+
+      # Each package resolves against its siblings' checkouts — the submodule
+      # commits the app pins — not the git branches its pubspec names. Without
+      # this, pinbench_parts and pinbench_sim were tested against pdl's main
+      # while the app built the submodule, and a branch the app needed failed
+      # here on APIs main did not have yet.
       - name: Link packages to their siblings
         run: tools/link_packages.sh
 
-      - name: Analyze and test each package
+      - name: Analyze and test
+        working-directory: packages/${{ matrix.package }}
         run: |
           set -euo pipefail
-          for pkg in packages/*/; do
-            [ -f "$pkg/pubspec.yaml" ] || continue
-            echo "::group::$pkg"
-            (
-              cd "$pkg"
-              flutter pub get
-              dart analyze --fatal-infos
-              # Not every package is a library with a suite — composite_plugin
-              # is a generated analyzer plugin. `flutter test` exits 1 on "Test
-              # directory not found", which is not a failure worth blocking on.
-              # Announced either way, so a package that lost its tests shows up
-              # rather than quietly passing.
-              if [ -d test ]; then
-                flutter test
-              else
-                echo "no test/ directory — analysis only"
-              fi
-            )
-            echo "::endgroup::"
-          done
-
-      # The figure, where it is seen: the run's summary page. It counts the
-      # lines of files the tests load, so files no test touches are missing
-      # from both sides — read it as a trend, not an absolute.
-      - name: Coverage summary
-        if: always()
-        run: |
-          if [ -f coverage/lcov.info ]; then
-            awk -F'[:,]' '/^DA:/ { t++; if ($3 > 0) h++ }
-              END { if (t) printf "**Line coverage: %.1f%%** (%d of %d lines, in the files the tests load)\n", 100 * h / t, h, t }' \
-              coverage/lcov.info >> "$GITHUB_STEP_SUMMARY"
+          flutter pub get
+          dart analyze --fatal-infos
+          # Not every package has a suite — composite_plugin is a generated
+          # analyzer plugin. `flutter test` exits 1 on "Test directory not
+          # found", which is not a failure worth blocking on. Announced either
+          # way, so a package that lost its tests shows up rather than quietly
+          # passing.
+          if [ -d test ]; then
+            flutter test
+          else
+            echo "::notice::${{ matrix.package }} has no test/ directory — analysis only."
           fi
-
-      # Nice to have, never a reason to fail the gate. A full artifact
-      # storage quota once turned a run with clean analysis and 431 passing
-      # tests into a red X, which reads as "the code is broken" and is not
-      # what this job is for.
-      - name: Upload coverage
-        if: always()
-        continue-on-error: true
-        uses: actions/upload-artifact@v7
-        with:
-          name: coverage
-          path: coverage/lcov.info
-          if-no-files-found: ignore
-          # Artifacts default to 90 days, and desktop/web bundles at ~50 MB a
-          # push filled the account's storage quota — which fails the upload
-          # step of every workflow, including a release. These exist to hand
-          # a build to a later job in the same run, plus a short window to
-          # download one by hand; a week covers both.
-          retention-days: 7
 
   # Proves the web target still compiles. Only proves it: this repository does
   # not publish the web app anywhere, so nothing here needs a deploy
-  # configuration or its secrets.
+  # configuration or its secrets. Alongside the checks, not after them: it
+  # waited ~10 min for them only to borrow their generated code.
   build-web:
     name: Build Web
-    needs: analyze-and-test
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
-
-      - name: Fetch submodules
-        run: git submodule update --init --recursive
-
-      - name: Set up Flutter
-        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
-        with:
-          flutter-version-file: .fvmrc
-          channel: stable
-          cache: true
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      # Generated once, by analyze-and-test.
-      - uses: actions/download-artifact@v7
-        with:
-          name: generated-code
-      - name: Unpack the generated code
-        shell: bash
-        run: tar -xzf generated.tgz && rm generated.tgz
+      - uses: ./.github/actions/setup-app
 
       # --wasm because that is the configuration that ships; a dart2js-only
       # build would miss a WASM-specific compile failure.
       - name: Build (WASM)
         run: flutter build web --wasm --pwa-strategy=none
 
-  # Whether this push/PR touches code only a desktop toolchain compiles.
+  # What the rest of the run needs to know about this push or pull request:
+  # which packages to check, and whether it touches code only a desktop
+  # toolchain compiles.
   #
-  # `analyze-and-test` runs on the Dart VM and `build-web` runs dart2js, so
-  # neither one ever compiles the native runners. Without this, a typo in
-  # win32_window.cpp or my_application.cc stays invisible until a release tag
-  # — which is the one build you least want to discover it in.
+  # `test` runs on the Dart VM and `build-web` runs dart2js, so neither ever
+  # compiles the native runners. Without the desktop check, a typo in
+  # win32_window.cpp or my_application.cc stays invisible until a release tag —
+  # the one build you least want to discover it in.
   #
   # Written as a git diff rather than a paths-filter action: it is a dozen
   # lines, and the alternative is another third-party action holding the
-  # workflow token.
-  #
-  # It also lints the workflows when one changed, which used to be a job of
-  # its own on every run: a job is billed as at least a minute, and actionlint
-  # needs two seconds.
-  detect-native-changes:
+  # workflow token. It also lints the workflows when one changed: actionlint
+  # needs two seconds, not a job of its own.
+  detect:
     name: Detect changes
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
       native: ${{ steps.filter.outputs.native }}
+      packages: ${{ steps.packages.outputs.packages }}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+
+      # Every directory under packages/, submodules included: read from the
+      # tree, since a submodule's directory is empty until it is fetched.
+      - id: packages
+        run: |
+          set -euo pipefail
+          packages=$(git ls-tree -d --name-only HEAD packages/ | sed 's#^packages/##' | jq -R . | jq -cs .)
+          echo "packages=$packages" >> "$GITHUB_OUTPUT"
+          echo "Packages: $packages"
 
       - id: filter
         env:
@@ -306,7 +264,7 @@ jobs:
             fi
           fi
           echo "native=$native" >> "$GITHUB_OUTPUT"
-          if echo "$changed" | grep -q '^\.github/workflows/'; then
+          if echo "$changed" | grep -qE '^\.github/(workflows|actions)/'; then
             echo "workflows=true" >> "$GITHUB_OUTPUT"
           else
             echo "workflows=false" >> "$GITHUB_OUTPUT"
@@ -326,21 +284,19 @@ jobs:
           bash <(curl -sS https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.7.12 .
           ./actionlint -color
 
-  # Desktop binaries are release deliverables, not something consumed per
-  # commit, and they cost ~30 min of runner time a push (Windows alone is
-  # ~16 min). So this job exists for exactly one reason: to compile any commit
-  # that edits a native runner, which is the only code no other job compiles.
-  # Native code changes a couple of times a year, so that stays close to free.
+  # Compiles any commit that edits a native runner, the only code no other job
+  # compiles. Native code changes a couple of times a year.
   #
-  # It deliberately does *not* run on version tags any more. Tags are handled
-  # by release.yml, which builds the same three platforms and then signs,
-  # notarises and packages them — running both would mean paying for the
-  # desktop matrix twice and shipping the unsigned copy as a CI artifact
-  # beside the signed one.
+  # A debug build, because compiling the runner is the whole point: release
+  # mode also compiles the Dart ahead of time — for two architectures on macOS,
+  # ~10 of that job's 14 minutes — which proves nothing the web build and the
+  # tests have not, and its output is not something to hand anyone. The
+  # deliverables are release.yml's: built from the tag, signed, notarised and
+  # packaged. So nothing is uploaded here.
   build-desktop:
     name: Build ${{ matrix.target }}
-    needs: [analyze-and-test, detect-native-changes]
-    if: needs.detect-native-changes.outputs.native == 'true'
+    needs: detect
+    if: needs.detect.outputs.native == 'true'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     strategy:
@@ -350,21 +306,15 @@ jobs:
           - os: macos-latest
             platform: macos
             target: macOS
-            archive: tar -czf pinbench_macos.tar.gz -C build/macos/Build/Products/Release pinbench.app
           - os: windows-latest
             platform: windows
             target: Windows
-            archive: powershell -Command "Compress-Archive -Path 'build/windows/x64/runner/Release/*' -DestinationPath 'pinbench_windows.zip'"
           - os: ubuntu-latest
             platform: linux
             target: Linux
-            archive: tar -czf pinbench_linux.tar.gz -C build/linux/x64/release/bundle .
 
     steps:
       - uses: actions/checkout@v7
-
-      - name: Fetch submodules
-        run: git submodule update --init --recursive
 
       - name: Install Linux build dependencies
         if: matrix.platform == 'linux'
@@ -372,58 +322,54 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libblkid-dev libasound2-dev
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+      # Desktop targets are enabled by default on stable, so no `flutter config
+      # --enable-*-desktop` (37 s on Windows). The SDK cache only on Linux: on
+      # Windows saving it took 168 s and restoring 97 s.
+      - uses: ./.github/actions/setup-app
         with:
-          flutter-version-file: .fvmrc
-          channel: stable
-          cache: true
-
-      - name: Enable Desktop Platform
-        run: flutter config --enable-${{ matrix.platform }}-desktop
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      # Generated once, by analyze-and-test.
-      - uses: actions/download-artifact@v7
-        with:
-          name: generated-code
-      - name: Unpack the generated code
-        shell: bash
-        run: tar -xzf generated.tgz && rm generated.tgz
+          flutter-cache: ${{ matrix.platform == 'linux' }}
 
       # Flutter hands FLUTTER_XCODE_* to xcodebuild as build settings; plain
-      # CODE_SIGNING_* variables never reach it, and the Release target's
-      # automatic signing then wants a provisioning profile CI cannot have.
+      # CODE_SIGNING_* variables never reach it, and automatic signing then
+      # wants a provisioning profile CI cannot have.
       - name: Build Desktop App
         env:
           FLUTTER_XCODE_CODE_SIGNING_ALLOWED: "NO"
           FLUTTER_XCODE_CODE_SIGNING_REQUIRED: "NO"
           FLUTTER_XCODE_CODE_SIGN_IDENTITY: ""
-        run: flutter build ${{ matrix.platform }} --release
+        run: flutter build ${{ matrix.platform }} --debug
 
-      # One step instead of four `if:`-guarded ones. Every matrix leg used to
-      # carry all four, and GitHub renders skipped steps, so each job listed
-      # three packaging steps belonging to other platforms. `shell:` cannot
-      # take an expression, so it stays bash — present on all three runners —
-      # and the matrix carries the whole command. Windows shells out to
-      # PowerShell so its artifact stays a .zip rather than a tarball.
-      - name: Package
-        shell: bash
-        run: ${{ matrix.archive }}
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v7
+  # Main's coverage figure, on the run's summary page. Each shard measured the
+  # files its own tests load, so the same line can appear in several reports:
+  # a line counts once, and as covered if any shard ran it. It counts only files
+  # the tests load, so read it as a trend, not an absolute.
+  coverage:
+    name: Coverage
+    if: github.event_name == 'push'
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@v8
         with:
-          name: pinbench-${{ matrix.platform }}
-          path: pinbench_${{ matrix.platform }}.*
-          if-no-files-found: error
-          retention-days: 7
+          pattern: coverage-*
+          path: coverage
+      - name: Summarise
+        run: |
+          set -euo pipefail
+          cat coverage/*/lcov.info | awk -F'[:,]' '
+            /^SF:/ { file = substr($0, 4) }
+            /^DA:/ {
+              key = file ":" $2
+              if (!(key in seen)) { seen[key] = 1; total++ }
+              if ($3 > 0 && !(key in hit)) { hit[key] = 1; covered++ }
+            }
+            END { if (total) printf "**Line coverage: %.1f%%** (%d of %d lines, in the files the tests load)\n", 100 * covered / total, covered, total }
+          ' >> "$GITHUB_STEP_SUMMARY"
 
   # Asks PinBench/website to build and publish a preview of this commit; that
-  # repository owns the web deploy. Only on main, and only once the web build
-  # above has proven the commit compiles.
+  # repository owns the web deploy. Only on main, and only once the commit has
+  # passed every check.
   #
   # WEBSITE_DISPATCH_TOKEN needs Contents: write on PinBench/website, which is
   # what the repository_dispatch API requires. Without it the job succeeds with
@@ -431,7 +377,7 @@ jobs:
   notify-website:
     name: Request web preview
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [analyze-and-test, build-web]
+    needs: [analyze, test, package, build-web]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
