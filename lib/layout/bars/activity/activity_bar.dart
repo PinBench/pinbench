@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plat/plat.dart';
 import 'package:pinbench_ui/theme/tokens.dart';
 
+import '../../../core/auth/auth_provider.dart';
 import '../../providers/layout_provider.dart';
 import 'activity_bar_button.dart';
 import 'activity_target.dart';
@@ -21,6 +22,10 @@ class const ActivityBar({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.watch(platControllerProvider);
+    // The account sidebar is sign-in and nothing else, so a build without an
+    // auth backend — this repository's own build among them — has no use for
+    // its button.
+    final signInEnabled = ref.watch(authServiceProvider).enabled;
 
     return ListenableBuilder(
       listenable: controller,
@@ -42,7 +47,8 @@ class const ActivityBar({super.key}) extends ConsumerWidget {
                     (tab != ActivityBarTab.parts && tab != ActivityBarTab.properties))
                   ActivityBarButton(tab: tab),
               const Spacer(),
-              for (final tab in bottomTabs) ActivityBarButton(tab: tab),
+              for (final tab in bottomTabs)
+                if (tab != ActivityBarTab.account || signInEnabled) ActivityBarButton(tab: tab),
               // Settings is a document, not a sidebar — it opens as a tab in the
               // center pane, the way an editor does. See [SettingsTabButton].
               const SettingsTabButton(),
