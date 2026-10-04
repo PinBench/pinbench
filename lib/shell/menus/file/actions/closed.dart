@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:multiview_desktop/multiview_desktop.dart';
 import 'package:pinbench_ui/strings.dart';
 
-import '../../../../features/editor/providers/editor_provider.dart';
 import '../../../../features/workspace/providers/workspace_files_provider.dart';
+import '../../../../layout/controllers/app_layout_controller.dart';
 import '../../shared_menu_actions.dart';
 
 PlatformMenuItemGroup closeActions({
@@ -20,9 +20,9 @@ PlatformMenuItemGroup closeActions({
       onSelected: !hasEditorTab
           ? null
           : () async {
-              final activeTab = ref.read(activeTabProvider);
-              if (activeTab.isEmpty || activeTab == 'Welcome') return;
-              await ref.read(workspaceFilesProvider.notifier).revertFile(activeTab);
+              final path = activeEditorFile(ref.read(appLayoutControllerProvider));
+              if (path == null) return;
+              await ref.read(workspaceFilesProvider.notifier).revertFile(path);
             },
     ),
     PlatformMenuItem(

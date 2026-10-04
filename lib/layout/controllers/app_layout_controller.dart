@@ -158,6 +158,15 @@ class AppLayoutController(
     _platController.focus(AppTabs.releaseNotes);
   }
 
+  /// The tab on screen in the editor area, or null with none open. What
+  /// "the active editor" means to File ▸ Close Editor and Revert File.
+  LeafSnapshot? activeCenterLeaf() {
+    final group = _platController.snapshot('center_pane');
+    if (group is! TabGroupSnapshot) return null;
+    final active = group.activeTab;
+    return active?.focusedLeaf ?? active?.firstLeaf;
+  }
+
   /// Whether the settings tab is open *and* the one on screen — the activity
   /// bar's settings button lights up on exactly that.
   bool isSettingsTabSelected() {

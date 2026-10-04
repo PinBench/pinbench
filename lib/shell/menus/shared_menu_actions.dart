@@ -5,9 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pinbench_ui/widgets/text_input_dialog.dart';
 import 'package:pinbench_ui/strings.dart';
 
-import '../../features/editor/providers/editor_provider.dart';
 import '../../features/workspace/providers/workspace_files_provider.dart';
 import '../../features/workspace/providers/editor_state_provider.dart';
+import '../../core/chrome/chrome_commands.dart';
 import '../../core/updates/update_providers.dart';
 import '../../layout/controllers/app_layout_controller.dart';
 import '../../layout/updates/update_dialog.dart';
@@ -61,15 +61,30 @@ Future<void> loadPrecompiledHexFile(WorkspaceFiles files) async {
 /// Closes the active editor tab (and its canvas tab, if it's a `.cdl`).
 /// Backs "Close Editor" on both menus. No-op when nothing (or the welcome
 /// tab) is active.
+///
+/// Asks the layout which tab that is. It used to read `activeTabProvider`,
+/// which switching tabs never updates — so it was usually empty, and ⌘W did
+/// nothing.
 void closeActiveEditorTab(WidgetRef ref) {
-  final activeTab = ref.read(activeTabProvider);
-  if (activeTab.isEmpty || activeTab == 'Welcome') return;
-  ref.read(appLayoutControllerProvider).closeTab(activeTab);
-  ref.read(editorStateControllerProvider).closeFile(activeTab);
-  if (activeTab.endsWith('.cdl')) {
-    ref.read(appLayoutControllerProvider).closeTab('canvas_$activeTab');
+  final layout = ref.read(appLayoutControllerProvider);
+  final leaf = layout.activeCenterLeaf();
+  if (leaf == null) return;
+  // A file tab carries its path; its editor state goes with it, and so does a
+  // `.cdl` file's canvas. Anything else — a canvas, the welcome screen,
+  // settings — is just a tab to close, as ⌘W closes any editor in VS Code.
+  if (activeEditorFile(layout) case final path?) {
+    ref.read(editorStateControllerProvider).closeFile(path);
+    if (path.endsWith('.cdl')) layout.closeTab(AppTabs.canvas(path));
   }
+  layout.closeTab(leaf.id);
 }
+
+/// The file open in the active editor tab, or null when that tab is not a
+/// file (a canvas, the welcome screen, settings) or there is none.
+String? activeEditorFile(AppLayoutController layout) => switch (layout.activeCenterLeaf()?.data) {
+  final String path when path != 'canvas_view' => path,
+  _ => null,
+};
 
 /// Opens the update dialog, which starts a check as it appears. Backs "Check
 /// for Updates…" on both menus.
