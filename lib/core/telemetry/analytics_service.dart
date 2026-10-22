@@ -1,22 +1,22 @@
 import 'dart:async';
 
-import 'package:firebase_analytics/firebase_analytics.dart';
-
 import '../utils/logger.dart';
+import 'analytics_backend.dart';
 
-/// Thin wrapper over [FirebaseAnalytics] that logs the app's meaningful
+/// Thin wrapper over an [AnalyticsBackend] — the Firebase Analytics SDK, or
+/// the Measurement Protocol on Windows/Linux — that logs the app's meaningful
 /// interactions — navigation, feature usage, and button/menu actions.
 ///
-/// When Firebase is unavailable (unsupported platform, or `flutterfire
-/// configure` hasn't been run yet) [_analytics] is null and every method is a
-/// safe no-op, so call sites never need their own guards. All logging is
+/// When there is no backend (no telemetry in this build, or the user has not
+/// agreed) [_analytics] is null and every method is a safe no-op, so call
+/// sites never need their own guards. All logging is
 /// fire-and-forget and swallows errors: telemetry must never break the app.
 ///
 /// Event/parameter names follow Firebase Analytics limits (snake_case, event
 /// name ≤ 40 chars, string values ≤ 100 chars). Parameter values must be
 /// `String` or `num` (booleans are encoded as 0/1).
 class AnalyticsService {
-  const new(FirebaseAnalytics analytics) : _fixed = analytics, _slot = null;
+  const new(AnalyticsBackend analytics) : _fixed = analytics, _slot = null;
 
   /// A disabled instance: every call is a no-op. Used as the provider default
   /// and whenever Firebase init is skipped or fails.
@@ -27,10 +27,10 @@ class AnalyticsService {
   /// when the user agrees, and empties it again if they withdraw.
   const new switchable(AnalyticsSlot slot) : _fixed = null, _slot = slot;
 
-  final FirebaseAnalytics? _fixed;
+  final AnalyticsBackend? _fixed;
   final AnalyticsSlot? _slot;
 
-  FirebaseAnalytics? get _analytics => _fixed ?? _slot?.instance;
+  AnalyticsBackend? get _analytics => _fixed ?? _slot?.instance;
 
   /// Whether events are being sent right now. For a switchable service this
   /// follows the user's consent.
@@ -42,7 +42,7 @@ class AnalyticsService {
   void logEvent(String name, [Map<String, Object>? params]) {
     final analytics = _analytics;
     if (analytics == null) return;
-    _guard(() => analytics.logEvent(name: name, parameters: params));
+    _guard(() => analytics.logEvent(name, params));
   }
 
   /// Logs a screen/route view. [screenName] must be a normalized name (e.g.
@@ -50,7 +50,7 @@ class AnalyticsService {
   void logScreen(String screenName) {
     final analytics = _analytics;
     if (analytics == null) return;
-    _guard(() => analytics.logScreenView(screenName: screenName));
+    _guard(() => analytics.logScreenView(screenName));
   }
 
   /// Sets a user property for segmentation (persists across events for the
@@ -59,7 +59,7 @@ class AnalyticsService {
     final analytics = _analytics;
     if (analytics == null) return;
     final trimmed = value.length <= 36 ? value : value.substring(0, 36);
-    _guard(() => analytics.setUserProperty(name: name, value: trimmed));
+    _guard(() => analytics.setUserProperty(name, trimmed));
   }
 
   /// Records which app the user is running against (web vs desktop, etc.).
@@ -70,14 +70,19 @@ class AnalyticsService {
   void setConsent({required bool granted}) {
     final analytics = _analytics;
     if (analytics == null) return;
-    _guard(
-      () => analytics.setConsent(
-        analyticsStorageConsentGranted: granted,
-        adStorageConsentGranted: false,
-        adUserDataConsentGranted: false,
-        adPersonalizationSignalsConsentGranted: false,
-      ),
-    );
+    _guard(() => analytics.setConsent(granted: granted));
+  }
+
+  /// Sends anything the backend has buffered. Awaited before the app exits;
+  /// like every other call here, it never throws.
+  Future<void> flush() async {
+    final analytics = _analytics;
+    if (analytics == null) return;
+    try {
+      await analytics.flush();
+    } catch (e) {
+      talker.warning('Analytics flush failed: $e');
+    }
   }
 
   // ── Segmentation user properties ────────────────────────────────────────────
@@ -90,6 +95,11 @@ class AnalyticsService {
 
   /// The app version, so behaviour can be sliced across releases.
   void setAppVersion(String version) => setUserProperty('app_version', version);
+
+  /// Whether the user is signed in to an account (`yes` / `no`). Never the
+  /// account itself.
+  void setSignedIn({required bool signedIn}) =>
+      setUserProperty('signed_in', signedIn ? 'yes' : 'no');
 
   // ── Named feature events (the app's vocabulary) ─────────────────────────────
 
@@ -195,5 +205,5 @@ class AnalyticsService {
 /// Holds the SDK instance a [AnalyticsService.switchable] sends through; null
 /// while analytics is off.
 class AnalyticsSlot {
-  FirebaseAnalytics? instance;
+  AnalyticsBackend? instance;
 }

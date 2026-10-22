@@ -18,6 +18,14 @@ abstract final class TelemetrySupport {
   /// Analytics: Android, iOS, macOS, Web. (No Windows/Linux.)
   static bool get analytics => kIsWeb || _isMacOS || _isAndroid || _isIOS;
 
+  /// Analytics over the Measurement Protocol instead of the SDK: the platforms
+  /// [analytics] leaves out, Windows and Linux. Plain HTTPS, so it works
+  /// anywhere; it is only used where there is no SDK.
+  static bool get measurementProtocol =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.windows ||
+          defaultTargetPlatform == TargetPlatform.linux);
+
   /// Crashlytics: Android, iOS, macOS. (No Web/Windows/Linux implementation.)
   static bool get crashlytics => !kIsWeb && (_isMacOS || _isAndroid || _isIOS);
 

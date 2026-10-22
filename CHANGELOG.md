@@ -22,7 +22,26 @@ to it. Anything older is summarised at the end.
 
 ## [Unreleased]
 
-Nothing yet.
+### Changed
+
+- **Usage statistics now work on Windows and Linux too**, for those who agree
+  to share them. They go to the same place as on macOS and the web, under the
+  same answer in Settings ▸ Privacy.
+
+### Fixed
+
+- Usage statistics reported every build as version 0.0.1; they now carry the
+  real version.
+
+### Internal
+
+- Analytics: `AnalyticsService` sends through an `AnalyticsBackend` — the
+  Firebase SDK, or the GA4 Measurement Protocol on Windows/Linux
+  (`measurement_protocol.dart`, configured by an edition's
+  `TelemetryConfig.measurementProtocol`). New `signed_in` user property; new
+  `first_template_open`, `first_component_added` and `first_compile_attempt`
+  milestones; user properties are set again when consent is given mid-session,
+  and buffered analytics is flushed on exit.
 
 ## [0.1.2] - 2026-10-04
 

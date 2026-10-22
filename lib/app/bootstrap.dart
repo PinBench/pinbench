@@ -110,14 +110,17 @@ void installCloudLogSink() {
 Future<FirebaseTelemetry> setupFirebase({
   required TelemetryConfig? config,
   required TelemetryConsent consent,
+  required SharedPreferences prefs,
+  required String version,
 }) => initFirebaseTelemetry(
   config: config,
   granted: consent == TelemetryConsent.granted,
+  prefs: prefs,
   // Set whenever analytics starts sending, not at startup: until the user
   // agrees there is nothing to set them on.
   onAnalyticsOn: (analytics) => analytics
     ..setAppContext(platform: runPlatform)
-    ..setAppVersion(appVersion),
+    ..setAppVersion(version),
 );
 
 /// Brings up OpenTelemetry (native only — its OTLP exporter needs `dart:io`).
@@ -133,8 +136,9 @@ Future<FirebaseTelemetry> setupFirebase({
 /// so there is nothing to ask about.
 Future<({TracingService tracing, TelemetryControl? control})> setupTracing({
   required bool granted,
+  required String version,
 }) async {
-  final config = OtelConfig.fromEnvironment(platform: runPlatform);
+  final config = OtelConfig.fromEnvironment(platform: runPlatform, serviceVersion: version);
   if (kIsWeb || !config.isConfigured) {
     return (tracing: const TracingService.disabled(), control: null);
   }
