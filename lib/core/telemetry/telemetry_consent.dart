@@ -61,10 +61,11 @@ class TelemetryConsentController extends Notifier<TelemetryConsent> {
   @override
   TelemetryConsent build() => readTelemetryConsent(ref.read(sharedPreferencesProvider));
 
-  /// Records the answer and applies it immediately.
+  /// Records the answer and applies it immediately — applied first, so whatever
+  /// listens for the answer finds analytics already switched on or off.
   Future<void> choose({required bool granted}) async {
-    state = granted ? TelemetryConsent.granted : TelemetryConsent.denied;
     ref.read(telemetryControlProvider).applyConsent(granted: granted);
+    state = granted ? TelemetryConsent.granted : TelemetryConsent.denied;
     await ref.read(sharedPreferencesProvider).setString(_prefsKey, state.name);
   }
 }

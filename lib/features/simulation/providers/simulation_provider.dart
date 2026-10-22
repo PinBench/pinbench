@@ -167,6 +167,9 @@ class Simulation extends _$Simulation {
             codeBytes: code.length,
             errorType: success ? null : diagnostics.compileErrorType,
           );
+      // Whether it compiled or not: with first_simulation_success, the
+      // tried-then-succeeded step of the activation funnel.
+      ref.read(milestonesProvider).fireOnce('first_compile_attempt');
 
       if (success) {
         state = SimulationState.running;

@@ -4,16 +4,20 @@ import 'dart:ui' show AppExitResponse;
 import 'package:flutter/widgets.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pinbench_cloud/auth/auth_user.dart';
 import 'package:pinbench_sim/models/simulation_state.dart';
 import 'package:pinbench_ui/theme/theme.dart';
 
 import '../../features/editor/providers/editor_provider.dart';
 import '../../features/simulation/providers/simulation_provider.dart';
+import '../auth/auth_provider.dart';
+import 'telemetry_consent.dart';
 import 'telemetry_providers.dart';
 
 /// Wraps the app and turns cross-cutting state changes into telemetry:
-/// navigation, theme, simulation-state crash context, and a flush of buffered
-/// OpenTelemetry spans before the app exits or is backgrounded.
+/// navigation, theme and sign-in user properties, simulation-state crash
+/// context, and a flush of buffered analytics events and OpenTelemetry spans
+/// before the app exits or is backgrounded.
 ///
 /// Explicit actions (buttons, menu items, feature usage) are logged at their
 /// call sites via [analyticsProvider] / [tracingProvider]; this holds only the
@@ -34,18 +38,31 @@ class _TelemetryListenerState extends ConsumerState<TelemetryListener> {
   @override
   void initState() {
     super.initState();
-    // OpenTelemetry batches spans (~5s), so the last batch can be lost on quit.
-    // Flush on a cancelable exit (desktop ⌘Q / window close) and on pause
-    // (mobile backgrounding). No-op when tracing is disabled (web / unconfigured).
+    // OpenTelemetry batches spans (~5s), and analytics on Windows/Linux batches
+    // events (~10s), so the last batch can be lost on quit. Flush on a
+    // cancelable exit (desktop ⌘Q / window close) and on pause (mobile
+    // backgrounding). No-op where neither batches.
     _lifecycle = AppLifecycleListener(
       onExitRequested: () async {
-        await ref.read(tracingProvider).flush();
+        await _flush();
         return AppExitResponse.exit;
       },
-      onPause: () => unawaited(ref.read(tracingProvider).flush()),
+      onPause: () => unawaited(_flush()),
     );
-    // Seed the initial theme user property (ref.listen only fires on change).
-    ref.read(analyticsProvider).setTheme(ref.read(themeModeProvider).name);
+    _seedUserProperties();
+  }
+
+  Future<void> _flush() =>
+      (ref.read(analyticsProvider).flush(), ref.read(tracingProvider).flush()).wait;
+
+  /// The user properties that `ref.listen` only sets on change. Set here at
+  /// start, and again when the user agrees to analytics — anything set while
+  /// it was off went nowhere.
+  void _seedUserProperties() {
+    final analytics = ref.read(analyticsProvider)..setTheme(ref.read(themeModeProvider).name);
+    if (ref.read(authStateProvider) case AsyncData(:final value)) {
+      analytics.setSignedIn(signedIn: value != null);
+    }
   }
 
   @override
@@ -82,6 +99,16 @@ class _TelemetryListenerState extends ConsumerState<TelemetryListener> {
     ref.listen<AppThemeMode>(themeModeProvider, (_, mode) {
       ref.read(analyticsProvider).setTheme(mode.name);
       ref.read(crashReporterProvider).setKey('theme', mode.name);
+    });
+
+    ref.listen<AsyncValue<AuthUser?>>(authStateProvider, (_, next) {
+      if (next case AsyncData(:final value)) {
+        ref.read(analyticsProvider).setSignedIn(signedIn: value != null);
+      }
+    });
+
+    ref.listen<TelemetryConsent>(telemetryConsentProvider, (previous, next) {
+      if (next == TelemetryConsent.granted && previous != next) _seedUserProperties();
     });
 
     ref.listen<SimulationState>(simulationProvider, (_, state) {

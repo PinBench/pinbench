@@ -411,17 +411,24 @@ class SelectionManager(final CanvasContext context) {
 
       _dragAccumulator -= actualTranslation;
 
-      for (var i = 0; i < context.selectedNodes.length; i++) {
-        final node = context.selectedNodes[i];
-        final index = context.nodes.indexOf(node);
+      // Fresh lists, not edits in place: the wire painter repaints only when
+      // it's handed a different list, so mutating the old one left every
+      // wire on a dragged part frozen where it was until the drop.
+      final newNodes = List<ComponentInstance>.from(context.nodes);
+      final newSelectedNodes = List<ComponentInstance>.from(context.selectedNodes);
+      for (var i = 0; i < newSelectedNodes.length; i++) {
+        final node = newSelectedNodes[i];
+        final index = newNodes.indexOf(node);
         if (index == -1) continue;
 
         final updatedNode = node.copyWith(position: node.position + actualTranslation);
-        context.nodes[index] = updatedNode;
-        context.selectedNodes[i] = updatedNode;
+        newNodes[index] = updatedNode;
+        newSelectedNodes[i] = updatedNode;
       }
 
       context.updateState(
+        nodes: newNodes,
+        selectedNodes: newSelectedNodes,
         verticalGuidelines: verticalGuidelines,
         horizontalGuidelines: horizontalGuidelines,
       );
@@ -432,16 +439,18 @@ class SelectionManager(final CanvasContext context) {
     }
 
     if (context.selectedWireIds.isNotEmpty && actualTranslation != Offset.zero) {
+      final newWires = List<WireModel>.from(context.wires);
       for (final wireId in context.selectedWireIds) {
-        final wireIndex = context.wires.indexWhere((w) => w.id == wireId);
+        final wireIndex = newWires.indexWhere((w) => w.id == wireId);
         if (wireIndex != -1) {
-          final wire = context.wires[wireIndex];
+          final wire = newWires[wireIndex];
           if (wire.bendPoints.isNotEmpty) {
             final newBendPoints = wire.bendPoints.map((p) => p + actualTranslation).toList();
-            context.wires[wireIndex] = wire.copyWith(bendPoints: newBendPoints);
+            newWires[wireIndex] = wire.copyWith(bendPoints: newBendPoints);
           }
         }
       }
+      context.updateState(wires: newWires);
     }
 
     context.forceUpdate();

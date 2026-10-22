@@ -11,6 +11,7 @@ import 'core/remote_config/remote_config_bootstrap.dart';
 import 'core/services/feedback_service.dart';
 import 'core/telemetry/analytics_milestones.dart';
 import 'core/telemetry/telemetry_consent.dart';
+import 'core/telemetry/telemetry_context.dart';
 import 'core/utils/logger.dart';
 import 'shell/window.dart';
 
@@ -29,12 +30,18 @@ void main() async {
   final storage = await setupLocalStorage();
   final consent = readTelemetryConsent(storage.sharedPreferences);
   final granted = consent == TelemetryConsent.granted;
-  final firebase = await setupFirebase(config: edition?.telemetry, consent: consent);
+  final version = await readAppVersion();
+  final firebase = await setupFirebase(
+    config: edition?.telemetry,
+    consent: consent,
+    prefs: storage.sharedPreferences,
+    version: version,
+  );
   // Independent of one another, so together: startup waits for the slowest
   // (a Remote Config fetch, a cloud session restore), not for the sum.
   final (featureFlags, tracingSetup, editionSetup) = await (
     setupRemoteConfig(firebaseReady: firebase.initialized, granted: granted),
-    setupTracing(granted: granted),
+    setupTracing(granted: granted, version: version),
     setupEdition(edition),
   ).wait;
   final tracing = tracingSetup.tracing;

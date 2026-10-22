@@ -178,6 +178,7 @@ class CanvasController()
       return;
     }
     ref.read(analyticsProvider).componentAdded(child.part.definitionId ?? child.part.name);
+    ref.read(milestonesProvider).fireOnce('first_component_added');
     executeCommand(AddNodeCommand(child));
   }
 

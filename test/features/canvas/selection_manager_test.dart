@@ -100,6 +100,22 @@ void main() {
       expect(moved.position.dx % cellSize, closeTo(0, 0.001));
     });
 
+    test('a drag hands the painters a new node list, so wires follow live', () {
+      // The wire painter repaints only when its node list isn't the one it
+      // last drew. Editing that list in place left a dragged part's wires
+      // behind until the drop committed a fresh one.
+      final node = ComponentInstance(position: Offset.zero, part: _model(PartNames.resistor));
+      controller.add(node);
+      controller.selectedNodes = [node];
+      final before = controller.nodes;
+
+      controller.selectionManager.moveSelection(Offset(controller.gridCellSize * 3, 0));
+
+      expect(identical(controller.nodes, before), isFalse);
+      expect(before.single.position, Offset.zero, reason: 'the old list is left as it was');
+      expect(controller.nodes.single.position, isNot(Offset.zero));
+    });
+
     test('snapping aligns a dragged node to a nearby node on the same axis', () {
       final anchor = ComponentInstance(
         position: const Offset(200, 0),

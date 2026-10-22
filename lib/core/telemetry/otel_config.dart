@@ -1,7 +1,6 @@
 // Credentials are supplied via --dart-define (the standard OTEL_* mechanism), so
 // String.fromEnvironment is intentional here.
 // ignore_for_file: do_not_use_environment
-import 'telemetry_context.dart';
 
 /// Configuration for the OpenTelemetry (Grafana Cloud) exporter.
 ///
@@ -31,7 +30,7 @@ class const OtelConfig({
 }) {
   /// Builds config from `--dart-define` values. [platform] is a coarse label
   /// (e.g. `macos`, `windows`) recorded as a resource attribute.
-  factory fromEnvironment({required String platform, String serviceVersion = appVersion}) {
+  factory fromEnvironment({required String platform, required String serviceVersion}) {
     const endpoint = String.fromEnvironment('OTEL_EXPORTER_OTLP_ENDPOINT');
     const rawHeaders = String.fromEnvironment('OTEL_EXPORTER_OTLP_HEADERS');
     const serviceName = String.fromEnvironment('OTEL_SERVICE_NAME', defaultValue: 'pinbench');

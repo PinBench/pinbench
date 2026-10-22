@@ -212,6 +212,7 @@ class _TemplateViewState extends ConsumerState<_TemplateView> {
 /// spinner — keeps working even after the original caller is gone.
 Future<void> openTemplateWorkspace(ProviderContainer container, String template) async {
   container.read(analyticsProvider).templateOpened(template);
+  container.read(milestonesProvider).fireOnce('first_template_open');
   // Show the loading overlay from the moment the template is picked, covering
   // the asset-loading phase too (openWorkspace's own begin/end nests under this).
   container.read(workspaceLoadingProvider.notifier).begin();

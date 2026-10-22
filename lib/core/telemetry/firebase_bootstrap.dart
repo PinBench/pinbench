@@ -8,11 +8,15 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 
 import 'package:pinbench_edition_api/telemetry.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/logger.dart';
+import 'analytics_backend.dart';
 import 'analytics_service.dart';
 import 'crash_reporter.dart';
+import 'measurement_protocol.dart';
 import 'telemetry_consent.dart';
+import 'telemetry_context.dart';
 import 'telemetry_support.dart';
 
 /// The Firebase-backed telemetry the app talks to: analytics events + crash
@@ -46,18 +50,34 @@ class const FirebaseTelemetry({
 /// their mind. [onAnalyticsOn] runs each time analytics starts sending, to set
 /// its user properties then rather than while it is off.
 ///
+/// On Windows and Linux, where there is no Firebase SDK, analytics goes over
+/// the Measurement Protocol instead (see `measurement_protocol.dart`), with the
+/// same consent rules; there is no crash reporting there beyond OpenTelemetry.
+/// [prefs] keeps that install's client id.
+///
 /// Best-effort throughout: a failure here returns disabled handles and the app
 /// runs exactly as before. Call **after** [initAppLogger] so the existing
 /// Talker error handler is chained ahead of Crashlytics.
 Future<FirebaseTelemetry> initFirebaseTelemetry({
   required TelemetryConfig? config,
   required bool granted,
+  required SharedPreferences prefs,
   required void Function(AnalyticsService analytics) onAnalyticsOn,
 }) async {
-  if (config == null || !TelemetrySupport.firebase) return FirebaseTelemetry.disabled;
+  if (config == null) return FirebaseTelemetry.disabled;
+  if (TelemetrySupport.measurementProtocol) {
+    return _measurementProtocolTelemetry(
+      config,
+      granted: granted,
+      prefs: prefs,
+      onAnalyticsOn: onAnalyticsOn,
+    );
+  }
+  final options = config.firebase;
+  if (options == null || !TelemetrySupport.firebase) return FirebaseTelemetry.disabled;
 
   try {
-    await Firebase.initializeApp(options: config.firebase);
+    await Firebase.initializeApp(options: options);
   } catch (e) {
     talker.warning('Firebase telemetry disabled (init skipped): $e');
     return FirebaseTelemetry.disabled;
@@ -77,6 +97,35 @@ Future<FirebaseTelemetry> initFirebaseTelemetry({
     crashReporter: crashReporter,
     control: control,
     initialized: true,
+  );
+}
+
+/// Analytics alone, over the Measurement Protocol; Firebase is never
+/// initialised, so Remote Config keeps its defaults too.
+FirebaseTelemetry _measurementProtocolTelemetry(
+  TelemetryConfig config, {
+  required bool granted,
+  required SharedPreferences prefs,
+  required void Function(AnalyticsService analytics) onAnalyticsOn,
+}) {
+  final mp = config.measurementProtocol;
+  if (mp == null) return FirebaseTelemetry.disabled;
+  final control = MeasurementProtocolControl(
+    config.privacyPolicyUrl,
+    prefs: prefs,
+    onAnalyticsOn: onAnalyticsOn,
+    createBackend: (clientId) => MeasurementProtocolBackend(
+      config: mp,
+      clientId: clientId,
+      platform: runPlatform,
+      language: PlatformDispatcher.instance.locale.toLanguageTag(),
+    ),
+  )..applyConsent(granted: granted);
+  return FirebaseTelemetry(
+    analytics: control.analytics,
+    crashReporter: const CrashReporter.disabled(),
+    control: control,
+    initialized: false,
   );
 }
 
@@ -116,13 +165,16 @@ class _FirebaseTelemetryControl(
   void _analyticsConsent(bool granted) {
     if (!TelemetrySupport.analytics) return;
     if (granted) {
-      final instance = _analyticsSlot.instance ??= FirebaseAnalytics.instance;
+      final instance = FirebaseAnalytics.instance;
+      _analyticsSlot.instance ??= FirebaseAnalyticsBackend(instance);
       unawaited(instance.setAnalyticsCollectionEnabled(true).catchError((Object _) {}));
       analytics.setConsent(granted: true);
       _onAnalyticsOn(analytics);
-    } else if (_analyticsSlot.instance case final instance?) {
+    } else if (_analyticsSlot.instance != null) {
       analytics.setConsent(granted: false);
-      unawaited(instance.setAnalyticsCollectionEnabled(false).catchError((Object _) {}));
+      unawaited(
+        FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(false).catchError((Object _) {}),
+      );
       _analyticsSlot.instance = null;
     }
   }
