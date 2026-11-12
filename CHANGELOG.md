@@ -30,6 +30,10 @@ to it. Anything older is summarised at the end.
 
 ### Fixed
 
+- **Property changes show on the canvas straight away.** After a simulation
+  had run, changing a part's properties — an LED's colour, a resistor's value
+  — in the properties panel or the `.cdl` file changed nothing on the canvas
+  until the next run.
 - Usage statistics reported every build as version 0.0.1; they now carry the
   real version.
 
