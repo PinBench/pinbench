@@ -2,6 +2,9 @@
 // `FTextFieldStyle.border` is typed as Material's `InputBorder`, so there is
 // no other way to say "no border" to a forui field. `ui_library_boundary_test`
 // records the exemption; it goes when forui migrates (duobaseio/forui#1159).
+// Which is also why migrate_design_widgets cannot be followed here: a border
+// from the split-out Material package would not be the type forui asks for.
+// ignore: migrate_design_widgets
 import 'package:flutter/material.dart' show InputBorder;
 import 'package:flutter/widgets.dart';
 
