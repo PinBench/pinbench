@@ -20,8 +20,7 @@ import '../../support/simulation_bindings.dart';
 /// underneath it: the LED stayed the colour it ran in until the next run.
 final _shot = GlobalKey();
 
-PartModel _model(String name) =>
-    standardParts.firstWhere((c) => c.name == name);
+PartModel _model(String name) => standardParts.firstWhere((c) => c.name == name);
 
 void main() {
   late ProviderContainer container;
@@ -51,10 +50,7 @@ void main() {
       controller.updateState(nodes: [node]);
       runAndStop(node);
 
-      controller.updateNodeProperties(node.key, {
-        ...node.properties,
-        'Color': 'Green',
-      });
+      controller.updateNodeProperties(node.key, {...node.properties, 'Color': 'Green'});
 
       expect(controller.liveProperties(node.key).value, {'isOn': false});
     });
@@ -68,10 +64,7 @@ void main() {
         node.copyWith(properties: {'Color': 'Blue'}),
       ], const []);
 
-      expect(
-        controller.liveProperties(node.key).value.containsKey('Color'),
-        isFalse,
-      );
+      expect(controller.liveProperties(node.key).value.containsKey('Color'), isFalse);
     });
 
     test('drops it again when an edit is undone', () {
@@ -83,10 +76,7 @@ void main() {
       controller.undo();
 
       expect(controller.nodes.single.properties['Color'], 'Red');
-      expect(
-        controller.liveProperties(node.key).value.containsKey('Color'),
-        isFalse,
-      );
+      expect(controller.liveProperties(node.key).value.containsKey('Color'), isFalse);
     });
 
     test('is untouched by a drag, which keeps the property map', () {
@@ -95,72 +85,53 @@ void main() {
       runAndStop(node);
       final before = controller.liveProperties(node.key).value;
 
-      controller.updateState(
-        nodes: [node.copyWith(position: const Offset(300, 200))],
-      );
+      controller.updateState(nodes: [node.copyWith(position: const Offset(300, 200))]);
 
-      expect(
-        identical(controller.liveProperties(node.key).value, before),
-        isTrue,
-      );
+      expect(identical(controller.liveProperties(node.key).value, before), isTrue);
     });
   });
 
-  testWidgets(
-    'an LED recoloured after a run changes colour on screen at once',
-    (tester) async {
-      tester.view.physicalSize = const Size(1200, 900);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
+  testWidgets('an LED recoloured after a run changes colour on screen at once', (tester) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
 
-      final node = led();
-      controller.updateState(nodes: [node]);
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: RepaintBoundary(
-            key: _shot,
-            child: appTestApp(const fap.Canvas()),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      runAndStop(node);
-      await tester.pumpAndSettle();
+    final node = led();
+    controller.updateState(nodes: [node]);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: RepaintBoundary(key: _shot, child: appTestApp(const fap.Canvas())),
+      ),
+    );
+    await tester.pumpAndSettle();
+    runAndStop(node);
+    await tester.pumpAndSettle();
 
-      final ledPaint = find.byWidgetPredicate(
-        (w) =>
-            w is CustomPaint &&
-            w.painter is LEDPainter &&
-            !(w.painter! as LEDPainter).isOutline,
-      );
-      // The lens, just above the body's centre, clear of the legs.
-      final lens = tester.getCenter(ledPaint) - const Offset(0, 10);
+    final ledPaint = find.byWidgetPredicate(
+      (w) => w is CustomPaint && w.painter is LEDPainter && !(w.painter! as LEDPainter).isOutline,
+    );
+    // The lens, just above the body's centre, clear of the legs.
+    final lens = tester.getCenter(ledPaint) - const Offset(0, 10);
 
-      Future<(int, int, int)> pixel() async {
-        final boundary = tester.renderObject<RenderRepaintBoundary>(
-          find.byKey(_shot),
-        );
-        return (await tester.runAsync(() async {
-          final image = await boundary.toImage();
-          // Raw RGBA, the default.
-          final data = (await image.toByteData())!;
-          final i = (lens.dy.round() * image.width + lens.dx.round()) * 4;
-          return (data.getUint8(i), data.getUint8(i + 1), data.getUint8(i + 2));
-        }))!;
-      }
+    Future<(int, int, int)> pixel() async {
+      final boundary = tester.renderObject<RenderRepaintBoundary>(find.byKey(_shot));
+      return (await tester.runAsync(() async {
+        final image = await boundary.toImage();
+        // Raw RGBA, the default.
+        final data = (await image.toByteData())!;
+        final i = (lens.dy.round() * image.width + lens.dx.round()) * 4;
+        return (data.getUint8(i), data.getUint8(i + 1), data.getUint8(i + 2));
+      }))!;
+    }
 
-      final (r0, g0, _) = await pixel();
-      expect(r0, greaterThan(g0), reason: 'starts red');
+    final (r0, g0, _) = await pixel();
+    expect(r0, greaterThan(g0), reason: 'starts red');
 
-      controller.updateNodeProperties(node.key, {
-        ...node.properties,
-        'Color': 'Green',
-      });
-      await tester.pumpAndSettle();
+    controller.updateNodeProperties(node.key, {...node.properties, 'Color': 'Green'});
+    await tester.pumpAndSettle();
 
-      final (r1, g1, _) = await pixel();
-      expect(g1, greaterThan(r1), reason: 'turns green without another run');
-    },
-  );
+    final (r1, g1, _) = await pixel();
+    expect(g1, greaterThan(r1), reason: 'turns green without another run');
+  });
 }

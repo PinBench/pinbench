@@ -62,8 +62,7 @@ class CanvasController()
 
   /// Centralizes the analytics call sites that were previously interleaved
   /// directly through nearly every public method.
-  void _track(String action) =>
-      ref.read(analyticsProvider).canvasAction(action);
+  void _track(String action) => ref.read(analyticsProvider).canvasAction(action);
 
   this {
     historyManager = HistoryManager();
@@ -79,10 +78,7 @@ class CanvasController()
     return const CanvasState();
   }
 
-  void updateCircuit(
-    List<ComponentInstance> newNodes,
-    List<WireModel> newWires,
-  ) {
+  void updateCircuit(List<ComponentInstance> newNodes, List<WireModel> newWires) {
     final before = state.nodes;
     state = state.copyWith(nodes: newNodes, wires: newWires);
     _reconcileLiveProperties(before, newNodes);
@@ -96,8 +92,7 @@ class CanvasController()
   @override
   List<String> get selectedWireIds => selectionManager.selectedWireIds;
   @override
-  set selectedWireIds(List<String> ids) =>
-      selectionManager.selectedWireIds = ids;
+  set selectedWireIds(List<String> ids) => selectionManager.selectedWireIds = ids;
 
   @override
   void selectWire(String? id) => selectionManager.selectWire(id);
@@ -114,8 +109,7 @@ class CanvasController()
       wiringManager.selectedBendHandleDistance(canvasPosition);
 
   @override
-  bool isSelectedWireEndpoint(PortLocation port) =>
-      wiringManager.isSelectedWireEndpoint(port);
+  bool isSelectedWireEndpoint(PortLocation port) => wiringManager.isSelectedWireEndpoint(port);
 
   @override
   PortLocation? selectedEndpointAt(Offset canvasPosition) =>
@@ -155,10 +149,7 @@ class CanvasController()
   }
 
   void clearGuidelines() {
-    state = state.copyWith(
-      verticalGuidelines: const [],
-      horizontalGuidelines: const [],
-    );
+    state = state.copyWith(verticalGuidelines: const [], horizontalGuidelines: const []);
   }
 
   void undo() {
@@ -189,9 +180,7 @@ class CanvasController()
       // Component count cap — prevents OOM with many thousands of nodes.
       return;
     }
-    ref
-        .read(analyticsProvider)
-        .componentAdded(child.part.definitionId ?? child.part.name);
+    ref.read(analyticsProvider).componentAdded(child.part.definitionId ?? child.part.name);
     ref.read(milestonesProvider).fireOnce('first_component_added');
     executeCommand(AddNodeCommand(child));
   }
@@ -199,25 +188,18 @@ class CanvasController()
   void remove() {
     if (isReadOnly) return;
     _track('delete');
-    final toRemoveNodes = nodes
-        .where((n) => selectedNodes.any((sel) => sel.key == n.key))
-        .toList();
+    final toRemoveNodes = nodes.where((n) => selectedNodes.any((sel) => sel.key == n.key)).toList();
     final toRemoveWires = wires
         .where(
           (w) =>
               selectedWireIds.contains(w.id) ||
-              selectedNodes.any(
-                (n) => w.start.nodeKey == n.key || w.end.nodeKey == n.key,
-              ),
+              selectedNodes.any((n) => w.start.nodeKey == n.key || w.end.nodeKey == n.key),
         )
         .toList();
 
     if (toRemoveNodes.isNotEmpty || toRemoveWires.isNotEmpty) {
       executeCommand(
-        RemoveSelectionCommand(
-          removedNodes: toRemoveNodes,
-          removedWires: toRemoveWires,
-        ),
+        RemoveSelectionCommand(removedNodes: toRemoveNodes, removedWires: toRemoveWires),
       );
     }
   }
@@ -277,10 +259,7 @@ class CanvasController()
   void batchSimulationUpdate(Map<LocalKey, Map<String, dynamic>> updates) {
     if (updates.isEmpty) return;
     for (final entry in updates.entries) {
-      final notifier = _liveProperties.putIfAbsent(
-        entry.key,
-        () => ValueNotifier(const {}),
-      );
+      final notifier = _liveProperties.putIfAbsent(entry.key, () => ValueNotifier(const {}));
       notifier.value = {...notifier.value, ...entry.value};
     }
   }
@@ -297,18 +276,14 @@ class CanvasController()
   ///
   /// Runtime-only keys the user never sets, like `isOn`, are untouched, so a
   /// stopped LED stays dark.
-  void _reconcileLiveProperties(
-    List<ComponentInstance> before,
-    List<ComponentInstance> after,
-  ) {
+  void _reconcileLiveProperties(List<ComponentInstance> before, List<ComponentInstance> after) {
     if (_liveProperties.isEmpty) return;
     final previous = {for (final node in before) node.key: node.properties};
     for (final node in after) {
       final notifier = _liveProperties[node.key];
       final old = previous[node.key];
       // A drag replaces the node but not its property map.
-      if (notifier == null || old == null || identical(old, node.properties))
-        continue;
+      if (notifier == null || old == null || identical(old, node.properties)) continue;
       final live = notifier.value;
       final stale = [
         for (final key in live.keys)
@@ -364,15 +339,10 @@ class CanvasController()
       return pin == null ? null : PortLocation(nodeKey: key, portId: pin);
     }
 
-    final oldWires = wires
-        .where((w) => w.start.nodeKey == key || w.end.nodeKey == key)
-        .toList();
+    final oldWires = wires.where((w) => w.start.nodeKey == key || w.end.nodeKey == key).toList();
     final newWires = [
       for (final wire in oldWires)
-        if ((moved(wire.start), moved(wire.end)) case (
-          final start?,
-          final end?,
-        ))
+        if ((moved(wire.start), moved(wire.end)) case (final start?, final end?))
           wire.copyWith(start: start, end: end),
     ];
     executeCommand(
@@ -417,8 +387,7 @@ class CanvasController()
     }
   }
 
-  void fitToContent(Size viewportSize) =>
-      _viewportOps.fitToContent(viewportSize);
+  void fitToContent(Size viewportSize) => _viewportOps.fitToContent(viewportSize);
 
   void completeWiring(PortLocation endPort) {
     _track('wire_complete');
@@ -451,9 +420,7 @@ class CanvasController()
     wiringManager.updateWireColor(newColor);
   }
 
-  void _updateSelectedNodes(
-    ComponentInstance Function(ComponentInstance) updater,
-  ) {
+  void _updateSelectedNodes(ComponentInstance Function(ComponentInstance) updater) {
     if (isReadOnly || selectedNodes.isEmpty) return;
 
     final oldNodesList = <ComponentInstance>[];
@@ -515,12 +482,10 @@ class CanvasController()
 
   void rotateRight() => _rotateSelected(rotationStep);
   void rotateLeft() => _rotateSelected(-rotationStep);
-  void flipHorizontal() => _updateSelectedNodes(
-    (node) => node.copyWith(flipHorizontal: !node.flipHorizontal),
-  );
-  void flipVertical() => _updateSelectedNodes(
-    (node) => node.copyWith(flipVertical: !node.flipVertical),
-  );
+  void flipHorizontal() =>
+      _updateSelectedNodes((node) => node.copyWith(flipHorizontal: !node.flipHorizontal));
+  void flipVertical() =>
+      _updateSelectedNodes((node) => node.copyWith(flipVertical: !node.flipVertical));
 
   @override
   void toggleGrid() {
@@ -593,12 +558,11 @@ class CanvasController()
   void _reorderSelectedWires(int delta) {
     final newWires = List<WireModel>.from(wires);
     final isUp = delta > 0;
-    final sorted =
-        newWires.where((w) => selectedWireIds.contains(w.id)).toList()
-          ..sort((a, b) {
-            final cmp = newWires.indexOf(a).compareTo(newWires.indexOf(b));
-            return isUp ? -cmp : cmp;
-          });
+    final sorted = newWires.where((w) => selectedWireIds.contains(w.id)).toList()
+      ..sort((a, b) {
+        final cmp = newWires.indexOf(a).compareTo(newWires.indexOf(b));
+        return isUp ? -cmp : cmp;
+      });
 
     for (final wire in sorted) {
       final index = newWires.indexOf(wire);
@@ -638,10 +602,7 @@ class CanvasController()
       }
 
       selectionManager.selectedWireIds = newSelectedWireIds;
-      state = state.copyWith(
-        boxSelectionRect: newRect,
-        selectedNodes: newSelectedNodes,
-      );
+      state = state.copyWith(boxSelectionRect: newRect, selectedNodes: newSelectedNodes);
     }
   }
 

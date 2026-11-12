@@ -146,8 +146,7 @@ class SimulationEngine({
   /// The board [_boardNode] is, or the Uno for a canvas without one.
   BoardProfile get _canvasProfile {
     final node = _boardNode;
-    return (node == null ? null : BoardProfile.of(node.part)) ??
-        BoardProfile.arduinoUno;
+    return (node == null ? null : BoardProfile.of(node.part)) ?? BoardProfile.arduinoUno;
   }
 
   /// A fresh emulator for the board on the canvas. Called as a run starts,
@@ -227,9 +226,7 @@ class SimulationEngine({
       // included — that names a logic on its PartModel. Checked before the
       // name-based buckets below, which is the list this is meant to shrink.
       final definitionId = node.part.definitionId;
-      final definition = definitionId == null
-          ? null
-          : PartRegistry.getPart(definitionId);
+      final definition = definitionId == null ? null : PartRegistry.getPart(definitionId);
       final hasRules = definition?.behavior.isNotEmpty ?? false;
       if (hasRules || PartRegistry.logicFor(node.part) != null) {
         _behaviourNodes.add(node);
@@ -261,16 +258,12 @@ class SimulationEngine({
       if (PartRegistry.isBoard(node.part)) {
         // The board's own LED goes out with the sketch.
         stopUpdates[node.key] = {ComponentProps.isOn: false};
-      } else if (node.part.name == PartNames.led ||
-          node.part.name == PartNames.piezoBuzzer) {
+      } else if (node.part.name == PartNames.led || node.part.name == PartNames.piezoBuzzer) {
         // Only what the run changed. Whatever is sent here is drawn over the
         // part's own properties until the next run, so a copy of the whole map
         // would pin its `Color` — and everything else the user can edit — to
         // the values the run started with.
-        stopUpdates[node.key] = {
-          ComponentProps.isOn: false,
-          ComponentProps.hasError: false,
-        };
+        stopUpdates[node.key] = {ComponentProps.isOn: false, ComponentProps.hasError: false};
       } else if (node.part.name == PartNames.ky037MicSensor) {
         stopUpdates[node.key] = {ComponentProps.isDigitalHigh: false};
       }
@@ -289,10 +282,7 @@ class SimulationEngine({
     }
   }
 
-  Future<void> start(
-    String compiledHex, {
-    required void Function() onStop,
-  }) async {
+  Future<void> start(String compiledHex, {required void Function() onStop}) async {
     // Make start fully idempotent: supersede + tear down any in-flight run before
     // touching the shared AVR/ngspice state, so a quick stop→start (or a
     // double-start) can never leave two run loops ticking the emulator at once.
@@ -363,9 +353,7 @@ class SimulationEngine({
   /// for the part [nodeId] names. No-op when the simulation is not running.
   void handlePartEvent(String nodeId, String event) {
     if (!_isSimulating) return;
-    final node = _nodesByKey.values
-        .where((n) => nodeKeyToId(n.key) == nodeId)
-        .firstOrNull;
+    final node = _nodesByKey.values.where((n) => nodeKeyToId(n.key) == nodeId).firstOrNull;
     if (node == null) return;
     if (node.part.name == PartNames.irRemote) {
       final command = IrRemoteKeys.commands[event];
@@ -419,8 +407,7 @@ class SimulationEngine({
 
     // SPICE needs resistors as real 2-node elements (not bridged), so it gets a
     // dedicated netlist; [_netlist] stays bridged for digital connectivity.
-    final spiceNetlist = CircuitNetlist()
-      ..buildStatic(nodes, wires, bridgeResistors: false);
+    final spiceNetlist = CircuitNetlist()..buildStatic(nodes, wires, bridgeResistors: false);
     _spiceEngine = SpiceEngine(onLog: onSpiceLog);
     _spiceEngine.build(spiceNetlist, nodes);
 
@@ -440,8 +427,7 @@ class SimulationEngine({
   SimulationSnapshot captureSnapshot() => SimulationSnapshot(
     pinStates: {for (final p in _profile.digitalPins) p: _board.getPinState(p)},
     ledCurrents: {
-      for (final key in _spiceEngine.measuredElementKeys)
-        key: _spiceEngine.getLedCurrent(key),
+      for (final key in _spiceEngine.measuredElementKeys) key: _spiceEngine.getLedCurrent(key),
     },
     cpuCycles: _board.getCycles(),
   );
@@ -458,16 +444,11 @@ class SimulationEngine({
     final board = _boardNode;
     final hasAnalogInput =
         board != null &&
-        _canvasProfile.analogInputPorts.any(
-          (p) => _spiceEngine.isPortConnected(board.key, p),
-        );
+        _canvasProfile.analogInputPorts.any((p) => _spiceEngine.isPortConnected(board.key, p));
     // "Did the netlist produce any part element" rather than "are there LEDs":
     // the LED bucket is gone, and this is the question that was always being
     // asked through it.
-    _isSpiceActive =
-        _spiceEngine.hasPartElements ||
-        _micSensors.isNotEmpty ||
-        hasAnalogInput;
+    _isSpiceActive = _spiceEngine.hasPartElements || _micSensors.isNotEmpty || hasAnalogInput;
   }
 
   /// Solves the drawn wires' currents from the operating point just computed
@@ -493,9 +474,7 @@ class SimulationEngine({
           break;
         }
         final delta = (entry.value - previous).abs();
-        final scale = previous.abs() > entry.value.abs()
-            ? previous.abs()
-            : entry.value.abs();
+        final scale = previous.abs() > entry.value.abs() ? previous.abs() : entry.value.abs();
         if (delta > SimConstants.wireCurrentEpsilon && delta > scale * 0.02) {
           moved = true;
           break;
@@ -528,14 +507,12 @@ class SimulationEngine({
     final profile = _canvasProfile;
 
     final over = <String, double>{};
-    for (final MapEntry(key: rail, value: limit)
-        in profile.supplyLimits.entries) {
+    for (final MapEntry(key: rail, value: limit) in profile.supplyLimits.entries) {
       if (!_spiceEngine.isPortConnected(board.key, rail)) continue;
       final amps = -_spiceEngine.portCurrent(board.key, rail);
       if (amps > limit) over[rail] = amps;
     }
-    if (over.length == _overloadedRails.length &&
-        over.keys.every(_overloadedRails.contains)) {
+    if (over.length == _overloadedRails.length && over.keys.every(_overloadedRails.contains)) {
       return;
     }
     _overloadedRails
@@ -628,11 +605,7 @@ class SimulationEngine({
   /// the engine is stopped OR a newer run supersedes this one (a newer
   /// [_runGeneration]); only the still-current generation reports [onStop], so a
   /// superseded loop never tears down the run that replaced it.
-  Future<void> _runLoop(
-    String compiledHex,
-    int generation,
-    void Function() onStop,
-  ) async {
+  Future<void> _runLoop(String compiledHex, int generation, void Function() onStop) async {
     _activeLoops++;
     // Self-enforcing invariant: if a future refactor ever lets two loops run,
     // this trips immediately in debug/tests rather than silently double-ticking
@@ -652,9 +625,7 @@ class SimulationEngine({
         return;
       }
 
-      onSerialPrint?.call(
-        'Running the sketch on the emulated ${profile.partName}...',
-      );
+      onSerialPrint?.call('Running the sketch on the emulated ${profile.partName}...');
       onDebugLog?.call(
         '[Run] Simulation started (${profile.partName} @ ${profile.clockHz ~/ 1000000} MHz).',
       );
@@ -703,9 +674,7 @@ class SimulationEngine({
           final workUs = runFrame(cycles: cycles, solveSpice: solveSpice);
           final remainingMs = AVRConfig.frameBudgetMs - (workUs ~/ 1000);
           await Future<void>.delayed(
-            remainingMs > 0
-                ? Duration(milliseconds: remainingMs)
-                : Duration.zero,
+            remainingMs > 0 ? Duration(milliseconds: remainingMs) : Duration.zero,
           );
         } catch (e, stack) {
           final msg = 'Emulator/SPICE crashed: $e\n$stack';
@@ -746,8 +715,7 @@ class SimulationEngine({
     // an LED asking ngspice for its current now would find no result vector.
     if (!_partsPoweredOn) {
       _partsPoweredOn = true;
-      if (_behaviourNodes.isNotEmpty)
-        _updateBehaviourParts(circuitSolved: false);
+      if (_behaviourNodes.isNotEmpty) _updateBehaviourParts(circuitSolved: false);
     }
 
     // 1. Update digital inputs (push buttons → netlist → board pins)
@@ -775,9 +743,7 @@ class SimulationEngine({
       for (final pin in profile.digitalPins) {
         _spiceEngine.setPinDrive(
           '$pin',
-          voltage: _board.getPinDuty(pin) > 0
-              ? profile.logicHighVolts
-              : SimConstants.logicLowVolts,
+          voltage: _board.getPinDuty(pin) > 0 ? profile.logicHighVolts : SimConstants.logicLowVolts,
           isOutput: _board.isPinOutput(pin),
         );
       }
