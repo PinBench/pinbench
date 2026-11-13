@@ -259,14 +259,13 @@ class SimulationEngine({
         // The board's own LED goes out with the sketch.
         stopUpdates[node.key] = {ComponentProps.isOn: false};
       } else if (node.part.name == PartNames.led || node.part.name == PartNames.piezoBuzzer) {
-        final props = Map<String, dynamic>.from(node.properties);
-        props[ComponentProps.isOn] = false;
-        props[ComponentProps.hasError] = false;
-        stopUpdates[node.key] = props;
+        // Only what the run changed. Whatever is sent here is drawn over the
+        // part's own properties until the next run, so a copy of the whole map
+        // would pin its `Color` — and everything else the user can edit — to
+        // the values the run started with.
+        stopUpdates[node.key] = {ComponentProps.isOn: false, ComponentProps.hasError: false};
       } else if (node.part.name == PartNames.ky037MicSensor) {
-        final props = Map<String, dynamic>.from(node.properties);
-        props[ComponentProps.isDigitalHigh] = false;
-        stopUpdates[node.key] = props;
+        stopUpdates[node.key] = {ComponentProps.isDigitalHigh: false};
       }
     }
     _output.applyNodeUpdates(stopUpdates);

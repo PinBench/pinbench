@@ -79,7 +79,9 @@ class CanvasController()
   }
 
   void updateCircuit(List<ComponentInstance> newNodes, List<WireModel> newWires) {
+    final before = state.nodes;
     state = state.copyWith(nodes: newNodes, wires: newWires);
+    _reconcileLiveProperties(before, newNodes);
   }
 
   @override
@@ -133,6 +135,7 @@ class CanvasController()
     List<double>? verticalGuidelines,
     List<double>? horizontalGuidelines,
   }) {
+    final before = state.nodes;
     state = state.copyWith(
       nodes: nodes,
       wires: wires,
@@ -142,7 +145,7 @@ class CanvasController()
       verticalGuidelines: verticalGuidelines,
       horizontalGuidelines: horizontalGuidelines,
     );
-    if (nodes != null) _pruneLiveProperties(nodes);
+    if (nodes != null) _reconcileLiveProperties(before, nodes);
   }
 
   void clearGuidelines() {
@@ -261,14 +264,38 @@ class CanvasController()
     }
   }
 
-  /// Drops live state for nodes that no longer exist. Called wherever the node
-  /// list is replaced wholesale — opening a circuit, or undoing back past the
-  /// part that was lit.
-  void _pruneLiveProperties(List<ComponentInstance> currentNodes) {
+  /// Keeps the live state in step with the node list it was replaced by.
+  ///
+  /// A node that is gone takes its live state with it — opening a circuit, or
+  /// undoing back past the part that was lit. And a property that changed
+  /// drops any live value under the same key, so what the user set is what is
+  /// drawn: the overlay outlives the run that wrote it, and a run writes
+  /// user-set keys too (a part driven by Dart logic reports its whole property
+  /// map as state). Without this an LED recoloured after a run kept the run's
+  /// colour, on top of the new one, until the next run.
+  ///
+  /// Runtime-only keys the user never sets, like `isOn`, are untouched, so a
+  /// stopped LED stays dark.
+  void _reconcileLiveProperties(List<ComponentInstance> before, List<ComponentInstance> after) {
     if (_liveProperties.isEmpty) return;
-    final live = currentNodes.map((n) => n.key).toSet();
+    final previous = {for (final node in before) node.key: node.properties};
+    for (final node in after) {
+      final notifier = _liveProperties[node.key];
+      final old = previous[node.key];
+      // A drag replaces the node but not its property map.
+      if (notifier == null || old == null || identical(old, node.properties)) continue;
+      final live = notifier.value;
+      final stale = [
+        for (final key in live.keys)
+          if (old[key] != node.properties[key]) key,
+      ];
+      if (stale.isEmpty) continue;
+      notifier.value = {...live}..removeWhere((key, _) => stale.contains(key));
+    }
+
+    final current = {for (final node in after) node.key};
     _liveProperties.removeWhere((key, notifier) {
-      if (live.contains(key)) return false;
+      if (current.contains(key)) return false;
       notifier.dispose();
       return true;
     });
