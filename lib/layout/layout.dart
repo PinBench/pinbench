@@ -16,6 +16,7 @@ import '../features/editor/widgets/empty_editor_view.dart';
 import '../features/workspace/providers/workspace_loading_provider.dart';
 import 'bars/activity/activity_bar.dart';
 import 'components/chrome_tab.dart';
+import 'components/newsletter_first_run_prompt.dart';
 import 'leaf_registry.dart';
 import 'providers/layout_provider.dart';
 import 'bars/bottom/bottom_pane_toolbar.dart';
@@ -153,6 +154,8 @@ class const Layout({super.key}) extends ConsumerWidget {
           // being saved anywhere" cannot be missed. Renders nothing unless the
           // workspace is a read-only view of somebody else's shared project.
           const SharedProjectBanner(),
+          // Nothing to see: it waits for the first run, to offer the newsletter.
+          const NewsletterFirstRunPrompt(),
           Expanded(
             child: Row(
               children: [

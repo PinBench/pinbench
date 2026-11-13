@@ -21,6 +21,7 @@ import 'package:pinbench_ui/ui/app_page_route.dart';
 import '../core/auth/auth_provider.dart';
 import '../core/cloud/project_providers.dart';
 import '../core/edition/edition_provider.dart';
+import '../core/newsletter/newsletter.dart';
 import '../core/remote_config/feature_flags.dart';
 import '../core/remote_config/feature_flags_provider.dart';
 import '../core/telemetry/analytics_milestones.dart';
@@ -221,6 +222,7 @@ ProviderScope Function(Widget child) buildGlobalScope({
   required Milestones milestones,
   required CloudSession cloud,
   required SidePanel? panel,
+  required String? newsletterUrl,
   required FeatureFlags featureFlags,
 }) =>
     (child) => ProviderScope(
@@ -238,6 +240,7 @@ ProviderScope Function(Widget child) buildGlobalScope({
         authServiceProvider.overrideWithValue(cloud.auth),
         projectRepositoryProvider.overrideWithValue(cloud.projects),
         editionPanelProvider.overrideWithValue(panel),
+        newsletterUrlProvider.overrideWithValue(newsletterUrl),
         featureFlagsProvider.overrideWithValue(featureFlags),
         // What the simulation runs on, runs, and reports to. See
         // `app/simulation/` — the ports have no default binding.

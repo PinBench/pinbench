@@ -331,6 +331,21 @@ class AppStrings._() {
   static const updatesReleaseNotesLabel = 'Release notes';
   static const updatesDialogTitle = 'Update';
 
+  // ── Newsletter ───────────────────────────────────────────────────────────
+  // Every way to it opens the sign-up page in the browser; the app never takes
+  // the address itself.
+  static const newsletterTitle = 'Get new features by email';
+  static const newsletterBody =
+      'A short email when a release adds something worth trying — new parts, '
+      'boards and features. Unsubscribe with one click.';
+  static const newsletterSignUp = 'Sign up';
+  static const newsletterDismiss = 'No thanks';
+  static const newsletterMenuLabel = 'Get Updates by Email…';
+  static const newsletterSectionTitle = 'Newsletter';
+  static const settingsNewsletterDescription = 'Hear about new releases by email.';
+  static const newsletterFirstRunTitle = 'It runs!';
+  static const newsletterFirstRunBody = 'Want an email when PinBench gets new parts and features?';
+
   // ── Release notes ────────────────────────────────────────────────────────
   static const releaseNotesMenuLabel = 'Release Notes';
 

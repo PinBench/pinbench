@@ -22,5 +22,10 @@ PlatformMenu helpMenu(WidgetRef ref) => PlatformMenu(
       label: AppStrings.updatesCheckMenuLabel,
       onSelected: () => unawaited(checkForUpdates(ref)),
     ),
+    if (hasNewsletter(ref))
+      PlatformMenuItem(
+        label: AppStrings.newsletterMenuLabel,
+        onSelected: () => openNewsletter(ref),
+      ),
   ],
 );

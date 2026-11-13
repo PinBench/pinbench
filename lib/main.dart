@@ -59,6 +59,7 @@ void main() async {
     milestones: milestones,
     cloud: editionSetup.cloud,
     panel: editionSetup.panel,
+    newsletterUrl: edition?.newsletterUrl,
     featureFlags: featureFlags,
   );
 
