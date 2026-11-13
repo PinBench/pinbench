@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 
 import 'package:file_selector/file_selector.dart';
@@ -8,6 +10,7 @@ import 'package:pinbench_ui/strings.dart';
 import '../../features/workspace/providers/workspace_files_provider.dart';
 import '../../features/workspace/providers/editor_state_provider.dart';
 import '../../core/chrome/chrome_commands.dart';
+import '../../core/newsletter/newsletter.dart';
 import '../../core/updates/update_providers.dart';
 import '../../layout/controllers/app_layout_controller.dart';
 import '../../layout/updates/update_dialog.dart';
@@ -102,6 +105,15 @@ Future<void> checkForUpdates(WidgetRef ref, {BuildContext? context}) async {
 void openReleaseNotes(WidgetRef ref) => ref
     .read(appLayoutControllerProvider)
     .openReleaseNotesTab(version: ref.read(appVersionProvider).value);
+
+/// Whether this build has a newsletter, i.e. whether "Get Updates by Email…"
+/// belongs on the Help menu.
+bool hasNewsletter(WidgetRef ref) => ref.read(newsletterUrlProvider) != null;
+
+/// Opens the newsletter sign-up page in the browser. Backs "Get Updates by
+/// Email…" on the Help menu and the web menu bar's.
+void openNewsletter(WidgetRef ref) =>
+    unawaited(ref.read(newsletterPromptsProvider.notifier).open(NewsletterEntry.helpMenu));
 
 /// Opens the Welcome tab, or switches to it. Backs "Welcome" on the Help menu
 /// (and the web menu bar's equivalent entry).

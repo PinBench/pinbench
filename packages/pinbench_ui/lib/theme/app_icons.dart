@@ -129,6 +129,7 @@ abstract final class AppIcons {
   /// macOS/Windows the update has to come down before it can install.
   static const update = LucideIcons.arrowDownToLine;
   static const releaseNotes = LucideIcons.scrollText;
+  static const newsletter = LucideIcons.mail;
 
   /// Reads one icon so the library's module is resolved here, on a shallow
   /// stack, before anything builds a widget.

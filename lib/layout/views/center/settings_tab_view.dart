@@ -9,8 +9,10 @@ import 'package:pinbench_ui/theme/app_icons.dart';
 import 'package:pinbench_ui/ui/app_divider.dart';
 
 import '../../../core/edition/edition_provider.dart';
+import '../../../core/newsletter/newsletter.dart';
 import '../../../core/telemetry/telemetry_consent.dart';
 import '../../updates/update_panel.dart';
+import 'newsletter_panel.dart';
 import 'privacy_panel.dart';
 
 /// App settings, as a document in the center pane.
@@ -61,6 +63,13 @@ class const SettingsTabView({super.key}) extends ConsumerWidget {
                 title: AppStrings.privacySectionTitle,
                 description: AppStrings.settingsPrivacyDescription,
                 child: PrivacyPanel(),
+              ),
+            if (ref.watch(newsletterUrlProvider) != null)
+              const _Section(
+                icon: AppIcons.newsletter,
+                title: AppStrings.newsletterSectionTitle,
+                description: AppStrings.settingsNewsletterDescription,
+                child: NewsletterPanel(),
               ),
           ],
         ),

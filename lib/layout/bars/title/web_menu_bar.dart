@@ -293,6 +293,8 @@ class _WebMenuBarState extends ConsumerState<WebMenuBar> {
       AppStrings.updatesCheckMenuLabel,
       onPressed: () => unawaited(checkForUpdates(ref, context: context)),
     ),
+    if (hasNewsletter(ref))
+      _action(AppStrings.newsletterMenuLabel, onPressed: () => openNewsletter(ref)),
     const AppMenuSeparator(),
     _action(
       AppStrings.aboutMenuItemLabel,

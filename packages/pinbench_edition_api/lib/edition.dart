@@ -27,4 +27,11 @@ abstract interface class Edition {
   /// build initialises no telemetry at all — which is what a build from source
   /// must do, or every fork and debug run would report to the hosted project.
   TelemetryConfig? get telemetry;
+
+  /// A web page where people sign up for email about new releases. The app
+  /// only ever opens it in the browser — the sign-up itself, and whatever
+  /// confirmation it asks for, happen there. Null hides every way to it: the
+  /// welcome card, the prompt after a first run, the Help menu entry and the
+  /// Settings section.
+  String? get newsletterUrl;
 }

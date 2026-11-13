@@ -22,6 +22,14 @@ to it. Anything older is summarised at the end.
 
 ## [Unreleased]
 
+### Added
+
+- **Get new features by email.** The hosted builds offer a newsletter: a card
+  on the welcome screen, a one-time note after your first successful run,
+  Help ▸ Get Updates by Email…, and a section in Settings. Each opens the
+  sign-up page in your browser; the app never takes your address itself. A
+  build from source shows none of it.
+
 ### Changed
 
 - **Usage statistics now work on Windows and Linux too**, for those who agree
@@ -46,6 +54,9 @@ to it. Anything older is summarised at the end.
   `first_template_open`, `first_component_added` and `first_compile_attempt`
   milestones; user properties are set again when consent is given mid-session,
   and buffered analytics is flushed on exit.
+- `Edition.newsletterUrl` (null hides the newsletter everywhere), a
+  `newsletter_open` event saying where it came from, and `showAppToast` can
+  carry one button (`ToastAction`).
 
 ## [0.1.2] - 2026-10-04
 

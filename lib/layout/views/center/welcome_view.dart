@@ -15,6 +15,7 @@ import '../../../core/auth/auth_provider.dart';
 import '../../../core/edition/edition_provider.dart';
 import 'welcome/welcome_cloud_section.dart';
 import 'welcome/welcome_consent_card.dart';
+import 'welcome/welcome_newsletter_card.dart';
 import 'welcome/welcome_recent_section.dart';
 import 'welcome/welcome_start_section.dart';
 import 'welcome/welcome_templates_section.dart';
@@ -36,6 +37,7 @@ class const WelcomeView({super.key}) extends ConsumerWidget {
               children: [
                 _buildHeader(context),
                 const WelcomeConsentCard(),
+                const WelcomeNewsletterCard(),
                 // The side panel's entry point, when the edition has one. The
                 // pane itself stays closed here; see `closeWelcome`.
                 if (ref.watch(editionPanelProvider)?.welcome case final welcome?) ...[
